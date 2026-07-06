@@ -25,3 +25,60 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: Data
+      description: 将人类视频转化为机器人可用的操作数据，特别是重构手物交互、对齐人体运动与机器人形态、可复现的机器人学习缩放规律、生成可执行动作/演示数据的方法。
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: robot learning scaling law
+          keyword_cn: ''
+          query: r
+        - keyword: robot manipulation data engine
+          keyword_cn: ''
+          query: robot manipulation data engine
+        - keyword: scalable manipulation dataset
+          keyword_cn: ''
+          query: scalable manipulation dataset
+        - keyword: web-scale robot learning data
+          keyword_cn: ''
+          query: web-scale robot learning data
+        - keyword: robot learning from human videos
+          keyword_cn: ''
+          query: robot learning from human videos
+        - keyword: human-robot transfer
+          keyword_cn: 人机迁移
+          query: transferring human skills to robots
+      intent_queries:
+        - query: human demonstration retargeting
+          query_cn: ''
+          enabled: true
+          source: manual
+          note: ''
+        - query: robot learning from videos
+          query_cn: ''
+          enabled: true
+          source: manual
+          note: ''
+        - query: web scale robot learning
+          query_cn: ''
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-07-06T00:17:07.868Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
