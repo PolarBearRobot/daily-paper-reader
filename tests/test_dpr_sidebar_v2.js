@@ -591,7 +591,7 @@ function testSidebarFooterControlsReplaceRefresh() {
   const bodyRule = cssRule(css, 'body.dpr-sidebar-v2');
   assert.ok(/--dpr-sidebar-collapsed-width:\s*0px/i.test(bodyRule));
   const contentRule = cssRule(css, 'body.dpr-sidebar-v2 .content');
-  assert.ok(/left:\s*var\(--dpr-sidebar-width,\s*373px\)\s*!important/i.test(contentRule));
+  assert.ok(/left:\s*var\(--dpr-sidebar-width,\s*298px\)\s*!important/i.test(contentRule));
   assert.ok(/transition:\s*left \.24s ease,\s*width \.24s ease/i.test(contentRule));
   const footerRule = cssRule(css, '.dpr-sidebar-footer');
   assert.ok(/display:\s*flex/i.test(footerRule));
@@ -636,8 +636,8 @@ function testSidebarFooterControlsReplaceRefresh() {
 function testCollapsedSidebarRecentersChatSurface() {
   const css = fs.readFileSync('app/app.css', 'utf8');
   const v2InputRule = cssRule(css, 'body.dpr-sidebar-v2 #paper-chat-container .input-area');
-  assert.ok(/left:\s*calc\(\s*var\(--dpr-sidebar-width,\s*373px\)\s*\+\s*\(100%\s*-\s*var\(--dpr-sidebar-width,\s*373px\)\)\s*\/\s*2\s*\)/i.test(v2InputRule));
-  assert.ok(/max-width:\s*min\(var\(--dpr-paper-content-max-width\),\s*calc\(100%\s*-\s*var\(--dpr-sidebar-width,\s*373px\)\s*-\s*40px\)\)/i.test(v2InputRule));
+  assert.ok(/left:\s*calc\(\s*var\(--dpr-sidebar-width,\s*298px\)\s*\+\s*\(100%\s*-\s*var\(--dpr-sidebar-width,\s*298px\)\)\s*\/\s*2\s*\)/i.test(v2InputRule));
+  assert.ok(/max-width:\s*min\(var\(--dpr-paper-content-max-width\),\s*calc\(100%\s*-\s*var\(--dpr-sidebar-width,\s*298px\)\s*-\s*40px\)\)/i.test(v2InputRule));
 
   const collapsedInputRule = cssRule(css, 'body.dpr-sidebar-v2.dpr-sidebar-v2-collapsed #paper-chat-container .input-area');
   assert.ok(/left:\s*50%/i.test(collapsedInputRule));
@@ -720,10 +720,17 @@ function testSidebarUtilityHelpers() {
   assert.equal(tools.shouldAutoMarkRead('good'), false);
 
   assert.equal(typeof tools.clampSidebarWidth, 'function');
-  assert.equal(tools.clampSidebarWidth(undefined), 373);
+  assert.equal(tools.clampSidebarWidth(undefined), 298);
   assert.equal(tools.clampSidebarWidth(180), 240);
   assert.equal(tools.clampSidebarWidth(360), 360);
   assert.equal(tools.clampSidebarWidth(720), 520);
+  assert.equal(typeof tools.loadPersistedSidebarWidth, 'function');
+  global.window.localStorage.getItem = () => '373';
+  assert.equal(tools.loadPersistedSidebarWidth(), 298);
+  global.window.localStorage.getItem = () => '360';
+  assert.equal(tools.loadPersistedSidebarWidth(), 360);
+  global.window.localStorage.getItem = () => null;
+  assert.equal(tools.loadPersistedSidebarWidth(), 298);
 
   assert.equal(typeof tools.rerenderOptionsForReadStateEvent, 'function');
   assert.deepEqual(tools.rerenderOptionsForReadStateEvent(), {
@@ -921,7 +928,7 @@ function testSidebarStickyHierarchyCssContract() {
   assert.ok(/--dpr-sidebar-sticky-panel-top:\s*0px/i.test(rootRule));
   assert.ok(/--dpr-sidebar-sticky-axis-top:\s*36px/i.test(rootRule));
   assert.ok(/--dpr-sidebar-sticky-section-top:\s*86px/i.test(rootRule));
-  assert.ok(/width:\s*var\(--dpr-sidebar-width,\s*373px\)/i.test(rootRule));
+  assert.ok(/width:\s*var\(--dpr-sidebar-width,\s*298px\)/i.test(rootRule));
 
   const panelHeaderBaseRule = cssRule(css, '.dpr-sidebar-panel-header');
   assert.ok(/padding:\s*8px 14px/i.test(panelHeaderBaseRule));

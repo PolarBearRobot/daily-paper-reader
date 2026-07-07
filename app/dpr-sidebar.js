@@ -21,7 +21,8 @@
   var FILTER_KEY = 'dpr_sidebar_filter_v2';
   var COLLAPSE_KEY = 'dpr_sidebar_collapse_v4';
   var WIDTH_KEY = 'dpr_sidebar_width_v2';
-  var DEFAULT_SIDEBAR_WIDTH = 373;
+  var LEGACY_DEFAULT_SIDEBAR_WIDTH = 373;
+  var DEFAULT_SIDEBAR_WIDTH = 298;
   var MIN_SIDEBAR_WIDTH = 240;
   var MAX_SIDEBAR_WIDTH = 520;
   var OVERLAY_SIDEBAR_QUERY = '(max-width: 1023px)';
@@ -1338,6 +1339,7 @@
   function loadPersistedSidebarWidth() {
     try {
       var raw = window.localStorage && window.localStorage.getItem(WIDTH_KEY);
+      if (parseInt(raw, 10) === LEGACY_DEFAULT_SIDEBAR_WIDTH) return DEFAULT_SIDEBAR_WIDTH;
       return clampSidebarWidth(raw || DEFAULT_SIDEBAR_WIDTH);
     } catch (e) {
       return DEFAULT_SIDEBAR_WIDTH;
@@ -2493,6 +2495,7 @@
         statusForMarkIndex: statusForMarkIndex,
         shouldAutoMarkRead: shouldAutoMarkRead,
         clampSidebarWidth: clampSidebarWidth,
+        loadPersistedSidebarWidth: loadPersistedSidebarWidth,
         rerenderOptionsForReadStateEvent: rerenderOptionsForReadStateEvent,
         rerenderOptionsForAxisInteraction: rerenderOptionsForAxisInteraction,
         rerenderOptionsForPanelToggle: rerenderOptionsForPanelToggle,
