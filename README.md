@@ -277,4 +277,10 @@ QQ 群：583867967（欢迎交流，已有：1151 人）
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ziwenhahaha/daily-paper-reader&type=Date&showForks=true)](https://star-history.com/#ziwenhahaha/daily-paper-reader&Date)
+<a href="https://www.star-history.com/?type=date&repos=ziwenhahaha%2Fdaily-paper-reader">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ziwenhahaha/daily-paper-reader&type=date&theme=dark&legend=top-left&sealed_token=HZNlFXt8xbwRv5OoiqbjkjDPJoOuXlfSMxuVmHWAdDqfd9IVMab3xcK4VxF3DlJAvaO71PL3smUpfEw-NjNT83w8NqNJ0UPIhoNcxbiPhTMQkoMhkawF1w" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ziwenhahaha/daily-paper-reader&type=date&legend=top-left&sealed_token=HZNlFXt8xbwRv5OoiqbjkjDPJoOuXlfSMxuVmHWAdDqfd9IVMab3xcK4VxF3DlJAvaO71PL3smUpfEw-NjNT83w8NqNJ0UPIhoNcxbiPhTMQkoMhkawF1w" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ziwenhahaha/daily-paper-reader&type=date&legend=top-left&sealed_token=HZNlFXt8xbwRv5OoiqbjkjDPJoOuXlfSMxuVmHWAdDqfd9IVMab3xcK4VxF3DlJAvaO71PL3smUpfEw-NjNT83w8NqNJ0UPIhoNcxbiPhTMQkoMhkawF1w" />
+ </picture>
+</a>
