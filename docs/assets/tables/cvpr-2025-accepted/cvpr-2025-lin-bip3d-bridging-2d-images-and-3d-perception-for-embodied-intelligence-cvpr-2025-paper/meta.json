@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "extractor": "papercropper",
+  "tables": [
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-001.webp",
+      "caption": "",
+      "page": 0,
+      "index": 1,
+      "width": 1793,
+      "height": 472,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-002.webp",
+      "caption": "",
+      "page": 0,
+      "index": 2,
+      "width": 868,
+      "height": 201,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-003.webp",
+      "caption": "",
+      "page": 0,
+      "index": 3,
+      "width": 1818,
+      "height": 363,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-004.webp",
+      "caption": "",
+      "page": 0,
+      "index": 4,
+      "width": 1783,
+      "height": 470,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-005.webp",
+      "caption": "",
+      "page": 0,
+      "index": 5,
+      "width": 1755,
+      "height": 380,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-006.webp",
+      "caption": "",
+      "page": 0,
+      "index": 6,
+      "width": 1739,
+      "height": 685,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-007.webp",
+      "caption": "",
+      "page": 0,
+      "index": 7,
+      "width": 1650,
+      "height": 276,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/cvpr-2025-accepted/cvpr-2025-lin-bip3d-bridging-2d-images-and-3d-perception-for-embodied-intelligence-cvpr-2025-paper/table-008.webp",
+      "caption": "",
+      "page": 0,
+      "index": 8,
+      "width": 1544,
+      "height": 233,
+      "label": "Table"
+    }
+  ]
+}

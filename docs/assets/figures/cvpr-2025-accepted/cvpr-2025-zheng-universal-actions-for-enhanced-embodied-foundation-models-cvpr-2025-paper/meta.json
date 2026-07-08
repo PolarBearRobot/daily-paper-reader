@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "extractor": "papercropper",
+  "figures": [
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-001.webp",
+      "caption": "",
+      "page": 0,
+      "index": 1,
+      "width": 755,
+      "height": 588,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-002.webp",
+      "caption": "",
+      "page": 0,
+      "index": 2,
+      "width": 1691,
+      "height": 951,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-003.webp",
+      "caption": "",
+      "page": 0,
+      "index": 3,
+      "width": 1714,
+      "height": 549,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-004.webp",
+      "caption": "",
+      "page": 0,
+      "index": 4,
+      "width": 1694,
+      "height": 536,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-005.webp",
+      "caption": "",
+      "page": 0,
+      "index": 5,
+      "width": 874,
+      "height": 273,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-006.webp",
+      "caption": "",
+      "page": 0,
+      "index": 6,
+      "width": 1745,
+      "height": 366,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-007.webp",
+      "caption": "",
+      "page": 0,
+      "index": 7,
+      "width": 1703,
+      "height": 618,
+      "label": "Figure"
+    },
+    {
+      "url": "assets/figures/cvpr-2025-accepted/cvpr-2025-zheng-universal-actions-for-enhanced-embodied-foundation-models-cvpr-2025-paper/fig-008.webp",
+      "caption": "",
+      "page": 0,
+      "index": 8,
+      "width": 1712,
+      "height": 539,
+      "label": "Figure"
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+Title: IAAO: Interactive Affordance Learning for Articulated Objects in 3D Environments
+
+URL Source: https://openaccess.thecvf.com/content/CVPR2025/papers/Zhang_IAAO_Interactive_Affordance_Learning_for_Articulated_Objects_in_3D_Environments_CVPR_2025_paper.pdf
+
+Published Time: Mon, 19 May 2025 12:09:21 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# IAAO: Interactive Affordance Learning for Articulated Objects in 3D Environments 
+
+## Can Zhang Gim Hee Lee Department of Computer Science, National University of Singapore  
+
+> can.zhang@u.nus.edu gimhee.lee@nus.edu.sg
+
+## Abstract 
+
+This work presents IAAO, a novel framework that builds an explicit 3D model for intelligent agents to gain under-standing of articulated objects in their environment through interaction. Unlike prior methods that rely on task-specific networks and assumptions about movable parts, our IAAO leverages large foundation models to estimate interactive affordances and part articulations in three stages. We first build hierarchical features and label fields for each ob-ject state using 3D Gaussian Splatting (3DGS) by distilling mask features and view-consistent labels from multi-view images. We then perform object- and part-level queries on the 3D Gaussian primitives to identify static and artic-ulated elements, estimating global transformations and lo-cal articulation parameters along with affordances. Finally, scenes from different states are merged and refined based on the estimated transformations, enabling robust affordance-based interaction and manipulation of objects. Experimen-tal results demonstrate the effectiveness of our method. Our source code is available at: https://lulusindazc. github.io/IAAOproject/ .
+
+## 1. Introduction 
+
+The real world contains various dynamic objects that con-tinuously interact and move through time. Understanding and reconstructing the shapes, poses, and articulations of dynamic objects is crucial for many applications such as robotics, augmented reality and virtual reality (AR/VR), 
+
+etc . While humans naturally develop an intuitive under-standing of how objects move and interact, teaching this skill to an intelligent agent remains a complex challenge due to the diverse and intricate nature of articulated ob-jects. Furthermore, a key capability still missing in intel-ligent agents is effective interaction with their environment, particularly with functional elements like door handles and light switches. For intelligent agents to interact with func-tional objects, in addition to object detection, they must also  
+
+> Figure 1. Our IAAO requires multi-view images of the object or indoor scene from two different joint states (Left). The output is a 3D interactive field which supports interactions with multiple movable parts for fine-grained segmentation ( e.g . Case 2: handles) and articulation reconstruction ( e.g . Case 1: two articulated doors).
+
+understand the specific physical interactions each object af-fords—known as affordance [10]. The small size of these elements further intensifies the challenge, making them dif-ficult to detect. In this work, we aim to reconstruct the 3D complex scene and interact with both objects with static ge-ometry and objects with articulations and fine-grained af-fordances as illustrated in Fig. 1. Early approaches [21, 46] to understanding articulated objects rely on supervised learning with costly 3D anno-tations and category-specific models, which limit general-ization to novel objects. Recent methods [16, 22] such as Ditto [16] and PARIS [22] have advanced this field by creating digital twins of objects based on observations in two joint configurations. Since Ditto is trained on multi-view point clouds from specific categories, it struggles with objects that differ significantly from its training data. In contrast, PARIS [22] uses multi-view posed images to di-rectly optimize an implicit representation without pretrain-ing, allowing for improved generalization. However, it re-mains sensitive to initialization and may experience stabil-ity issues. Further developments [42, 47] have expanded scalability to objects with multiple moving parts based on implicit neural radiance fields (NeRFs). Nonetheless, several challenges remain unexplored, including generaliz-This CVPR paper is the Open Access version, provided by the Computer Vision Foundation. Except for this watermark, it is identical to the accepted version; the final published version of the proceedings is available on IEEE Xplore. 12132 ing to complex scenes, flexibly applied for manipulation, and practical assumptions ( e.g . handling unknown camera poses, unaligned static object parts, and occlusion). In 3D perception, instance segmentation provides essen-tial object-level understanding for agents interacting within scenes. Recent studies [27, 29] explore part-object segmen-tation to decompose objects into finer components such as cabinet drawers. However, these methods are preliminary and struggle with affordance detection due to the lack of precise small-scale geometry in existing datasets. Open-vocabulary models [6, 18, 35, 43] utilize foundation models such as CLIP [39] to extract semantic features and consoli-date them into a multi-view consistent 3D neural field repre-sentation. However, they rely on costly multi-scale queries to refine segmentation boundaries, and face challenges in high-dimensional feature encoding. To address the limitations mentioned above, we intro-duce IAAO, a framework designed for interaction of intelli-gent agents with objects, parts, and functional affordances, as well as for articulating movable objects. We explic-itly leverage 3D semantic information to provide our model with scene understanding and interaction capabilities for ar-ticulated objects. Key insights of our approach include: 1) semantic scene reconstruction where SAM masks enable multi-view consistent segmentations from partial views, 2) hierarchical feature fields to efficiently compress dense fea-tures from multiple views into 3DGS for object- and part-level interaction in diverse scenes, 3) explicit 3D Gaussian representations for affordance localization via query sim-ilarity and motion recovery via 3D point-to-2D pixel cor-respondences, 4) global-local transformation initialization to enhance robustness in realistic scenarios with potential scene misalignment between object states, and 5) scene state fusion merging two different scene states to enhance object geometry completeness. Specifically, our IAAO enables interactive affordance detection and object articulation via the following steps: 1) 3D model construction . Using multi-view posed im-ages of each state, we model the 3D scene as a set of ex-plicit 3D Gaussian primitives with 3D Gaussian Splatting (3DGS) [17]. 2) Hierarchical feature field construction .
+
+We propose an efficient distillation scheme where shape-aware 2D features and dense semantic features are ex-tracted from large foundation models, including CLIP [39], SAM [19], and DINOv2 [33]. 2D features are efficiently distilled into 3D fields with a decoder. 3) Semantic-guided mask association across states . We first cluster SAM-generated masks from all views within each state to obtain view-consistent mask labels. We then compute 3D proposal features by merging the features from the corresponding 2D masks. By comparing pairwise feature similarities, we es-tablish 3D mask-level correspondences across states that re-sult in consistent mask label sets for the entire scene in each state. 4) Affordance prediction . Given a task description, we encode it with the CLIP text encoder and compare the text embeddings with the feature fields to identify the rel-evant affordance. 5) Motion recovery . To estimate trans-formations, we define a set of consistency and matching losses that recover both global scene-level and local part-level transformations that ensure accurate motion represen-tation across different states. We summarize our main contributions as follows: • We introduce IAAO, an interactive affordance system utilizing 3D Gaussian fields embedded with hierarchi-cal language-aligned semantics and class-agnostic masks. This system supports manipulation tasks guided by vari-ous prompts (point, mask, and language) at both object and part levels, regardless of object categories and shape. • We propose a method to reconstruct motion via global matching at the scene level and local matching for articu-lated objects, without relying on impractical assumptions about static object alignment or known camera poses. • Our IAAO achieves state-of-the-art performance across extensive experiments on multiple benchmarks, including synthetic, real-world, and indoor scene data. • We show strong model generalization to complex indoor environments and previously unseen articulated objects, with no restrictions on the number of movable parts. 
+
+## 2. Related Work 
+
+Neural Fields for 3D Scene Understanding. 3D Scene un-derstanding is primarily characterized by four classic repre-sentations, including volumetric fields ([34]), point clouds ([40]), 3D meshes ([7]), and depth maps ([11, 41, 54]). Unlike traditional representations, NeRF (Neural Radiance Fields) [28] introduces a neural implicit field to capture the geometry and appearance of a scene. Through a Multi-Layer Perceptron (MLP) that takes 3D positions and 2D view directions as inputs, NeRF learns to implicitly repre-sent the color and radiance of the scenes from a collection of posed images. However, a key drawback of NeRF is the slow training and rendering speed. Recently, 3D Gaussian Splatting (3DGS) [17] has been introduced as an alterna-tive to implicit radiance field representations. In contrast to NeRF, 3DGS explicitly represents radiance fields as a collection of oriented 3D Gaussians. Each Gaussian is de-fined by its spatial position, opacity, and a covariance ma-trix, which allows flexible optimization. With efficient dif-ferentiable rasterization, 3DGS achieves fast rendering with high-quality results. Various work leverage neural fields as a representation robotic manipulation [18, 44, 45, 48, 58, 60]. Methods that leverage visual foundation models to construct neural feature fields [18, 37, 59] are most relevant to our work. With feature distillation via rendering, we re-construct a hierarchical feature field for object localization and fine-grained affordance prediction. 12133 Visual Affordance. Affordance [9] refers to the potential interactions that an object or its parts facilitate for an agent. Affordance prediction involves deducing interaction oppor-tunities from visual representations, e.g . images [4, 8, 25] or 3D models [3, 30, 31]. This field has gained significant interest in robotics as a foundational element for tasks e.g .grasping [26, 55], planning [50] and exploration [31]. How-ever, although these methods excel at predicting affordance regions, they lack detailed interaction information, which is essential for engaging with functional elements. Recent work [2] addresses fine-grained functional elements using comprehensive natural language task descriptions for inter-action. However, it depends on high-fidelity point clouds, restricting its practical applicability. We use high-resolution images with a Vision-Language Model (VLM) and 3D mo-tion heuristics to predict affordances, eliminating the need for high-fidelity point clouds. 
+
+Articulation Reasoning by Interaction. As embodied AI continues to evolve, the study of articulated objects has be-come a critical area of research. Recently, several syn-thetic [46, 49] and scanned data [15, 24, 27, 36] datasets have been introduced for articulated objects. These datasets contain annotations for part segmentation and motion pa-rameters that enable data-driven approaches in the predic-tion of motion parameters from 3D point clouds [46, 53]. Recent works have been increasingly focused on real-world scenarios by detecting articulated parts and the motion pa-rameters from images [15, 56] and videos [36]. Interactive perception involves agents gaining new insights from their interactions with the environment, and has been widely used to study object articulations [13, 14, 16, 32]. In this work, we focus on using language, and geometric and semantic scene understanding to achieve articulation reasoning. 
+
+## 3. Our Method 
+
+Objective. Given a scene of articulated objects represented by a set of multi-view posed images It = {Iti }N t 
+
+> i=1
+
+at two states t and t′, the goal is to reconstruct the geometries and semantics of the objects in the scene. We focus on articu-lated objects which contain one or more movable parts with rotary or prismatic joints. Under the condition of unknown object catergory in the scene, we aim to recover the ob-ject part geometry, segmentation and joint articulations in the presence of occlusions, shape discrepancies and motion changes across different scene states. For static objects in the scene, the task degenerates to global transformation es-timation between two input scene states for state matching. 
+
+Overview. Fig. 2 shows our IAAO framework consisting of: 1) A semantic scene reconstruction stage ( cf . Sec. 3.1) where we first extract CLIP features for objects in individ-ual scene state. These features are regularized by class-agnostic masks generated from 2D foundation models, e.g .SAM [57] at the instance and part level. We then cluster view-inconsistent masks from all views to obtain 3D con-sistent labels, and build a hierarchical feature field and la-bel field for all masks in each scene state via 3D Gaussian Splatting (3DGS). 2) An affordance and motion prediction 
+
+stage ( cf . Sec. 3.2) where we perform object- and part-level queries by directly operating on 3D primitives represented by 3D Gaussians. Static elements and articulated objects are identified by isolating the groups of 3D Gaussians cor-responding to segmented objects and functional parts of the scene, i.e . affordance prediction. For motion recovery, we estimate global transformation from static Gaussian primi-tives and local articulation parameters from the segmented movable parts of objects. 3) A scene state fusion stage ( cf .Sec. 3.3) enabling affordance interaction and object manip-ulation by merging and refining the reconstructed scenes from two states according to the estimated transformations. 
+
+3.1. Semantic Scene Reconstruction 
+
+Given a multi-view capture It of scene state t, we construct a 3D model using 3DGS initialized with sparse point cloud generated from Structure from Motion (SfM) [40]. Each point serves as the center of a Gaussian primitive embedded with geometry and appearance parameters. These 3D Gaus-sian primitives Gt = gtpP t 
+
+> p=1
+
+are then rendered into 2D views via differentiable rasterization for parameter optimization. To enrich the reconstructed model with semantic informa-tion, we augment each 3D Gaussian with semantic feature embeddings derived from large foundation models. 
+
+View-Consistent Mask Clustering. For each input im-age Iti ∈ It, we first derive the class-agnostic masks 
+
+M ti = {mti,n }nti 
+
+> n=1
+
+with an off-the-shelf mask predictor, where nti represents the number of masks in view i. For 
+
+M ti , we investigated the use of SAM [57] to generate both instance- and part-level masks for arbitrary objects. Unfor-tunately, mask generation models such as SAM face several challenges: a) class-agnostic masks do not have complete 3D information, b) inconsistent segmentation across images due to variations in viewpoint and appearance, and c) lack of one-to-one correspondence among masks due to over-segmentation for individual object. We aim to generate 3D-consistent labels for all masks in M t by defining a mask label mapping function ϕ(M t, G t) 7 → Ot. This function maps a set of masks M to belonging to the same 3D object to a consistent ot ∈ Ot within the 3D Gaussian primitives Gt.To associate class-agnostic masks across all input views at scene state t, we construct a mask graph to fuse the 2D masks M t of the entire scene into cohesive 3D instances 
+
+Ot. In the initial graph Gt 
+
+> 0
+
+= ( Vt
+
+> 0
+
+, Et
+
+> 0
+
+), each node in Vt
+
+> 0
+
+represents a mask detected from the views, and each edge in Et 
+
+> 0
+
+represents potential matches between pairs of object parts. Following the mask clustering workflow from [52], 12134 Figure 2. Our IAAO framework. 1) Top: Constructing 3D Gaussian fields in each state. We optimize 3DGS fields with hierarchical mask features, DINOv2 features and 3D-consistent mask labels generated from multi-view images. We also incorporate geometry information from depth images into the 3D Gaussians. 2) Bottom: Affordance and motion prediction. A query prompt is embedded using a pretrained encoder to localize relevant regions in the 3D Gaussians. For motion prediction, we optimize the transformation parameters by applying consistency and matching losses to 2D-3D correspondences between states. 3) Right: Scene fusion. Using the estimated transformations, we merge reconstructed 3DGS models from both states, aligning static and articulated elements. 
+
+we then cluster the mask nodes and update the edges to fa-cilitate mask association across different views. For each cluster, we combine the corresponding partial sets of Gaus-sians from individual masks to form a complete 3D in-stance and establish correspondences between 2D masks and 3D nodes. This results in the final graph Gt = ( Vt, Et),where each node in Vt represents a 3D instance proposal in Ot in scene state t. We maintain a list of associated 2D masks M to for each ot, discarding severely occluded masks. This 2D-3D relationship enables consistent segmentation labels across all views. However, the mask label mapping 
+
+ϕ(M t, G t) may be affected by noise due to varying part segmentation hierarchies across views. To mitigate segmen-tation ambiguities, we use the labeled masks M to in the final graph to supervise a label field for object part ot in the given scene state. To this end, we use a cross-entropy classifica-tion loss Llabel for enhanced consistency. 
+
+Per-State Hierarchical Feature Field. We generate a set of feature embeddings from the given image Iti us-ing pretrained foundation models. Specifically, we utilize MaskCLIP [5] to produce mask-level CLIP features at both instance and part levels, and DINOv2 [1, 33] to extract DINO embeddings. To enable object- and part-level in-teraction, we construct a hierarchical feature field by em-bedding dense features from multi-view images into the 3D Gaussian primitives. Using semantic hierarchy from SAM, we enhance our 3D semantic field accuracy while mak-ing the querying process more efficient. Directly embed-ding high-dimensional 2D features would result in exces-sive computational and memory costs. Therefore, we build a low-dimensional latent feature field and introduce a de-coder to project the rendered features ˆF t back to the 2D feature space F t during the differentiable rasterization op-timization process as: 
+
+Lf eat =∥ D ( ˆF t(Iti )) − F t(Iti ) ∥22 . (1) The decoder D is implemented as a small MLP with three output branches: two for instance- and part-level CLIP fea-tures, and one for DINO features. 
+
+Semantic Association between Scene States. Upon ob-taining the mask label mapping functions Ot and Ot′
+
+for scene states t and t′, we establish a global 3D mask asso-ciation which links the same semantic regions across both states into a unified 3D mask using their semantic features. For each 3D proposal in Ot, we select the top-k representa-tive masks from M to and aggregate their rendered features to create the corresponding semantic primitives F to . We then build an affinity matrix capturing the cosine similarity be-tween all 3D proposal pairs (Ot, O t′
+
+) using their primitives 
+
+(F tO , F t′ 
+
+> O
+
+) from two scene states. For each query proposal 
+
+ot ∈ Ot, we define its visual match as the target proposal in 
+
+Ot′
+
+with the highest similarity. 
+
+3.2. Affordance and Motion Prediction 
+
+Unlike NeRF-based methods [6, 18, 23] which require resource-intensive rendering to derive language-embeded features and geometry from implicit MLPs, our IAAO di-rectly uses explicit Gaussian primitives for efficient object 12135 part localization and manipulation. Given the reconstructed 3D scene Gt = {gtp}P t 
+
+> p=1
+
+at scene state t, where each Gaus-sian point gtp is embedded with geometric information (co-ordinates of points pt) and additional features (color and semantic embeddings), our goal is to enable scene-aware affordance prediction and object articulation estimation. 
+
+Functional Affordance Prediction. Functional affor-dances are defined as parts of the scene that facilitate in-teractions for agents to perform specific tasks. We utilize the reconstructed hierarchical feature and label fields as the 3D representations to predict the masks {ma}Ka 
+
+> a=1
+
+and af-fordance labels {la}Ka 
+
+> a=1
+
+in the scene, where Ka is the total number of affordance categories. We first build associations between affordance labels and our reconstructed mask label field, and then infer the point-level affordance of a func-tional element in the scene. Additionally, for task-specific reasoning, we encode the task description using the CLIP text encoder. To identify the relevant mask for a given de-scription, we calculate the similarity between the embed-dings in the feature field and the query embeddings. A mask is retrieved if its similarity score with the description text exceeds a predefined threshold. 
+
+Global and Local Motion Recovery. Given the recon-structed scenes with different object articulations at two states, our objective is to estimate scene-aware transforma-tion and 3D motion primitives for articulated parts. Our approach segments the reconstructed Gaussians Gt and Gt′
+
+into static scene elements and articulated objects via object-part querying for global and per-part local transformation estimation, respectively. 1) Object-level querying in com-plex scenes: In an indoor scene with a complex background and multiple objects, we start with object-level querying. Positive language queries are used to identify target objects for manipulation, while optional negative queries exclude irrelevant items. This selection process identifies 3D Gaus-sians with object-level CLIP features that align more closely with the positive queries than the negative ones, following standard CLIP feature-text comparison practices [45]. 2) 
+
+Part-level querying for targeted objects: For individual ob-jects in the scene, we apply part-level querying to focus on 3D Gaussians within the object. This allows for fine-grained transformation estimation specific to each articu-lated part. In addition to language, other user input prompts such as masks and points can also be used. Nonetheless, we do not further elaborate on these prompts as they can be easily obtained by a user clicking on the images. We define the global scene-aware transformation be-tween two different scene states as ξtg = (stg , R tg , T tg ),where stg ∈ R represents the scale factor, Rtg ∈ SO(3) 
+
+is the rotation matrix and T tg ∈ R3 is the translation vector. To initialize the transformation, we estimate an initial align-ment using 3D Gaussians derived from static elements in the scene, excluding articulated objects. From the Gaussian points in both scene states, we select reliable points with opacity values above a threshold (empirically set at 0.7) to serve as input point sets for the coarse registration. Using the GeoTransformer [38], we calculate the scene alignment transformation by matching coarse superpoints and refin-ing with dense point correspondences. Since these point clouds are based on reconstructed 3D Gaussians, the result-ing transformation is coarse, providing an initial approxi-mation for ξtg that can be further refined. After achieving global alignment between two scene states, we define the local transformation for each artic-ulated part as ξto = ( Rto, T to ), representing the movement of part o from state t to state t′. All points within a part are as-sumed to follow the same motion parameters. The reverse mapping, which transforms part o from state t′ back to state 
+
+t, is given by the inverse transformation, ξt′ 
+
+> o
+
+= ( Rto, T to )−1.To facilitate this process, we construct a 3D Gaussian corre-spondence field, allowing each Gaussian primitive gtp(o) at state t to be repositioned to its corresponding location pt′
+
+at state t′ based on the motion parameters of part ot. Formally: 
+
+pt→t′
+
+=
+
+ f (pt, ξ tg ) = Rtg pt + T tg , if p in static scene ,f (f (pt, ξ tg ), ξ to), otherwise. (2) The same rule applies to the backward transformation func-tion f −1 for obtaining pt′→t (i.e . mapping from t′ back to 
+
+t) with the transformations ξt′ 
+
+> g
+
+and ξt′ 
+
+> o
+
+.Establishing accurate dense correspondences between point clouds in two states is challenging due to the spar-sity and noise in 3D points derived from the 3DGS model. To optimize the correspondence field, we instead match 3D Gaussian primitives to 2D pixels across the two states, guided by part geometry and segmentation information. Specifically, for a Gaussian primitive gtp(o) of part o at state 
+
+t, the corresponding 2D pixels at state t′ can be treated as observations from novel views. To enhance consistency, we incorporate mask-level features alongside the rendered im-age consistency loss Lrgb . For a 3D proposal ot in graph Gt,we identify the part mask list Mt′ 
+
+> o
+
+associated with the cor-responding proposal ot′
+
+at state t′. Following the splatting process, we render the feature field of ot to training view n
+
+in target scene state t′ and decode the mask-level features by D( ˆF to (It′ 
+
+> n
+
+)) . We formulate the mask feature loss for part 
+
+o transformed from state t to target state t′ as: 
+
+Lmask (ot→t′
+
+) = ΣN t′
+
+> o
+> n
+
+M t′ 
+
+> o
+
+(It′ 
+
+> n
+
+)
+
+| M t′ 
+
+> o
+
+(It′ 
+
+> n
+
+) | · ∥ D ( ˆF to (It′ 
+
+> n
+
+)) − F t′ 
+
+> o
+
+(It′ 
+
+> n
+
+) ∥22, (3) where M t′ 
+
+> o
+
+(It′ 
+
+> n
+
+) and F t′ 
+
+> o
+
+(It′ 
+
+> n
+
+) represent the corresponding part mask and 2D mask-level features of part o in view It′
+
+> n
+
+at the target state t′. N to denotes the number of part masks for proposal ot across all training views. 12136 Since the mask-level loss provides only coarse guidance for transformation, we further propose to find dense cor-respondences between the 3D Gaussian primitives and 2D pixels by comparing their DINO features. We begin by computing the feature similarity matrix αp→o(It′ 
+
+> n
+
+) between each pixel in the part mask M t′ 
+
+> o
+
+(It′ 
+
+> n
+
+) in view It′ 
+
+> n
+
+and the sampled Gaussian point gtp from 3D proposal ot. We then normalize the similarity matrix αp→o(It′ 
+
+> n
+
+) using a softmax over the entire mask to obtain the weight βp→o(It′ 
+
+> n
+
+). Fi-nally, we identify the corresponding 2D pixel st′
+
+> p→o
+
+(It′ 
+
+> n
+
+) for the sampled 3D point pt using a weighted sum. See the supplementary material for details on the computation. For each point-pixel pair (pt, s t′
+
+> p→o
+
+(It′ 
+
+> n
+
+)) , we filter out pairs that collide by checking whether st′
+
+> p→o
+
+(It′ 
+
+> n
+
+) falls within the same part mask ot′
+
+. We then define the matching loss as follows: 
+
+Lmatch =∥ πt′ 
+
+> n
+
+(pt→t′
+
+) − st′
+
+> p→n
+
+(It′ 
+
+> n
+
+) ∥22, (4) where πt′ 
+
+> n
+
+represents the projection of 3D point pt→t′
+
+to view It′ 
+
+> n
+
+in scene state t′.
+
+Optimization. For the first stage, each scene is recon-structed independently at two different states. We option-ally use depth map for further geometry regularization. In the second stage, we reconstruct motion of global scene and local articulated objects. The total loss is defined as: 
+
+L = λcons (Lrgb + Lmask + Llabel ) + λmatch Lmatch . (5) 
+
+λcons and λmatch denote the balancing weights of consis-tency loss and matching loss. 
+
+3.3. Scene State Fusion 
+
+After training, we merge the 3DGS models from the two states using the estimated transformations to fill in the oc-cluded regions in each state. Details of our fusion and filtering strategy are provided in the supplementary mate-rial. The combined 3D Gaussians facilitate object manip-ulation by addressing potential artifacts that may appear in occluded areas of the reconstructed scene. Optional fine-tuning can be applied to either the edited regions or the en-tire scene for further refinement. 
+
+## 4. Experiment 
+
+4.1. Experimental Setup 
+
+Datasets. 1) PARIS two-part object dataset. This dataset contains two-part articulated objects, featuring 10 synthetic objects from PartNet-Mobility [49] and 2 real-world objects captured using MultiScan [27]. Each object comprises a movable part and a static part, observed in two distinct joint states. The dataset includes RGB images, object masks from 100 random viewpoints, and depth images for both synthetic and real-world objects. 2) Synthetic multi-part object dataset. This dataset includes two synthetic scenes containing multi-part objects from PartNet-Mobility, with each object featuring one static part and multiple movable parts. Each object is observed in two articulation states, and the dataset provides RGB, depth, and mask data from 100 random viewpoints. 3) Indoor scene OmniSim dataset. 
+
+OmniSim is generated using the OmniGibson [20] simula-tor with various indoor scene models. By adjusting the ro-tation of articulated object joints, we generate some scenes for evaluation, each containing RGBD images, interactive object masks and object state metrics at each state. 
+
+Metrics. To evaluate articulation models , we use: 1) Axis Ang Err (◦) means angular error of the predicted joint axis for both revolute and prismatic joints. 2) Axis Pos Err (0.1 m): The shortest distance between the predicted and true joint axes for revolute joints. For cross-state part motion ,we use Part Motion Err (° or m). It evaluates joint state precision by calculating the geodesic error for predicted ro-tations in revolute joints or the Euclidean error for transla-tions in prismatic joints, as specified in PARIS [22]. For 
+
+object and part mesh reconstruction , we use Chamfer-L1 distance (CD), reporting CD-w for the full surface, CD-s for static parts, and CD-m for movable parts. 
+
+Baselines. Ditto [16] and PARIS [22] are models for recon-structing part-level shape and motion in two-part articulated objects, using multi-view data. Ditto assumes one moving part and is pre-trained on specific categories, while PARIS uses a NeRF-based representation to handle unknown ob-jects. PARIS* is an enhanced version with depth super-vision, and PARIS-m* extends PARIS to multi-part ob-jects. CSG-reg uses TSDF fusion and Constructive Solid Geometry for part segmentation, with registration for align-ment. 3Dseg-reg follows a similar process but employs PA-Conv [51] for part segmentation, reporting results only for trained categories due to limited generalization. Digi-talTwinArt [47] divides reconstruction into two stages: 1) It reconstructs object-level shape independently of articula-tion; 2) It recovers the articulation model by identifying part segmentation and motions through state correspondences. 
+
+Evaluation Setup. There are some key differences on eval-uation setup between our model and previous models as we firstly incorporate the semantics into the explicit neural field supporting robust interactions even in complex envi-ronment. Unlike prior methods which assume the number of parts is known, our model can detect any articulated ob-jects if enough information for reconstructing object shape is given from multi-view images. To identify correspond-ing parts for evaluation, prior work need to iterate through all possible pairs of predicted and ground-truth parts, se-lecting the match with the smallest total Chamfer distance. In our model, we identify the corresponding parts based on the constructed semantic feature and mask label field. We extract the mesh based on the 3D point clouds derived 12137 Simulation Real FoldChair Fridge Laptop Oven Scissor Stapler USB Washer Blade Storage All Fridge Storage All Axis Ang ↓
+
+Ditto [16] 89.35 89.78 3.12 0.96 4.50 89.86 89.77 89.51 79.54* 6.32 54.22 1.71 5.88 3.80 
+
+PARIS [22] 8.08 9.15 0.02 0.04 3.82 39.73 0.13 25.36 15.38 0.03 10.17 1.64 43.13 22.39 PARIS* [22] 15.79 2.93 0.03 7.43 16.62 8.17 0.71 18.40 41.28 0.03 11.14 1.90 30.10 16.00 CSG-reg 0.10 0.27 0.47 0.35 0.28 0.30 11.78 71.93 7.64 2.82 9.60 8.92 69.71 39.31 3Dseg-reg - - 2.34 - - - - - 9.40 - - - - -DigitalTwinArt [47] 0.03 0.07 0.06 0.22 0.11 0.06 0.11 0.43 0.27 0.06 0.14 2.10 18.11 10.11 IAAO (Ours) 0.02 0.04 0.05 0.17 0.08 0.05 0.09 0.36 0.19 0.06 0.11 1.9 15.82 8.86 
+
+Axis Pos ↓
+
+Ditto [16] 3.77 1.02* 0.01 0.13 5.70 0.20 5.41 0.66 - - 2.11 1.84 - 0.92 PARIS [22] 0.45 0.38 0.00 0.00 2.10 2.27 2.36 1.50 - - 1.13 0.34 - 0.17 PARIS* [22] 0.25 1.13 0.00 0.05 1.59 4.67 3.35 3.28 - - 1.79 0.50 - 0.25 CSG-reg 0.02 0.00 0.20 0.18 0.01 0.02 0.01 2.13 - - 0.32 1.46 - 0.73 3Dseg-reg - - 0.10 - - - - - - - - - - -DigitalTwinArt [47] 0.01 0.01 0.00 0.01 0.02 0.01 0.00 0.01 - - 0.01 0.57 - 0.29 IAAO (Ours) 0.01 0.00 0.00 0.00 0.01 0.01 0.01 0.00 - - 0.01 0.32 - 0.16 Part Motion ↓
+
+Ditto [16] 99.36 × 5.18 2.09 19.28 56.61 80.60 55.72 × 0.09 39.87 8.43 0.38 4.41 PARIS [22] 131.66 24.58 0.03 0.03 120.70 110.80 64.85 60.35 0.34 0.30 51.36 2.16 0.56 1.36 PARIS* [22] 127.34 45.26 0.03 9.13 68.36 107.76 96.93 49.77 0.36 0.30 50.52 1.58 0.57 1.07 CSG-reg 0.13 0.29 0.35 0.58 0.20 0.44 10.48 158.99 0.05 0.04 17.16 14.82 0.64 7.73 3Dseg-reg - - 1.61 - - - - - 0.15 - - - - -DigitalTwinArt [47] 0.16 0.09 0.08 0.11 0.15 0.05 0.11 0.25 0.00 0.00 0.10 1.86 0.20 1.03 IAAO (Ours) 0.13 0.07 0.03 0.04 0.11 0.05 0.09 0.21 0.00 0.00 0.07 1.46 0.15 0.81 CD-s ↓
+
+Ditto [14] 33.79 3.05 0.25 2.52 39.07 41.64 2.64 10.32 46.90 9.18 18.94 47.01 16.09 31.55 PARIS [22] 9.16 3.65 1.94 1.88 12.95 1.88 2.69 25.39 1.19 12.76 7.18 42.57 54.54 48.56 PARIS* [22] 10.20 8.82 15.58 1.95 3.18 2.48 2.48 12.19 1.40 8.67 6.46 11.64 20.25 15.94 CSG-reg 1.69 1.45 3.93 3.26 3.26 2.22 1.95 4.53 0.59 7.06 2.70 6.33 12.55 9.44 3Dseg-reg - - 0.76 - - - - - 66.31 - - - - -DigitalTwinArt [47] 0.18 0.60 4.66 0.40 2.65 2.19 4.80 4.69 0.55 4.69 2.10 2.53 10.86 6.69 IAAO (Ours) 0.16 0.51 0.17 0.36 1.98 1.86 4.43 3.70 0.51 4.27 1.80 2.47 9.83 6.15 CD-m ↓
+
+Ditto [14] 141.11 0.99 0.19 0.94 20.68 31.21 15.88 12.89 195.93 2.20 42.20 50.60 20.35 35.48 PARIS [22] 8.99 7.76 0.21 28.70 46.64 19.27 5.32 178.43 25.21 76.69 39.72 45.66 864.82 455.24 PARIS* [22] 17.97 7.23 0.15 6.54 16.65 30.46 10.17 265.27 117.99 52.34 52.48 77.85 474.57 276.21 CSG-reg 1.91 21.71 0.42 256.99 1.95 6.36 29.78 436.42 26.62 1.39 78.36 442.17 521.49 481.83 3Dseg-reg - - 1.01 - - - - - 6.23 - - - - -DigitalTwinArt [47] 0.15 0.27 0.16 0.47 0.41 2.27 1.34 0.36 1.50 0.37 0.73 1.14 26.46 13.80 IAAO (Ours) 0.13 0.18 0.15 0.41 0.40 2.09 1.18 0.33 1.42 0.25 0.65 1.02 21.43 11.23 
+
+CD-w ↓
+
+Ditto [14] 6.80 2.16 0.31 2.51 1.70 2.38 2.09 7.29 42.04 3.91 7.12 6.50 14.08 10.29 PARIS [22] 1.80 2.92 0.30 11.73 10.49 3.58 2.00 24.38 0.60 8.57 6.64 22.98 63.35 43.16 PARIS* [22] 4.37 5.53 0.26 3.18 3.90 5.27 1.78 10.11 0.58 7.80 4.28 8.99 32.10 20.55 CSG-reg 0.48 0.98 0.40 3.00 1.70 1.99 1.20 4.48 0.56 4.00 1.88 5.71 14.29 10.00 3Dseg-reg - - 0.81 - - - - - 0.78 - - - - -DigitalTwinArt [47] 0.27 0.70 0.35 4.18 0.43 2.19 1.18 4.74 0.36 3.99 1.84 2.19 9.33 5.76 IAAO (Ours) 0.22 0.61 0.27 3.49 0.34 1.96 1.06 4.41 0.34 3.94 1.66 2.02 9.18 5.60 
+
+Table 1. Results on PARIS dataset including both synthetic and real data. ‘x’: failure case, and ‘*’: joint axis or position. ’–’: no result is available. Best result in bold .
+
+Axis Ang 0 ↓ Axis Ang 1 ↓ Axis Pos 0 ↓ Axis Pos 1 ↓ Part Motion 0 ↓ Part Motion 1 ↓ CD-s ↓ CD-m 0 ↓ CD-m 1 ↓ CD-w ↓
+
+Fridge-m 
+
+PARIS*-m [22] 34.52 15.91 3.60 1.63 86.21 105.86 8.52 526.19 160.86 15.00 DigitalTwinArt [47] 0.16 0.10 0.01 0.00 0.11 0.13 0.61 0.40 0.52 0.89 
+
+IAAO (Ours) 0.16 0.08 0.01 0.00 0.09 0.09 0.54 0.44 0.47 0.96 
+
+Storage-m 
+
+PARIS*-m [22] 43.26 26.18 10.42 - 79.84 0.64 8.56 128.62 266.71 8.66 DigitalTwinArt [47] 0.21 0.88 0.05 - 0.13 0.00 0.85 0.21 3.46 0.99 IAAO (Ours) 0.18 0.91 0.04 - 0.10 0.00 0.78 0.26 3.35 0.97 
+
+Table 2. Results on multi-part object dataset, averaged over 10 trials with different random seeds. Joint 1 of “Storage-m” is solely prismatic with no Axis Pos. ’–’: no result is available. Best results in bold .
+
+from 3DGS model via SuGaR [12] for evaluation. Follow-ing [22, 47], we transform our extracted parts with predicted motions to start state t for evaluation. 
+
+4.2. Quantitative Results 
+
+Tab. 1 shows quantitative results from the PARIS Two-Part Object Dataset, covering synthetic and real instances. Ditto performs well on seen categories but struggles with un-seen ones. PARIS occasionally fails in shape and articu-lation reconstruction, while depth supervision in PARIS* improves shape accuracy for complex and real-world ob-jects but increases articulation errors due to optimization challenges. CSG-reg and 3Dseg-reg handle simple objects well but struggle with complex ones, as segmentation errors affect articulation estimation. Tab. 2 presents the results for multi-part objects. Dig-italTwinArt [47] outperforms PARIS* in shape and artic-ulation reconstruction by incorporating additional supervi-12138 Figure 3. Qualitative analysis of shape reconstruction, part segmentation, and joint prediction results on multi-part object dataset. Input State 𝒕 Input State 𝒕 ! DigitalTwinArt Ours 
+
+> USB Laptop  Fridge
+
+Figure 4. Qualitative results of shape reconstruction, part segmen-tation, and joint prediction on PARIS. 
+
+Figure 5. Motion snapshots on PARIS & multi-part object. 
+
+Figure 6. Motion snapshots on scene-level OmniSim dataset. 
+
+sion on 3D geometries. Our IAAO achieves competitive results by leveraging geometric and semantic information from VLMs, enhancing object part modeling. 
+
+4.3. Qualitative Results 
+
+Fig. 3 and Fig. 4 show qualitative results on shape recon-struction, part segmentation, and joint prediction for the multi-part object and PARIS two-part datasets. Our IAAO achieves more complete segmentation results while also en-abling interaction with affordance and segmentation fea-tures. Fig. 5 and 6 show snapshots of the generated motions on several examples at object and scene levels in a simula-tor. It shows IAAO can produce smooth interpolations of                                    
+
+> Method Axis Ang ↓Axis Pos ↓Part Motion ↓CD-s ↓CD-m ↓
+> Proposed 0.28 0.01 0.11 0.80 0.35 w/o matching 4.59 1.38 8.57 1.21 123.71 w/o mask 14.82 0.01 0.28 2.59 129.14 w/o rgb 0.56 0.01 0.17 0.81 0.42 w/o label 0.54 0.01 0.15 8.56 169.73
+
+Table 3. Ablation study on multi-part object dataset. 
+
+articulated objects with good part geometry modeling. 
+
+4.4. Ablation Study 
+
+We assess the impact of our design choices specifically on multi-part objects, which present greater challenges. We first perform experiments to test out the impact of 2D-3D macthing loss (‘w/o matching’). As indicated in Tab. 3, the matching loss plays a crucial role in enhancing articu-lation reconstruction. We also study constraints from mask features and labels, which act as a coarse correspondence mechanism at the superpoint (mask) level. These con-straints also enforce consistency within the feature fields of each mask, leading to improved part segmentation and more accurate reconstruction of articulated components. 
+
+## 5. Conclusion 
+
+We present IAAO, a framework that facilitates interactive affordance detection and object articulation from two scene sequences. Each scene sequence captures movable parts of objects in different joint states. Our IAAO can han-dle both simple scenes with single objects and complex in-door scenes without limitations on the number of objects and movable parts. The entire scene is reconstructed using 3D Gaussians, embedded with robust zero-shot generaliza-tion capabilities from 2D foundation models. Affordance prediction is achieved through object and part queries on the 3D Gaussian primitives. Motion estimation is achieved by establishing 2D-3D correspondences within each object to track transformations. Static elements serve for global scene alignment while movable elements are for local trans-formation. Extensive experiments demonstrate that our ap-proach outperforms existing methods. 12139 Acknowledgement. This research / project is supported by the National Research Foundation (NRF) Singapore, un-der its NRF-Investigatorship Programme (Award ID. NRF-NRFI09-0008). 
+
+## References 
+
+[1] Timoth´ ee Darcet, Maxime Oquab, Julien Mairal, and Piotr Bojanowski. Vision transformers need registers, 2023. 4 [2] Alexandros Delitzas, Ayca Takmaz, Federico Tombari, Robert Sumner, Marc Pollefeys, and Francis Engelmann. Scenefun3d: Fine-grained functionality and affordance un-derstanding in 3d scenes. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 14531–14542, 2024. 3 [3] Shengheng Deng, Xun Xu, Chaozheng Wu, Ke Chen, and Kui Jia. 3d affordancenet: A benchmark for visual object af-fordance understanding. In proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,pages 1778–1787, 2021. 3 [4] Thanh-Toan Do, Anh Nguyen, and Ian Reid. Affordancenet: An end-to-end deep learning approach for object affordance detection. In 2018 IEEE international conference on robotics and automation (ICRA) , pages 5882–5889. IEEE, 2018. 3 [5] Xiaoyi Dong, Jianmin Bao, Yinglin Zheng, Ting Zhang, Dongdong Chen, Hao Yang, Ming Zeng, Weiming Zhang, Lu Yuan, Dong Chen, et al. Maskclip: Masked self-distillation advances contrastive language-image pretraining. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 10995–11005, 2023. 4[6] Francis Engelmann, Fabian Manhardt, Michael Niemeyer, Keisuke Tateno, Marc Pollefeys, and Federico Tombari. Opennerf: Open set 3d neural scene segmentation with pixel-wise features and rendered novel views. arXiv preprint arXiv:2404.03650 , 2024. 2, 4 [7] Carlos Hern´ andez Esteban and Francis Schmitt. Silhouette and stereo fusion for 3d object modeling. Computer Vision and Image Understanding , 96(3):367–392, 2004. 2 [8] Kuan Fang, Te-Lin Wu, Daniel Yang, Silvio Savarese, and Joseph J Lim. Demo2vec: Reasoning object affordances from online videos. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition , pages 2139– 2147, 2018. 3 [9] JJ Gibson. The theory of affordances. Perceiving, acting and knowing: Towards an ecological psychology/Erlbaum , 1977. 3[10] James J Gibson. The ecological approach to visual percep-tion: classic edition . Psychology press, 2014. 1 [11] Michael Goesele, Brian Curless, and Steven M Seitz. Multi-view stereo revisited. In 2006 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR’06) , pages 2402–2409. IEEE, 2006. 2 [12] Antoine Gu´ edon and Vincent Lepetit. Sugar: Surface-aligned gaussian splatting for efficient 3d mesh reconstruc-tion and high-quality mesh rendering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5354–5363, 2024. 7 [13] Karol Hausman, Scott Niekum, Sarah Osentoski, and Gau-rav S Sukhatme. Active articulation model estimation through interactive perception. In 2015 IEEE International Conference on Robotics and Automation (ICRA) , pages 3305–3312. IEEE, 2015. 3 [14] Cheng-Chun Hsu, Zhenyu Jiang, and Yuke Zhu. Ditto in the house: Building articulation models of indoor scenes through interactive perception. In 2023 IEEE International Conference on Robotics and Automation (ICRA) , pages 3933–3939. IEEE, 2023. 3, 7 [15] Hanxiao Jiang, Yongsen Mao, Manolis Savva, and Angel X Chang. Opd: Single-view 3d openable part detection. In 
+
+European Conference on Computer Vision , pages 410–426. Springer, 2022. 3 [16] Zhenyu Jiang, Cheng-Chun Hsu, and Yuke Zhu. Ditto: Building digital twins of articulated objects from interaction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5616–5626, 2022. 1, 3, 6, 7 [17] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk¨ uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Trans. Graph. , 42(4):139–1, 2023. 2 [18] Justin Kerr, Chung Min Kim, Ken Goldberg, Angjoo Kanazawa, and Matthew Tancik. Lerf: Language embedded radiance fields. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision , pages 19729–19739, 2023. 2, 4 [19] Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura Gustafson, Tete Xiao, Spencer White-head, Alexander C. Berg, Wan-Yen Lo, Piotr Doll´ ar, and Ross Girshick. Segment anything. arXiv:2304.02643 , 2023. 2[20] Chengshu Li, Ruohan Zhang, Josiah Wong, Cem Gok-men, Sanjana Srivastava, Roberto Mart´ ın-Mart´ ın, Chen Wang, Gabrael Levine, Wensi Ai, Benjamin Martinez, et al. Behavior-1k: A human-centered, embodied ai benchmark with 1,000 everyday activities and realistic simulation. arXiv preprint arXiv:2403.09227 , 2024. 6 [21] Xiaolong Li, He Wang, Li Yi, Leonidas J Guibas, A Lynn Abbott, and Shuran Song. Category-level articulated ob-ject pose estimation. In Proceedings of the IEEE/CVF con-ference on computer vision and pattern recognition , pages 3706–3715, 2020. 1 [22] Jiayi Liu, Ali Mahdavi-Amiri, and Manolis Savva. Paris: Part-level reconstruction and motion analysis for articulated objects. In Proceedings of the IEEE/CVF International Con-ference on Computer Vision , pages 352–363, 2023. 1, 6, 7 [23] Kunhao Liu, Fangneng Zhan, Jiahui Zhang, Muyu Xu, Yingchen Yu, Abdulmotaleb El Saddik, Christian Theobalt, Eric Xing, and Shijian Lu. Weakly supervised 3d open-vocabulary segmentation. Advances in Neural Information Processing Systems , 36:53433–53456, 2023. 4 [24] Liu Liu, Wenqiang Xu, Haoyuan Fu, Sucheng Qian, Qiao-jun Yu, Yang Han, and Cewu Lu. Akb-48: A real-world articulated object knowledge base. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 14809–14818, 2022. 3 12140 [25] Timo Luddecke and Florentin Worgotter. Learning to seg-ment affordances. In Proceedings of the IEEE International Conference on Computer Vision Workshops , pages 769–776, 2017. 3 [26] Priyanka Mandikal and Kristen Grauman. Learning dexter-ous grasping with object-centric visual affordances. In 2021 IEEE international conference on robotics and automation (ICRA) , pages 6169–6176. IEEE, 2021. 3 [27] Yongsen Mao, Yiming Zhang, Hanxiao Jiang, Angel Chang, and Manolis Savva. Multiscan: Scalable rgbd scanning for 3d environments with articulated objects. Advances in neural information processing systems , 35:9058–9071, 2022. 2, 3, 6[28] Ben Mildenhall, Pratul P Srinivasan, Matthew Tancik, Jonathan T Barron, Ravi Ramamoorthi, and Ren Ng. Nerf: Representing scenes as neural radiance fields for view syn-thesis. Communications of the ACM , 65(1):99–106, 2021. 2[29] Kaichun Mo, Shilin Zhu, Angel X Chang, Li Yi, Subarna Tripathi, Leonidas J Guibas, and Hao Su. Partnet: A large-scale benchmark for fine-grained and hierarchical part-level 3d object understanding. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,pages 909–918, 2019. 2 [30] Kaichun Mo, Yuzhe Qin, Fanbo Xiang, Hao Su, and Leonidas Guibas. O2o-afford: Annotation-free large-scale object-object affordance learning. In Conference on robot learning , pages 1666–1677. PMLR, 2022. 3 [31] Tushar Nagarajan and Kristen Grauman. Learning affor-dance landscapes for interaction exploration in 3d environ-ments. Advances in Neural Information Processing Systems ,33:2005–2015, 2020. 3 [32] Neil Nie, Samir Yitzhak Gadre, Kiana Ehsani, and Shu-ran Song. Structure from action: Learning interactions for articulated object 3d structure discovery. arXiv preprint arXiv:2207.08997 , 2022. 3 [33] Maxime Oquab, Timoth´ ee Darcet, Theo Moutakanni, Huy V. Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, Rus-sell Howes, Po-Yao Huang, Hu Xu, Vasu Sharma, Shang-Wen Li, Wojciech Galuba, Mike Rabbat, Mido Assran, Nico-las Ballas, Gabriel Synnaeve, Ishan Misra, Herve Jegou, Julien Mairal, Patrick Labatut, Armand Joulin, and Piotr Bo-janowski. Dinov2: Learning robust visual features without supervision, 2023. 2, 4 [34] Sylvain Paris, Franc ¸ois X Sillion, and Long Quan. A sur-face reconstruction method using global graph cut optimiza-tion. International Journal of Computer Vision , 66:141–161, 2006. 2 [35] Songyou Peng, Kyle Genova, Chiyu Jiang, Andrea Tagliasacchi, Marc Pollefeys, Thomas Funkhouser, et al. Openscene: 3d scene understanding with open vocabularies. In Proceedings of the IEEE/CVF conference on computer vi-sion and pattern recognition , pages 815–824, 2023. 2 [36] Shengyi Qian, Linyi Jin, Chris Rockwell, Siyi Chen, and David F Fouhey. Understanding 3d object articulation in in-ternet videos. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 1599– 1609, 2022. 3 [37] Minghan Qin, Wanhua Li, Jiawei Zhou, Haoqian Wang, and Hanspeter Pfister. Langsplat: 3d language gaussian splatting. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 20051–20060, 2024. 2[38] Zheng Qin, Hao Yu, Changjian Wang, Yulan Guo, Yux-ing Peng, and Kai Xu. Geometric transformer for fast and robust point cloud registration. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 11143–11152, 2022. 5 [39] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervi-sion. In International conference on machine learning , pages 8748–8763. PMLR, 2021. 2 [40] Johannes L Schonberger and Jan-Michael Frahm. Structure-from-motion revisited. In Proceedings of the IEEE con-ference on computer vision and pattern recognition , pages 4104–4113, 2016. 2, 3 [41] Christoph Strecha, Rik Fransens, and Luc Van Gool. Com-bined depth and outlier estimation in multi-view stereo. In 
+
+2006 IEEE Computer Society Conference on Computer Vi-sion and Pattern Recognition (CVPR’06) , pages 2394–2401. IEEE, 2006. 2 [42] Archana Swaminathan, Anubhav Gupta, Kamal Gupta, Shishira R Maiya, Vatsal Agarwal, and Abhinav Shrivastava. Leia: Latent view-invariant embeddings for implicit 3d artic-ulation. In European Conference on Computer Vision , pages 210–227. Springer, 2025. 1 [43] Ayca Takmaz, Elisabetta Fedele, Robert Sumner, Marc Pollefeys, Federico Tombari, and Francis Engelmann. Open-mask3d: Open-vocabulary 3d instance segmentation. Ad-vances in Neural Information Processing Systems , 36, 2024. 2[44] Zhenggang Tang, Balakumar Sundaralingam, Jonathan Tremblay, Bowen Wen, Ye Yuan, Stephen Tyree, Charles Loop, Alexander Schwing, and Stan Birchfield. Rgb-only reconstruction of tabletop scenes for collision-free manip-ulator control. In 2023 IEEE International Conference on Robotics and Automation (ICRA) , pages 1778–1785. IEEE, 2023. 2 [45] Can Wang, Menglei Chai, Mingming He, Dongdong Chen, and Jing Liao. Clip-nerf: Text-and-image driven manip-ulation of neural radiance fields. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 3835–3844, 2022. 2, 5 [46] Xiaogang Wang, Bin Zhou, Yahao Shi, Xiaowu Chen, Qin-ping Zhao, and Kai Xu. Shape2motion: Joint analysis of motion parts and attributes from 3d shapes. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pat-tern Recognition , pages 8876–8884, 2019. 1, 3 [47] Yijia Weng, Bowen Wen, Jonathan Tremblay, Valts Blukis, Dieter Fox, Leonidas Guibas, and Stan Birchfield. Neural implicit representation for building digital twins of unknown 12141 articulated objects. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pages 3141–3150, 2024. 1, 6, 7 [48] Youngsun Wi, Pete Florence, Andy Zeng, and Nima Fazeli. Virdo: Visio-tactile implicit representations of deformable objects. In 2022 International Conference on Robotics and Automation (ICRA) , pages 3583–3590. IEEE, 2022. 2 [49] Fanbo Xiang, Yuzhe Qin, Kaichun Mo, Yikuan Xia, Hao Zhu, Fangchen Liu, Minghua Liu, Hanxiao Jiang, Yifu Yuan, He Wang, et al. Sapien: A simulated part-based interactive environment. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 11097– 11107, 2020. 3, 6 [50] Danfei Xu, Ajay Mandlekar, Roberto Mart´ ın-Mart´ ın, Yuke Zhu, Silvio Savarese, and Li Fei-Fei. Deep affordance fore-sight: Planning through what can be done in the future. In 2021 IEEE international conference on robotics and au-tomation (ICRA) , pages 6206–6213. IEEE, 2021. 3 [51] Mutian Xu, Runyu Ding, Hengshuang Zhao, and Xiao-juan Qi. Paconv: Position adaptive convolution with dy-namic kernel assembling on point clouds. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 3173–3182, 2021. 6 [52] Mi Yan, Jiazhao Zhang, Yan Zhu, and He Wang. Maskclus-tering: View consensus based mask graph clustering for open-vocabulary 3d instance segmentation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pat-tern Recognition , pages 28274–28284, 2024. 3 [53] Zihao Yan, Ruizhen Hu, Xingguang Yan, Luanmin Chen, Oliver Van Kaick, Hao Zhang, and Hui Huang. Rpm-net: recurrent prediction of motion and parts from point cloud. 
+
+arXiv preprint arXiv:2006.14865 , 2020. 3 [54] Yao Yao, Zixin Luo, Shiwei Li, Tian Fang, and Long Quan. Mvsnet: Depth inference for unstructured multi-view stereo. In Proceedings of the European conference on computer vi-sion (ECCV) , pages 767–783, 2018. 2 [55] Andy Zeng, Shuran Song, Kuan-Ting Yu, Elliott Donlon, Francois R Hogan, Maria Bauza, Daolin Ma, Orion Taylor, Melody Liu, Eudald Romo, et al. Robotic pick-and-place of novel objects in clutter with multi-affordance grasping and cross-domain image matching. The International Journal of Robotics Research , 41(7):690–705, 2022. 3 [56] Vicky Zeng, Tabitha Edith Lee, Jacky Liang, and Oliver Kroemer. Visual identification of articulated object parts. In 2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , pages 2443–2450. IEEE, 2021. 3[57] Chaoning Zhang, Dongshen Han, Yu Qiao, Jung Uk Kim, Sung-Ho Bae, Seungkyu Lee, and Choong Seon Hong. Faster segment anything: Towards lightweight sam for mo-bile applications. arXiv preprint arXiv:2306.14289 , 2023. 3[58] Allan Zhou, Moo Jin Kim, Lirui Wang, Pete Florence, and Chelsea Finn. Nerf in the palm of your hand: Corrective augmentation for robotics via novel-view synthesis. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 17907–17917, 2023. 2 [59] Shijie Zhou, Haoran Chang, Sicheng Jiang, Zhiwen Fan, Ze-hao Zhu, Dejia Xu, Pradyumna Chari, Suya You, Zhangyang Wang, and Achuta Kadambi. Feature 3dgs: Supercharging 3d gaussian splatting to enable distilled feature fields. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 21676–21685, 2024. 2 [60] Luyang Zhu, Arsalan Mousavian, Yu Xiang, Hammad Mazhar, Jozef van Eenbergen, Shoubhik Debnath, and Di-eter Fox. Rgb-d local implicit function for depth completion of transparent objects. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pages 4649–4658, 2021. 2 12142
