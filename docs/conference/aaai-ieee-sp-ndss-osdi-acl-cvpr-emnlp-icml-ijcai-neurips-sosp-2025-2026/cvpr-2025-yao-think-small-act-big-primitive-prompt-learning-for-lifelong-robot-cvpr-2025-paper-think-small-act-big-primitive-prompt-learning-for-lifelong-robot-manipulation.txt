@@ -1,0 +1,384 @@
+Title: Think Small, Act Big: Primitive Prompt Learning for Lifelong Robot Manipulation
+
+URL Source: https://openaccess.thecvf.com/content/CVPR2025/papers/Yao_Think_Small_Act_Big_Primitive_Prompt_Learning_for_Lifelong_Robot_CVPR_2025_paper.pdf
+
+Published Time: Mon, 02 Jun 2025 12:15:59 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Think Small, Act Big: Primitive Prompt Learning for Lifelong Robot Manipulation 
+
+## Yuanqi Yao 1,7* Siao Liu 2* Haoming Song 1,3* Delin Qu 1,2 Qizhi Chen 1,4
+
+## Yan Ding 1 Bin Zhao 1,5 Zhigang Wang 1 Xuelong Li 6 Dong Wang 1†
+
+> 1
+
+## Shanghai AI Laboratory 2Fudan University 3Shanghai Jiao Tong University 4Zhejiang University 
+
+> 5
+
+## Northwestern Polytechnical University 6TeleAI, China Telecom Corp Ltd 7INSAIT, Sofia University 
+
+## Abstract 
+
+Building a lifelong robot that can effectively leverage prior knowledge for continuous skill acquisition remains signifi-cantly challenging. Despite the success of experience replay and parameter-efficient methods in alleviating catastrophic forgetting problem, naively applying these methods causes a failure to leverage the shared primitives between skills. To tackle these issues, we propose Primitive Prompt Learning (PPL), to achieve lifelong robot manipulation via reusable and extensible primitives. Within our two stage learning scheme, we first learn a set of primitive prompts to rep-resent shared primitives through multi-skills pre-training stage, where motion-aware prompts are learned to cap-ture semantic and motion shared primitives across differ-ent skills. Secondly, when acquiring new skills in lifelong span, new prompts are concatenated and optimized with frozen pretrained prompts, boosting the learning via knowl-edge transfer from old skills to new ones. For evaluation, we construct a large-scale skill dataset and conduct exten-sive experiments in both simulation and real-world tasks, demonstrating PPL’s superior performance over state-of-the-art methods. 
+
+## 1. Introduction 
+
+Developing robots that can effectively leverage prior knowl-edge to continuously acquire new skills has been a long-standing goal of generalist robotics. Humans demonstrate remarkable abilities in utilizing past experiences to accel-erate new learning - for instance, a person who knows how to use chopsticks can quickly adapt this knowledge to learn using tweezers, transferring their understanding of precision gripping and object manipulation across similar tasks. However, implementing effective knowledge transfer in robotics lifelong span proves particularly challenging due to the complexity and diversity of robotic tasks.               
+
+> *Equal contribution: yaoyuanqi@pjlab.org.cn.
+> †Corresponding author: dongwang.dw93@gmail.com. (a)Place block (b) Place banana
+> (c) Grasp banana (d) Place pot
+> Figure 1. Optical flow captures primitive-level motion patterns, revealing latent shared knowledge between semantically similar skills (a, b )and distinct skills (c, d ).
+
+To facilitate effective knowledge transfer for lifelong skill acquisition, various approaches have been proposed. Some works explore experience replay [43, 48] to explicitly utilize prior collected data, but these methods face practical limitations in real-world deployments due to memory con-straints and privacy concerns. Other approaches leverage regularization or dynamic architectures [21, 27, 59], aiming to better maintain existing knowledge when learning new tasks. However, these methods often yield suboptimal per-formance when scaling to complex vision-based manipu-lation tasks [1, 45], as they lack useful knowledge trans-fer mechanisms. More recently, TAIL [31] explored using Low-Rank Adaptation (LoRA [14]) for each task, which prevents interference between different tasks. Despite these advancements, a common limitation across This CVPR paper is the Open Access version, provided by the Computer Vision Foundation. Except for this watermark, it is identical to the accepted version; the final published version of the proceedings is available on IEEE Xplore. 22573 Subtask3    
+
+> Place Mug
+> Subtask2
+> Grasp Mug
+> Subtask1
+> Open Drawer
+> Mug Clean -up
+> Primitives Figure 2. Illustration of primitives. We demonstrate the concept of primitives within a task from MimicGen, focusing on ”Mug Clean-up,” which is composed of three subtasks: ”open-drawer,” ”grasp mug,” and ”place mug.” The bottom row provides a schematic representation of the primitives’ trajectory, conceptualizing the subsequences of states. By leveraging the primitive prompts from our Primitive Prompt Learning (PPL) framework, we model the shared primitives from demonstrations, ultimately facilitating lifelong knowledge transfer.
+
+existing works is their failure to effectively leverage shared knowledge between skills, limiting their ability to enable truly lifelong learning in robotics. As shown in Fig. 1, skills like ”Grasp banana” and ”Place pot”, while semantically different, may share common underlying motion primitives. Fig. 2 further illustrates this concept, demonstrating how a complex task like ”Mug Clean-up” can be decomposed into subtasks, which in turn consist of more fundamental primitives. These primitives, representing basic motion pat-terns, form the building blocks that enable knowledge trans-fer across diverse robotic skills. Recognizing and leveraging these shared primitives is crucial for effective knowledge transfer and lifelong learn-ing across diverse robotic skills. Some prior works have explored various approaches for learning primitives from demonstrations, including pre-defined primitive functions and statistical models like hidden Markov models [5, 9, 22, 35, 39], but such methods can be restrictive in repre-senting complex dynamics. More recent works have em-ployed pre-trained deep neural networks to identify primi-tives from input states [10, 44], while others have developed parameterized behavior primitives for specific manipulation tasks, such as movement primitives [16, 37], motion plan-ning [12, 17, 32, 51], and grasping systems [2, 33]. Hier-archical imitation learning [20, 23, 56, 58] has also shown promise in learning primitives from demonstrations. These works have already revealed the benefits of primitives, such as reusability, modularity, and robustness to variations [11], However, they have not explored how to better leverage primitives to address lifelong robot learning challenges. In this paper, we propose Primitive Prompt Learning (PPL ) for lifelong robot manipulation, a novel two-stage framework that transfers knowledge across skills through reusable and extensible primitive prompts. In the multi-skill pre-training stage, our framework learns a set of prim-itive prompts to represent shared and reuseable primitives. To achieve this, we design a motion-aware prompting via multi-modal text-flow queries, aiming to simultaneously capturing semantic and motion shared primitives across skills. Specifically, the motion-aware prompt is represented by weighted-sum of shared prompts and prepended into the keys and values of multi-head self-attention layers of dif-fusion transformer-based policy. In the lifelong learning stage, new lifelong prompts are appended and optimized with frozen pretrained prompts, enabling knowledge trans-fer between old and new skills. To evaluate PPL, we con-struct a large-scale skill dataset and conduct extensive ex-periments in both simulation and real-world tasks, demon-strating significant performance improvements over state-of-the-art methods. Our contributions are as follows: 
+
+• We propose Primitive Prompt Learning (PPL), a novel two-stage framework tailored for lifelong robot manip-ulation via reusable and extensible primitive prompts. 
+
+• We present motion-aware prompting via text-flow query, designed to represent shared primitives between skills and effectively transfer them to new skill acquisition. 
+
+• We construct a large-scale skill dataset and extensive experiments in both simulated and real-world environ-ments, demonstrating significant performance improve-ments over state-of-the-art methods in lifelong robotic manipulation. 
+
+## 2. Related Work 
+
+Lifelong Learning. Lifelong learning for decision-making strives to create agents capable of continuous learning from ongoing data streams without suffering catastrophic for-getting [19, 25, 38]. Techniques such as experience re-22574 play [43, 47, 52] help maintain knowledge but impracti-cal with increasing tasks due to growing memory demands. To counter this, methods involving regularization and dy-namic architectures have been explored [4, 21, 27, 28, 59], yet they often yield suboptimal performance due to their indirect approach to knowledge retention [1, 45]. More re-cently, TAIL [31], integrated with LoRA [14], demonstrates state-of-the-art results in lifelong learning with minimal pa-rameter updates, but it requires specific parameters for each task and does not leverage learned knowledge to boost new skill acquisition, making it inefficient in the real world. 
+
+Parameter-Efficient Methods for Lifelong Learning. 
+
+Parameter-efficient methods have achieved significant progress in natural language processing [40, 41, 53, 60, 61] and computer vision [7, 15, 18, 55, 57] as a crucial way for adapting to new tasks in lifelong learning without substan-tially increasing parameters. Dual-Prompt [55] combines fixed and learnable prompts for knowledge preservation and task adaptation. Coda-Prompt [18] decomposes prompts into task-shared and task-specific components for efficient knowledge transfer. MP 2 [15] leverages the task IDs to se-lect prompts for few-shot learning. However, these methods face limitations in robot manipulation: Dual-Prompt and Coda-Prompt struggle with temporal dependencies, while MP 2’s task ID-based approach limits generalization across different robotic motions and tasks. 
+
+Learning with Robotic Primitives. Prior work on robotic primitives learning can be broadly categorized into two di-rections. The first direction focuses on learning with pre-defined primitive libraries [5, 6, 13, 24, 36, 49], where prim-itives are manually designed and parameterized for pol-icy learning. Another line of research investigates primi-tive extraction from demonstrations, using either statistical models [5, 9, 22, 35, 39] or deep neural networks [8, 10, 11, 30, 44, 62]. Recent works explore hierarchical frame-works [20, 23, 56, 58] and model-based methods [3] inte-grates primitives for solving stowing tasks, while [46] ex-tracts waypoints for motion interpolation. In contrast, our PPL present a novel two-stage framework that leverages primitive prompts to represent shared primitives and finally enables lifelong robot learning. 
+
+## 3. Problem Formulation 
+
+Multi-Skill Pre-Training Stage : In multi-skill pre-training stage, we formulate the problem as follows. Given a set of robot tasks C = {Tj }Jj=1 , for each task j, we have N expert demonstrations {τj,i }Ni=1 , where each demonstration τj,i is a sequence of state-action pairs. We formulate robot im-itation learning as an action sequence prediction problem, aiming to minimize the error in future actions conditioned on historical states. The standard behavioral cloning loss is used to optimize policy π over these demonstrations: 
+
+ˆθ = min 
+
+> θK
+
+X
+
+> k=1
+
+Est,a t∼D k
+
+" lkX
+
+> t=0
+
+L  π(a|st, T k; θ), a tk
+
+#
+
+. (1) where L is a supervised action prediction loss, lk is the length of demonstrations for task Tk, and θ refers to the learnable parameters of the network. 
+
+Lifelong Learning Stage : In this stage, we build upon the shared knowledge acquired during multi-skill pre-training. Our objective is to incrementally learn new skills while retaining performance on old ones. The pre-trained pol-icy continues to encounter a sequence of tasks, denoted as 
+
+T1, ..., T K . For each task Tk, the policy receives N demon-strations Dk = τ 1 
+
+> k
+
+, ..., τ Nk . Here, Dk only contains data from the current task, and st should be interpreted as s≤t.
+
+## 4. Methodology 
+
+Fig. 3 shows the overview of the proposed PPL. Given an input demonstration stream {Di}Ji=1 and instruction T, we aim to learn a set of reusable and extensible primi-tive prompts. In Sec. 4.1, we present the multi-skill pre-training stage of PPL, where we learn primitive prompts to represent shared primitives across different skills. To ef-fectively capture shared knowledge, we introduce motion-aware prompting in Sec. 4.2, which combines optical flow with task-conditional semantic information to model both semantic and motion-shared primitives. Finally, Sec. 4.3 describes the lifelong learning stage of PPL, where new life-long prompts are concatenated and optimized with frozen pretrained prompts, enabling knowledge transfer from old skills to new ones without requiring access to previous data. 
+
+4.1. Multi-Skill Pre-Training 
+
+In the multi-skill pre-training stage of PPL, our goal is to learn a set of reusable and extensible primitive prompts that can effectively capture shared knowledge across mul-tiple robotic skills, enhancing performance across diverse tasks. To do this, we apply primitive prompts to the diffu-sion transformer policy, prepending prompts to the keys and values of the multi-head self-attention (MSA) layers, with distinct prompting parameters for each layer. We define our prompt parameter as p ∈ RLp×D , where Lp represents the prompt length and D denotes the embedding dimension. In a typical MSA layer with input h ∈ RL×D , the query, key, and value are represented as hQ, hK , and hV respectively. The layer’s output is computed as follows: MSA (hQ, h K , h V ) = Concat (h1, . . . , h m)W O
+
+where hi = Attention 
+
+
+
+hQW Qi , h K W Ki , h V W Vi
+
+ (2) where W O , W Qi , W Ki , and W Vi are projection matrices, and m denotes the number of attention heads. PPL in-22575 Q       
+
+> K
+> V
+> PK
+> PV
+> Demonstrations
+> Proprio
+> Encoder
+> Visual
+> Encoder
+> Flow
+> Encoder
+> Text
+> Encoder
+> Optical Flow
+> Language Instruction
+> Grasp the cube
+> RGB Image
+> Gripper Pose Observation
+> Embeddings
+> Transformer Decoder
+> Diffusion Head
+> Lifelong Task N
+> Lifelong Prompts
+> Pretrained Prompts
+> Primitive Prompts
+> Transformer Encoder
+> Multihead Self Attention
+> (MSA)
+> Actions
+> Cosine Similarity
+> M𝒐𝒕𝒊𝒐𝒏 −𝑨𝒘𝒂𝒓𝒆
+> P𝒓𝒐𝒎𝒑𝒕 𝑸𝒖𝒆𝒓𝒚
+> …
+> ⊙
+> Lifelong Task 1
+> …
+> Weights
+> 𝝎
+> 𝝎
+> P
+> AAtten Vectors
+> KPrompt Keys
+> Atten Query
+> ……
+> ……
+> 🔥 🧊
+
+… 
+
+> 🔥 🧊
+
+… 
+
+> 🔥 🧊
+
+Figure 3. The overview of Primitive Prompt Learning (PPL) . In pre-training stage, our input consist of proprioception, image obser-vation and language instruction. A set of primitive prompts are queried via motion-aware query module to obtain a weighted-sum prompt 
+
+P , which is prepended to each layer of diffusion transformer policy. For new skill acquisition with expert demonstrations, new lifelong prompts are concatenated and optimized with frozen pretrained prompts, following the same input/output flow as the pre-training. The notation fire → ice indicates that prompts are optimized during the pre-training stage and then frozen in the lifelong learning stage. 
+
+volves splitting the prompt p into {pK , p V } ∈ R(Lp/2) ×D
+
+and prepending these to hK and hV using the prefix-prompt method followed by [26]: 
+
+fP −T (p, h) = MSA (hQ, [pK ; hK ], [pV ; hV ]) . (3) Typically, prompt learning methods often rely on task iden-tifiers or language instructions to guide the learning pro-cess, involving prepending learnable tokens to the input or intermediate representations of a model. However, these approaches that heavily rely on high-level representations face a key limitation: they often struggle to facilitate mu-tual improvement between tasks that are not semantically similar. This can potentially overlook the rich temporal and motion information inherent in robotic actions. For exam-ple, while these methods are effective for knowledge trans-fer between semantically similar tasks like ”grasp cube” and ”grasp mug”, they fall short in capturing shared primitives across semantically distinct but motion-related tasks. This limitation can result in sub-optimal knowledge transfer be-tween seemingly unrelated tasks such as ” grasp mug ” and ”place banana ”, which, despite their semantic differences, may share common underlying primitives. 
+
+4.2. Motion-Aware Prompting 
+
+To address these limitations and capture semantic and mo-tion shared primitives across different skills, we propose Motion-Aware Prompting (MAP). MAP combines optical flow with task-conditional semantic information, allowing us to capture and leverage common primitives across seem-ingly disparate tasks. Motion-aware optical flow provides a rich representation of motion dynamics within the scene, capturing the essential kinematic properties of primitive ac-tions. This motion-centric approach allows us to identify and learn common movement patterns across skills, even when the high-level semantics differ. Additionally, optical flow offers a degree of invariance to appearance changes, focusing instead on the underlying motion structure. This property is particularly valuable in robotics, where the same primitive-level manipulation might be performed on objects with vastly different visual and semantic characteristics. The optical flow can be represented mathematically as: 
+
+I(x, y, t ) = I(x + u∆t, y + v∆t, t + ∆ t), (4) where I is the image intensity, (u, v ) is the optical flow vector, and ∆t is the time step. This formulation is based on the brightness constancy assumption, which posits that the intensity of a moving pixel remains constant over short time intervals. By focusing on pixel movement rather than intensity changes, and by representing motion as a vector 
+
+(u, v ), this captures local motion patterns independent of specific textures or colors. To estimate optical flow, we em-ploy RAFT [50], which computes the flow iteratively: 
+
+fk+1 = fk + ∆ fk, (5) 
+
+∆fk, h k+1 = GRU (C(fk), h k), (6) where fk is the flow estimate at iteration k, ∆fk is the flow update, C is a correlation volume, hk is a hidden state, and GRU is a gated recurrent unit. 22576 While optical flow provides rich motion information, re-lying solely on it may cause policy to overlook distinctions between different skills or tasks. To address this limitation and create a more comprehensive representation, we inte-grate optical flow with task-specific instructions. We embed these instructions by pre-trained CLIP [42] model, comple-menting the motion information from optical flow. This integration allows MAP to leverage both semantic under-standing and low-level motion features, enabling the model to identify shared primitives across different skills while maintaining task-specific knowledge, thus promoting effec-tive knowledge transfer between tasks. The formalized rep-resentation of motion-aware prompt query is: MAP (T, F ) = fprompt (ECLIP (T ), Φ( F )) , (7) where T is the task description, F is the optical flow from RAFT, ECLIP (T ) is the CLIP-based semantic embedding function, Φ( F ) is the flow feature extraction function, and 
+
+fprompt is a learned function that combines semantic and mo-tion information. The CLIP-based semantic embedding en-sures task-specificity, while the flow feature enables fine-grained primitive modeling. MAP enables policy to model and transfer primitives, thereby facilitating mutual improve-ment and lifelong expansion across diverse skills. 
+
+4.3. Lifelong Skill Acquisition 
+
+In the lifelong learning stage of PPL, we introduce a lifelong skill acquisition method by concatenating new primitive prompts with frozen pretrained prompts, enabling knowl-edge transfer from old skills to new ones. Specifically, we introduce a set of prompt components P ∈ RM ×D ,where M is the number of components. Each prompt com-ponent P initializes attention vectors A ∈ RD×M , keys 
+
+K ∈ RM ×D . PPL combines these components through the following steps: Atten Query = MAP (T, F ) ⊙ A, (8) where MAP (T, F ) is a text-flow query function and ⊙ de-notes the Hadamard product. Then, to determine the ap-propriate weighting vector for each skill, we compute the weight vector α based on the similarity between a text-flow query and a set of keys associated with the prompt compo-nents: 
+
+αm = cos sim (Atten Query , Km), (9) where cos sim represents a similarity function, and Km is the key for the m-th prompt component. 
+
+p = X
+
+> m
+
+αmPm. (10) Here, we employ a weighted summation of prompt compo-nents, Pm is the m-th prompt component. As shown in Fig. 3, to achieve lifelong skill acquisition, we freeze the primitive prompts obtained after the stage of multi-skill pre-training, ensuring that the expanded param-eters do not alter the weight α calculations for previously learned tasks during the lifelong learning stage. When ac-quiring new skills, we expand P, K, and A, increasing their dimensions to P ∈ RZ×D , A ∈ RD×Z , and K ∈ RZ×D ,where Z represents the number of prompt components after incorporating new skills, and D is the embedding dimen-sion. Notably, while training the t-th lifelong task, we only update the parameters of the lifelong prompts for this spe-cific task. Nevertheless, when calculating weights, we still involve all frozen primitive prompts and lifelong prompt components from all previous t tasks. 
+
+Algorithm 1 PPL: Primitive Prompt Learning                                                                                                   
+
+> Require: Visual demonstrations {Di}Ji=1 , Skill descriptions T
+> Ensure: Learned Primitive Prompts
+> 1: Initialize p∈RLp ×D▷Initialize primitive prompts
+> 2: for each skill jin {1, . . . , J }do
+> 3: fk+1 =fk+ ∆ fk▷Compute optical flow using RAFT
+> 4: MAP (T, F ) = fprompt (ECLIP (T),Φ( F)) ▷Motion-Aware Prompting
+> 5: fP−T(p, h ) = MSA (hQ,[pK;hK],[pV;hV]) ▷Apply prefix-prompt learning
+> 6: Compute diffusion loss L▷Using diffusion transformer policy
+> 7: Update pand model parameters to minimize L
+> 8: end for
+> 9: for each new skill kdo
+> 10: Initialize P∈RM′×D▷Initialize new prompt components
+> 11: Compute MAP(T, F) k▷Compute MAP query for new skill
+> 12: α=cos sim (q(x)⊙A, K )▷Compute attention-based weighting
+> 13: p=P′
+> mα′
+> mP′
+> m▷Generate new prompt
+> 14: Compute diffusion loss Lfor new skill ▷Using diffusion transformer policy
+> 15: Update pand model parameters to minimize L
+> 16: Add pto existing prompts ▷Expand prompt set
+> 17: end for
+> 18: return Learned prompts
+
+## 5. Experiments 
+
+5.1. Experimental Setup 
+
+Simulation tasks. We conduct our simulation experiments by a large-scale skill dataset that constructed based on Mim-icGen [34] and LIBERO [29]. In our skill dataset, each skill is associated with its language instruction. For example, a skill might be “Grasp the mug” or ”Open the drawer”. As shown in Fig. 5, our dataset incorporates skills from MimicGen, each containing 1K human demonstrations and with broad initial state distributions, effectively showing the generalization for multitask evaluation. We also include skills from LIBERO, a lifelong robotic manipulation bench-mark. By building our large-scale skill dataset, we ensure a comprehensive range of robotic manipulation scenarios, en-abling PPL to be applied to diverse and challenging tasks. 
+
+Real-world experiments. The real-robot experiments are conducted on the Franka Panda robotic arm. As shown in Fig. 4, we perform multitask pre-training on four distinct skills, each comprising 200 human demonstrations with broad initial state distributions. To evaluate our policy’s 22577 Lifelong New Skill 3 :                 
+
+> Place the drink on cutting board.
+> Pre -Trained Skill 2:
+> Place the banana to the basket.
+> Pre -Trained Skill 3:
+> Grasp the block.
+> Pre -Trained Skill 1 :
+> Grasp the banana.
+> Lifelong New Skill 2:
+> Place the croissant.
+> Pre -Trained Skill 4:
+> Place the block to the blanket.
+> Lifelong New Skill 3:
+> Push down the teapot handle.
+
+Figure 4. Real-world robot setting. We proposed 9 real-world skills, 4 of which are used in the pre-training stage and 5 in the lifelong stage, covering a variety of action spaces such as grasp, place, push, and a variety of different objects and distributions. Grasp the red cube. Place the red cube. Grasp the green cube. Place the green cube. Grasp the block. Place the square.      
+
+> Grasp the coffee mug. Place the coffee mug. Close the machine lid. Open the drawer. Grasp the mug. Place the mug.
+
+Figure 5. Illustration of our skill dataset. Our skill dataset is constructed based on MimicGen and LEBRO benchmark with diverse action spaces and scene variations. 
+
+ability for lifelong learning, we conduct training and vali-dation on four additional skill tasks. The objects involved in these tasks, such as banana, block, and various utensils, are randomly placed to assess position generalization. All metrics are evaluated with 15 independent runs for each skill, ensuring robust performance assessment across dif-ferent initial conditions and task variations. 
+
+Evaluation Metrics. Following [31], we employ Forward Transfer Weight (FWT) and Backward Transfer Weight (BWT) to evaluate the performance of lifelong learning. FWT is computed by the maximum success rate our policy can achieve when adapting to a new task. We denote FWT at task k as Fk. Meanwhile, BWT measures the success rate increase on previous tasks. Specifically, when adapting to the k-th task, we first record the best FWT model on this task and then evaluate this model on all previous k−1 tasks, obtaining success rate Si, 1 ≤ i ≤ k − 1. Then we com-pute the success rate difference between the new model and the best FWT of the previous k − 1 tasks and then average among them to obtain the BWT metric: 
+
+B = 1
+
+k − 1
+
+> k−1
+
+X
+
+> i=1
+
+(Si − Fi), (11) For both FWT and BWT metrics, higher values indicate bet-ter performance in terms of knowledge transfer and reten-tion across tasks. 
+
+5.2. Multi-Skill Pre-Training 
+
+As shown in Tab.2, our PPL achieves the highest success rates across all pre-training tasks in the LIBERO-GOAL en-vironment. Compared to the MoE-based policy [54], PPL improves the average success rate across all tasks by 17%. Appendix provides a detailed success rates for each task within MimicGen benchmark. We further evaluate PPL’s ability to learn generalizable cross-skill information in real-world scenarios. Tab. 2 presents the results of real-world experiments, where PPL consistently outperforms existing approaches. These results validate PPL’s effectiveness in both simulated and real-world environments. 22578 Place Red Cube Place Coffee Pod        
+
+> P1 P6 P2 P3 P4 P5
+> Place Green Cube
+> Place Red Cube
+> Place Square
+> Place Coffee Mug
+> Place Mug
+> Close Machine Lid
+> Grasp Red Cube
+> Grasp Green Cube
+> Grasp Square
+> Grasp Mug
+> Grasp Coffee Mug
+> Text -Only
+> Weight
+> Open Drawer
+> Text + Optical Flow
+> T2T1
+> T2T1
+> T2T1
+> T2T1
+> Similar Weight Similar Weight Similar Weight Similar Weight
+> Grasp Red Cube Grasp Coffee Pod
+> Articulated Manipulation
+> Place
+> Grasp
+
+Figure 6. Impact of Motion-Aware Prompt Query on Prompt Weights. This figure illustrates the weight distributions when using only text as the query (left) and when using our text-flow query (right). When only text is used as the prompt query, the weight responses exhibit similarities only in semantically related tasks. In contrast, our text-flow query enables the policy to have similar weight responses even in semantically different skills, allowing different skills to learn primitives in the latent space. 
+
+5.3. Lifelong Learning 
+
+For lifelong learning tasks, we conducted a compara-tive analysis of PPL against traditional sequential learn-ing approaches, experience replay-based methods, and task-specific LoRA [31]. As illustrated in Tables 1 and 2 , PPL demonstrates superior performance in simulated environ-ments, achieving state-of-the-art performance in both FWT and BWT metrics. Furthermore, Tab.2 presents evidence that in real-world scenarios, PPL not only facilitates the acquisition of cross-skill primitives during the pre-training phase but also effectively leverages this pretrained primi-tives into the new skill acquisition stage, enabling shared knowledge transfer from old skills to new ones. Notably, PPL surpasses existing approaches without requiring access to replay experiences.                                                                                        
+
+> Task Methods Diff-T MOE PPL (Ours) Multi-Skill Pre-Training Pretrain Task 1 0.79 ±0.05 0.83 ±0.04 0.85 ±0.03
+> Pretrain Task 2 0.83 ±0.11 0.85 ±0.03 0.86 ±0.02
+> Pretrain Task 3 0.84 ±0.07 0.86 ±0.08 0.86 ±0.01
+> Pretrain Task 4 0.63 ±0.08 0.74 ±0.07 0.80 ±0.03
+> Average 0.77 ±0.02 0.82 ±0.03 0.84 ±0.02
+> Lifelong Learning Task Sequential ER PPL (Ours) Lifelong Task 1 0.77 ±0.08 0.73 ±0.04 0.78 ±0.04
+> Lifelong Task 2 0.65 ±0.03 0.61 ±0.12 0.68 ±0.09
+> Lifelong Task 3 0.74 ±0.11 0.62 ±0.08 0.71 ±0.06 Average 0.72 ±0.04 0.65 ±0.03 0.73 ±0.03
+
+Figure 7. Performances with LIBERO. When dealing with dif-ferent tasks in the same scene, PPL achieves the best performance. 
+
+5.4. Ablation Studies 
+
+Effect of Motion-Aware Prompting To validate the ef-fectiveness of our motion-aware prompt query, we visualize the weight distributions when using only text embeddings as query and when using our text-flow query. As shown in the Fig. 6, if only task-specific instruction embedding is used as the prompt query, the weight responses will only exhibit similarities in semantically related tasks, and within a sin-gle task, the weights remain the same at each time step. In contrast, our text-flow query can capture both semantic and motion-shared primitives across different skills, even those skills are semantically distinct, ultimately enabling primi-tive representation through primitive prompts. 
+
+Effect of Primitive Prompt Count. We conducted a comprehensive investigation into the optimal selection of prompt count during the multi-skill learning. As various skills undergo joint optimization, primitives are modeled by primitive prompts. For any specific task, only a subset of primitive prompts responds and matches to extract rele-vant prior knowledge, while unmatched primitive prompts may introduce noise. Consequently, as illustrated in Fig. 8, an increase in the number of prompts does not necessar-ily correlate with improved performance. Simultaneously, an insufficient number of prompts may fail to encompass all primitives, underscoring the importance of achieving an appropriate balance in prompt count. 
+
+Effect of Primitive Prompt. As illustrated in Fig.8, signif-icant performance degradation is observed when learning new skills under two conditions: (1) when prompt learning of primitives is omitted during the pre-training phase, or (2) when pre-trained prompts are not utilized in the acquisition of new skills. These findings substantiate the effectiveness of our proposed prompt mechanism in extracting common knowledge from pre-trained skills. Moreover, they demon-strate the mechanism’s capacity to repurpose this knowl-edge during the lifelong learning phase, thereby enhancing the performance of newly acquired skills. 
+
+Robustness Analysis under Complex lighting Condi-tions. As shown in Fig.9, we design a challenging sce-nario under varying lighting conditions. The experiment simulates a dynamic lighting environment where the illu-mination transitions from warm to cold, and finally to dark during a single skill execution. This setup creates a more demanding visual challenge for the robot, as it must adapt 22579 Task Conventional Methods Adapter-based Methods Sequential ER LoRA PPL (Ours) FWT ↑ BWT ↑ FWT ↑ BWT ↑ FWT ↑ FWT ↑                                                                                                                                            
+
+> Task 1 0.87 ±0.07 -0.79 ±0.12 -0.89 ±0.02 0.88 ±0.00 Task 2 0.73 ±0.07 -0.57 ±0.08 0.71 ±0.07 -0.23 ±0.08 0.79 ±0.01 0.75 ±0.12 Task 3 0.79 ±0.04 -0.48 ±0.12 0.67 ±0.07 -0.37 ±0.11 0.81 ±0.07 0.83 ±0.03
+> Task 4 0.77 ±0.03 -0.62 ±0.17 0.64 ±0.07 -0.44 ±0.19 0.78 ±0.00 0.79 ±0.02
+> Task 5 0.49 ±0.07 -0.69 ±0.24 0.35 ±0.14 -0.57 ±0.23 0.62 ±0.12 0.60 ±0.09 Task 6 0.64 ±0.12 -0.66 ±0.24 0.52 ±0.19 -0.61 ±0.23 0.61 ±0.12 0.73 ±0.14
+> Task 7 0.32 ±0.05 -0.69 ±0.18 0.11 ±0.00 -0.58 ±0.24 0.43 ±0.26 0.54 ±0.11
+> Average 0.65 ±0.06 -0.56 ±0.16 0.61 ±0.09 -0.46 ±0.18 0.78 ±0.09 0.83 ±0.03
+
+Table 1. Lifelong Performances with MimicGen. PPL achieved the best success rate in both multi-skill pre-training and lifelong learning, as well as demonstrating superior lifelong learning capabilities. Task Methods Diffusion-Transformer MOE PPL (Ours) Multi-Skill Policy Pre-Training Pretrain Task 1 0.60 ± 0.05 0.82 ± 0.04 0.99 ± 0.03                                                          
+
+> Pretrain Task 2 0.25 ±0.06 0.78 ±0.05 0.62 ±0.02
+> Average 0.42 ±0.09 0.73 ±0.08 0.84 ±0.05
+> Lifelong Learning Task Sequential ER PPL (Ours) Lifelong Task 1 0.60 ±0.08 0.65 ±0.07 0.72 ±0.04
+> Lifelong Task 2 0.55 ±0.09 0.58 ±0.08 0.68 ±0.05
+> Lifelong Task 3 0.50 ±0.10 0.52 ±0.09 0.63 ±0.06
+> Average 0.55 ±0.09 0.58 ±0.08 0.68 ±0.05
+
+Table 2. Performances with real-world robot tasks. PPL achieved the best success rate in both multi-skill pre-training stage, as well as demonstrating superior lifelong learning capabilities. 
+
+to rapidly changing lighting conditions while performing the task of pushing the tea pot handle aside. Such extreme variations in lighting are rarely encountered in typical real-world scenarios, making this a particularly stringent test of PPL’s robustness. According to Tab.3, while both Diffu-sion Policy and our PPL with flow-based MAP degrade un-der these conditions, using only text as PPL’s prompt query shows improved performance. To address this limitation, our future work will explore incorporating depth informa-tion and 3D scene flow for further robustness. 
+
+Figure 8. Illustration of ablation studies. We conducted ablation analysis on the effect of proposed prompt mechanism, the number of prompts, and comparisons with MoE and LoRA. 
+
+5.5. Discussion on PPL v.s. Lora and MoE 
+
+Recently, some studies have explored the effectiveness of LoRA [31] and MOE [54] in enhancing lifelong robot learn-ing. However, as illustrated in Fig. 8, our experiments 
+
+Table 3. Quantitative Results under Various Lighting Conditions.                                 
+
+> * Light Variation Level: warm (L1), warm →cold (L2), warm →cold →dark (L3); † Static Light Condition: Constant light with different colors. Methods Light Variation Level* Static Light Condition† L1 L2 L3 warm cold dark Diff-T 0.82 0.80 0.75 0.82 0.85 0.52 PPL w flow+text 0.83 0.76 0.61 0.83 0.87 0.48 PPL w text 0.81 0.84 0.80 0.81 0.86 0.61 warm light dark light cold light half warm half cold
+
+Figure 9. Visualization of Franka robot arm pushing the tea pot handle aside under light variation level L3 (warm →cold →dark). 
+
+demonstrate that although MOE excels in terms of aver-age success rate, its training speed is slower due to the additional computational overhead introduced by its gat-ing network and multiple expert networks. MOE’s training time is approximately twice that of LoRA and our proposed method. LoRA, on the other hand, emerges as the frontrun-ner in terms of training speed, while its overall performance falls short of its competitors. Notably, PPL achieves per-formance surpassing that of MOE while maintaining com-parable training speed. This balance of efficiency and ef-ficacy enables PPL to effectively combine the strengths of LoRA and MOE, facilitating faster skill knowledge acqui-sition while preserving high performance. 
+
+## 6. Conclusion 
+
+In this work, we present Primitive Prompt Learning for lifelong robotic skill learning. Motion-aware prompts via text flow query mechanism are proposed to learn reusable and extensible primitive prompts across multiple skills and achieve superior results in multi-skill pre-training. More-over, for new skill acquisition, lifelong prompts are con-catenated and optimized with frozen pretrained prompt, en-abling knowledge transfer between old and new skills. Fi-nally, we construct a large-scale skill dataset and demon-strate the superior perform of PPL in multi-skill pre-training and lifelong skill acquisition. 22580 Acknowledgements. This work is supported by the Shang-hai AI Laboratory, National Key R&D Program of China (2022ZD0160101), the National Natural Science Founda-tion of China (62376222), Young Elite Scientists Sponsor-ship Program by CAST (2023QNRC001) and the Early Ca-reer Scheme of the Research Grants Council (RGC) of the Hong Kong SAR under grant No. 26202321. 
+
+## References 
+
+[1] Rahaf Aljundi, Francesca Babiloni, Mohamed Elhoseiny, Marcus Rohrbach, and Tinne Tuytelaars. Memory aware synapses: Learning what (not) to forget. In Proceedings of the European Conference on Computer Vision (ECCV) ,pages 139–154, 2018. 1, 3 [2] Jeannette Bohg, Antonio Morales, Tamim Asfour, and Dan-ica Kragic. Data-driven grasp synthesis—a survey. IEEE Transactions on robotics , 30(2):289–309, 2013. 2 [3] Haonan Chen, Yilong Niu, Kaiwen Hong, Shuijing Liu, Yixuan Wang, Yunzhu Li, and Katherine Rose Driggs-Campbell. Predicting object interactions with behavior prim-itives: An application in stowing tasks. In 7th Annual Con-ference on Robot Learning , 2023. 3 [4] Shuo Cheng and Danfei Xu. League: Guided skill learn-ing and abstraction for long-horizon manipulation. IEEE Robotics and Automation Letters , 2023. 3 [5] Rohan Chitnis, Shubham Tulsiani, Saurabh Gupta, and Ab-hinav Gupta. Efficient bimanual manipulation using learned task schemas. In 2020 IEEE International Conference on Robotics and Automation (ICRA) , pages 1149–1155. IEEE, 2020. 2, 3 [6] Murtaza Dalal, Deepak Pathak, and Russ R Salakhutdinov. Accelerating robotic reinforcement learning via parameter-ized action primitives. Advances in Neural Information Pro-cessing Systems , 34:21847–21859, 2021. 3 [7] Dong Wang Jie Yin Qizhi Chen Yiting Zhang Dan Xu Delin Qu, Chi Yan, Bin Zhao, and Xuelong Li. Implicit event-rgbd neural slam. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024. 3 [8] Qizhi Chen Yuanqi Yao Xinyi Ye Yan Ding Zhigang Wang JiaYuan Gu Bin Zhao Dong Wang Xuelong Li Delin Qu, Haoming Song. Spatialvla: Exploring spatial representations for visual-language-action models. 2025. 3 [9] Roy Fox, Richard Shin, William Paul, Yitian Zou, Dawn Song, Ken Goldberg, Pieter Abbeel, and Ion Stoica. Hier-archical variational imitation learning of control programs. 
+
+arXiv preprint arXiv:1912.12612 , 2019. 2, 3 [10] Andrej Gams, Aleˇ s Ude, Jun Morimoto, et al. Deep encoder-decoder networks for mapping raw images to dynamic move-ment primitives. In 2018 IEEE international conference on robotics and automation (ICRA) , pages 5863–5868. IEEE, 2018. 2, 3 [11] Tian Gao, Soroush Nasiriany, Huihan Liu, Quantao Yang, and Yuke Zhu. Prime: Scaffolding manipulation tasks with behavior primitives for data-efficient imitation learning. 
+
+arXiv preprint arXiv:2403.00929 , 2024. 2, 3 [12] Caelan Reed Garrett, Rohan Chitnis, Rachel Holladay, Beomjoon Kim, Tom Silver, Leslie Pack Kaelbling, and Tom´ as Lozano-P´ erez. Integrated task and motion planning. 
+
+Annual review of control, robotics, and autonomous systems ,4(1):265–293, 2021. 2 [13] Matthew Hausknecht and Peter Stone. Deep reinforce-ment learning in parameterized action space. arXiv preprint arXiv:1511.04143 , 2015. 3 [14] Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. Lora: Low-rank adaptation of large language models. In In-ternational Conference on Learning Representations , 2021. 1, 3 [15] Tianxing Hu, Yanfu Ding, Zhou Yu, Yuning Wu, Xingjian Wang, and Chunyan Xiong. Multi-task pre-training of modu-lar prompt for few-shot learning. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Pro-cessing , pages 8742–8755, 2022. 3 [16] Auke Jan Ijspeert, Jun Nakanishi, Heiko Hoffmann, Peter Pastor, and Stefan Schaal. Dynamical movement primitives: learning attractor models for motor behaviors. Neural com-putation , 25(2):328–373, 2013. 2 [17] Zhiwei Jia, Vineet Thumuluri, Fangchen Liu, Linghao Chen, Zhiao Huang, and Hao Su. Chain-of-thought predictive con-trol. In Proceedings of the 41st International Conference on Machine Learning , pages 21768–21790, 2024. 2 [18] Zifeng Jiang, Hao Zhang, Tianlong Cai, Hang Zhao, Ying Ding, Zheng Wang, Shu Wang, and Yun Wang. Coda-prompt: Continual decomposed attention-based prompt-ing for rehearsal-free continual learning. arXiv preprint arXiv:2211.13218 , 2023. 3 [19] Khimya Khetarpal, Matthew Riemer, Irina Rish, and Doina Precup. Towards continual reinforcement learning: A review and perspectives. arXiv preprint arXiv:2012.13490 , 2020. 2 [20] Thomas Kipf, Yujia Li, Hanjun Dai, Vinicius Zambaldi, Alvaro Sanchez-Gonzalez, Edward Grefenstette, Pushmeet Kohli, and Peter Battaglia. Compile: Compositional imita-tion learning and execution. In International Conference on Machine Learning , pages 3418–3428. PMLR, 2019. 2, 3 [21] James Kirkpatrick, Razvan Pascanu, Neil Rabinowitz, Joel Veness, Guillaume Desjardins, Andrei A Rusu, Kieran Milan, John Quan, Tiago Ramalho, Agnieszka Grabska-Barwinska, et al. Overcoming catastrophic forgetting in neu-ral networks. In Proceedings of the national academy of sci-ences , pages 3521–3526. National Acad Sciences, 2017. 1, 3[22] Oliver Kroemer, Christian Daniel, Gerhard Neumann, Herke Van Hoof, and Jan Peters. Towards learning hierarchical skills for multi-phase manipulation tasks. In 2015 IEEE in-ternational conference on robotics and automation (ICRA) ,pages 1503–1510. IEEE, 2015. 2, 3 [23] Hoang Le, Nan Jiang, Alekh Agarwal, Miroslav Dud´ ık, Yisong Yue, and Hal Daum´ e III. Hierarchical imitation and reinforcement learning. In International conference on ma-chine learning , pages 2917–2926. PMLR, 2018. 2, 3 [24] Youngwoon Lee, Jingyun Yang, and Joseph J Lim. Learning to coordinate manipulation skills via skill behavior diversifi-22581 cation. In International conference on learning representa-tions , 2019. 3 [25] Timoth´ ee Lesort, Vincenzo Lomonaco, Andrei Stoian, Da-vide Maltoni, David Filliat, and Natalia D´ ıaz-Rodr´ ıguez. Continual learning for robotics: Definition, framework, learning strategies, opportunities and challenges. Informa-tion fusion , 58:52–68, 2020. 2 [26] Xiang Lisa Li and Percy Liang. Prefix-tuning: Optimizing continuous prompts for generation, 2021. 4 [27] Zhizhong Li and Derek Hoiem. Learning without forgetting. In IEEE transactions on pattern analysis and machine intel-ligence , pages 2935–2947. IEEE, 2017. 1, 3 [28] Jacky Liang, Mohit Sharma, Alex LaGrassa, Shivam Vats, Saumya Saxena, and Oliver Kroemer. Search-based task planning with learned skill effect models for lifelong robotic manipulation. In 2022 International Conference on Robotics and Automation (ICRA) , pages 6351–6357. IEEE, 2022. 3 [29] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowl-edge transfer for lifelong robot learning. Advances in Neural Information Processing Systems , 36:44776–44791, 2023. 5 [30] Ruizhe Liu, Qian Luo, and Yanchao Yang. Infocon: con-cept discovery with generative and discriminative informa-tiveness. arXiv preprint arXiv:2404.10606 , 2024. 3 [31] Zuxin Liu, Jesse Zhang, Kavosh Asadi, Yao Liu, Ding Zhao, Shoham Sabach, and Rasool Fakoor. Tail: Task-specific adapters for imitation learning with large pretrained models. 
+
+arXiv preprint arXiv:2310.05905 , 2023. 1, 3, 6, 7, 8 [32] Tom´ as Lozano-P´ erez and Leslie Pack Kaelbling. Aconstraint-based method for solving sequential manipulation planning problems. In 2014 IEEE/RSJ International Confer-ence on Intelligent Robots and Systems , pages 3684–3691. IEEE, 2014. 2 [33] Jeffrey Mahler, Jacky Liang, Sherdil Niyaz, Michael Laskey, Richard Doan, Xinyu Liu, Juan Aparicio Ojea, and Ken Goldberg. Dex-net 2.0: Deep learning to plan robust grasps with synthetic point clouds and analytic grasp metrics. arXiv preprint arXiv:1703.09312 , 2017. 2 [34] Ajay Mandlekar, Soroush Nasiriany, Bowen Wen, Iretiayo Akinola, Yashraj Narang, Linxi Fan, Yuke Zhu, and Dieter Fox. Mimicgen: A data generation system for scalable robot learning using human demonstrations. In 7th Annual Con-ference on Robot Learning , 2023. 5 [35] Simon Manschitz, Jens Kober, Michael Gienger, and Jan Pe-ters. Learning movement primitive attractor goals and se-quential skills from kinesthetic demonstrations. Robotics and Autonomous Systems , 74:97–107, 2015. 2, 3 [36] Soroush Nasiriany, Huihan Liu, and Yuke Zhu. Augmenting reinforcement learning with behavior primitives for diverse manipulation tasks. In 2022 International Conference on Robotics and Automation (ICRA) , pages 7477–7484. IEEE, 2022. 3 [37] Gerhard Neumann, Christian Daniel, Alexandros Paraschos, Andras Kupcsik, and Jan Peters. Learning modular policies for robotics. Frontiers in computational neuroscience , 8:62, 2014. 2 [38] German I Parisi, Ronald Kemker, Jose L Part, Christopher Kanan, and Stefan Wermter. Continual lifelong learning with neural networks: A review. Neural Networks , 113:54–71, 2019. 2 [39] Peter Pastor, Heiko Hoffmann, Tamim Asfour, and Stefan Schaal. Learning and generalization of motor skills by learn-ing from demonstration. In 2009 IEEE International Con-ference on Robotics and Automation , pages 763–768. IEEE, 2009. 2, 3 [40] Chengwei Qin and Shafiq Joty. Lfpt5: A unified framework for lifelong few-shot language learning based on prompt tun-ing of t5. arXiv preprint arXiv:2110.07298 , 2021. 3 [41] Chengwei Qin, Chen Chen, and Shafiq Joty. Lifelong sequence generation with dynamic module expansion and adaptation. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 6701–6714, Singapore, 2023. Association for Computational Linguistics. 3 [42] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervi-sion. In International conference on machine learning , pages 8748–8763. PmLR, 2021. 5 [43] David Rolnick, Arun Ahuja, Jonathan Schwarz, Timothy Lil-licrap, and Gregory Wayne. Experience replay for continual learning. In Advances in Neural Information Processing Sys-tems , pages 350–360, 2019. 1, 3 [44] Muhammet Yunus Seker, Mert Imre, Justus H Piater, and Emre Ugur. Conditional neural movement primitives. In 
+
+Robotics: Science and Systems , 2019. 2, 3 [45] Joan Serra, Didac Suris, Marius Miron, and Alexandros Karatzoglou. Overcoming catastrophic forgetting with hard attention to the task. In International Conference on Machine Learning , pages 4548–4557. PMLR, 2018. 1, 3 [46] Lucy Xiaoyang Shi, Archit Sharma, Tony Z Zhao, and Chelsea Finn. Waypoint-based imitation learning for robotic manipulation. arXiv preprint arXiv:2307.14326 , 2023. 3 [47] Hanul Shin, Jung Kwon Lee, Jaehong Kim, and Jiwon Kim. Continual learning with deep generative replay. In Advances in neural information processing systems , pages 2990–2999, 2017. 3 [48] Shagun Sodhani, Sarath Chandar, and Yoshua Bengio. To-ward training recurrent neural networks for lifelong learning. 
+
+Neural Computation , 32(1):1–35, 2020. 1 [49] Robin Strudel, Alexander Pashevich, Igor Kalevatykh, Ivan Laptev, Josef Sivic, and Cordelia Schmid. Learning to com-bine primitive skills: A step towards versatile robotic ma-nipulation §. In 2020 IEEE International Conference on Robotics and Automation (ICRA) , pages 4637–4643, 2020. 3[50] Zachary Teed and Jia Deng. Raft: Recurrent all-pairs field transforms for optical flow. In Computer Vision–ECCV 2020: 16th European Conference, Glasgow, UK, August 23– 28, 2020, Proceedings, Part II 16 , pages 402–419. Springer, 2020. 4 [51] Marc Toussaint. Logic-geometric programming: An optimization-based approach to combined task and motion planning. In IJCAI , pages 1930–1936, 2015. 2 22582 [52] Gido M van de Ven, Hava T Siegelmann, and Andreas S To-lias. Brain-inspired replay for continual learning with arti-ficial neural networks. Nature communications , 11(1):1–14, 2020. 3 [53] Xiao Wang, Tianze Chen, Qiming Ge, Han Xia, Rong Bao, Rui Zheng, Qi Zhang, Tao Gui, and Xuanjing Huang. Or-thogonal subspace learning for language model continual learning. In Findings of the Association for Computational Linguistics: EMNLP 2023 , pages 10658–10671, Singapore, 2023. Association for Computational Linguistics. 3 [54] Yixiao Wang, Yifei Zhang, Mingxiao Huo, Ran Tian, Xi-ang Zhang, Yichen Xie, Chenfeng Xu, Pengliang Ji, Wei Zhan, Mingyu Ding, et al. Sparse diffusion policy: Asparse, reusable, and flexible policy for robot learning. arXiv preprint arXiv:2407.01531 , 2024. 6, 8 [55] Zifeng Wang, Zizhao Zhang, Sayna Chen, and Zheng Wang. Dual-prompt: Complementary prompting for rehearsal-free continual learning. In European Conference on Computer Vision , pages 388–407. Springer, 2022. 3 [56] Fan Xie, Alexander Chowdhury, M De Paolis Kaluza, Lin-feng Zhao, Lawson Wong, and Rose Yu. Deep imita-tion learning for bimanual robotic manipulation. Advances in neural information processing systems , 33:2327–2337, 2020. 2, 3 [57] Chi Yan, Delin Qu, Dan Xu, Bin Zhao, Zhigang Wang, Dong Wang, and Xuelong Li. Gs-slam: Dense visual slam with 3d gaussian splatting. In CVPR , 2024. 3 [58] Tianhe Yu, Pieter Abbeel, Sergey Levine, and Chelsea Finn. One-shot hierarchical imitation learning of compound visuo-motor tasks. arXiv preprint arXiv:1810.11043 , 2018. 2, 3 [59] Friedemann Zenke, Ben Poole, and Surya Ganguli. Contin-ual learning through synaptic intelligence. In International Conference on Machine Learning , pages 3987–3995. PMLR, 2017. 1, 3 [60] Yanzhe Zhang, Xuezhi Wang, and Diyi Yang. Continual sequence generation with adaptive compositional modules. In Proceedings of the 60th Annual Meeting of the Associ-ation for Computational Linguistics (Volume 1: Long Pa-pers) , pages 3653–3667, Dublin, Ireland, 2022. Association for Computational Linguistics. 3 [61] Weixiang Zhao, Shilong Wang, Yulin Hu, Yanyan Zhao, Bing Qin, Xuanyu Zhang, Qing Yang, Dongliang Xu, and Wanxiang Che. SAPT: A shared attention framework for parameter-efficient continual learning of large language models. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 11641–11661, Bangkok, Thailand, 2024. As-sociation for Computational Linguistics. 3 [62] Pei Zhou and Yanchao Yang. Maxmi: A maximal mu-tual information criterion for manipulation concept discov-ery, 2024. 3 22583

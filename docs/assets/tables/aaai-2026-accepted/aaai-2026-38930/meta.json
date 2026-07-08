@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "extractor": "papercropper",
+  "tables": [
+    {
+      "url": "assets/tables/aaai-2026-accepted/aaai-2026-38930/table-001.webp",
+      "caption": "",
+      "page": 0,
+      "index": 1,
+      "width": 1845,
+      "height": 549,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/aaai-2026-accepted/aaai-2026-38930/table-002.webp",
+      "caption": "",
+      "page": 0,
+      "index": 2,
+      "width": 1836,
+      "height": 552,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/aaai-2026-accepted/aaai-2026-38930/table-003.webp",
+      "caption": "",
+      "page": 0,
+      "index": 3,
+      "width": 874,
+      "height": 298,
+      "label": "Table"
+    },
+    {
+      "url": "assets/tables/aaai-2026-accepted/aaai-2026-38930/table-004.webp",
+      "caption": "",
+      "page": 0,
+      "index": 4,
+      "width": 869,
+      "height": 249,
+      "label": "Table"
+    }
+  ]
+}

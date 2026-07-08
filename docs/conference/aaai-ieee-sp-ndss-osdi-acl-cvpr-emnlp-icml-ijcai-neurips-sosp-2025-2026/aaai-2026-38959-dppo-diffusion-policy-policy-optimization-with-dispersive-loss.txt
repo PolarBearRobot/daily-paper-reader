@@ -1,0 +1,357 @@
+Title: D²PPO: Diffusion Policy Policy Optimization with Dispersive Loss
+
+URL Source: https://ojs.aaai.org/index.php/AAAI/article/download/38959/42921
+
+Number of Pages: 9
+
+Markdown Content:
+# D²PPO: Diffusion Policy Policy Optimization with Dispersive Loss 
+
+# Guowei Zou, Weibing Li, Hejun Wu B, Yukun Qian, Yuhang Wang, Haitao Wang B
+
+School of Computer Science and Engineering, Sun Yat-sen University, Guangzhou, China Guangdong Key Laboratory of Big Data Analysis and Processing, Guangzhou, Guangdong, China 
+
+{zougw, qianyk5, wangyh253 }@mail2.sysu.edu.cn, {liwb53, wuhejun, wanght76 }@mail.sysu.edu.cn 
+
+Abstract 
+
+Diffusion policies excel at robotic manipulation by nat-urally modeling multimodal action distributions in high-dimensional spaces. Nevertheless, diffusion policies suffer from diffusion representation collapse : semantically simi-lar observations are mapped to indistinguishable features, ul-timately impairing their ability to handle subtle but critical variations required for complex robotic manipulation. To ad-dress this problem, we propose D²PPO (Diffusion Policy Pol-icy Optimization with Dispersive Loss). D²PPO introduces dispersive loss regularization that combats representation col-lapse by treating all hidden representations within each batch as negative pairs. D²PPO compels the network to learn dis-criminative representations of similar observations, thereby enabling the policy to identify subtle yet crucial differences necessary for precise manipulation. In evaluation, we find that early-layer regularization benefits simple tasks, while late-layer regularization sharply enhances performance on com-plex manipulation tasks. On RoboMimic benchmarks, D²PPO achieves an average improvement of 22.7% in pre-training and 26.1% after fine-tuning, setting new SOTA results. In comparison with SOTA, results of real-world experiments on a Franka Emika Panda robot show the excitingly high success rate of our method. The superiority of our method is espe-cially evident in complex tasks. 
+
+Project Page — https://guowei-zou.github.io/d2ppo/ 
+
+# Introduction 
+
+Diffusion models have recently emerged as a promising ap-proach for learning robot control policies (Ho, Jain, and Abbeel 2020; Song, Meng, and Ermon 2020; Peebles and Xie 2023). Through an iterative denoising mechanism, dif-fusion policies are able to model complex and multimodal action distributions (Lee et al. 2025; Geng et al. 2024; Li et al. 2023), making them well-suited for high-dimensional continuous control tasks (Chi et al. 2023). Despite these advantages, we observe that diffusion poli-cies still face significant challenges with low success rates when executing complex manipulation tasks. Consider a robotic arm performing a grasping task where the obser-vations in two scenarios appear highly similar but require 
+
+Copyright © 2026, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+> B
+
+Corresponding author. 
+
+distinctly different actions. Standard diffusion policies typi-cally fail to distinguish the subtle yet critical differences be-tween similar observations, consequently generating identi-cal actions that lead to task failure, as shown in Figure 1(a). Incorrect grasp Correct grasp Fail Success   
+
+> (a)
+> …… ……
+> w/o dispersive loss with dispersive loss (b) (d) (c) (e) features clustering features clustering
+> Similar observations
+
+Figure 1: Effect of Dispersive Loss on Representation Qual-ity and Policy Performance. (a) Shows how representa-tion collapse leads to grasping failures: similar observations are encoded into nearly identical features, causing the pol-icy to make incorrect decisions between successful (green) and failed (red) grasping attempts. (b) and (c) demonstrate training without dispersive loss: clustered feature repre-sentations with limited diversity and correspondingly slow, unstable learning curves with poor final performance. (d) and (e) show the effect of incorporating dispersive loss: well-distributed, diverse feature representations and signifi-cantly improved learning curves with faster convergence and higher success rates. Through detailed analysis of these task failures, we iden-tify the root cause as diffusion representation collapse .The Fortieth AAAI Conference on Artificial Intelligence (AAAI-26) 
+
+18891 This phenomenon arises because diffusion policies rely pri-marily on reconstruction loss (Karras et al. 2022, 2023; Song et al. 2023). Such loss optimizes for denoising accuracy but neglects the quality and diversity of intermediate feature rep-resentations. Consequently, hidden layers produce nearly in-distinguishable embeddings for semantically different ob-servations. As illustrated in Figure 1(b), clustering analysis of hidden layer features reveals that numerous similar state representations are grouped into nearly identical clusters, in-dicating poor feature diversity. This representation collapse directly leads to poor performance, as shown in Figure 1(c). This representation collapse is particularly problematic for robotic manipulation, where subtle observational differences often require substantially different actions for successful task completion. When the learned representations fail to distinguish these nuanced differences, the policy cannot gen-erate the context-sensitive actions required for precise ma-nipulation tasks. Motivated by advances in computer vision, we try to mit-igate this problem through explicit representation regular-ization. As an explicit form of representation regularization, contrastive representation learning is the most widely used approach for enhancing the discriminability and robustness of feature embeddings (van den Oord, Li, and Vinyals 2018; Chen et al. 2020; He et al. 2020; Arora et al. 2019; Wang and Isola 2020). However, traditional contrastive learning typ-ically requires constructing positive-negative sample pairs, additional pre-training stages (Oquab et al. 2023), auxiliary model components (Chen et al. 2025a), and access to exter-nal data for reliable positive pair generation (Yu et al. 2024). Given these limitations, we propose dispersive loss regu-larization, a “ contrastive loss without positive pairs ” that encourages internal representations to spread out in the hid-den space. Specifically, we integrate this dispersive regular-ization into the standard diffusion loss, maximizing feature dispersion within each batch and thereby enabling the net-work to distinguish the subtle variations essential for pre-cise manipulation tasks. Importantly, our approach requires no extra pre-training, model parameters, or external data. As illustrated in Figure 1(d-e), dispersive loss promotes well-separated feature representations and leads to significantly improved learning performance. Building upon this insight, we propose D²PPO (Diffusion Policy Policy Optimization with Dispersive Loss) , a two-stage training strategy: (1) pre-training with dispersive loss to encourage feature dispersion within each batch; (2) fine-tuning with PPO to maximize task success (Williams 1992; Schulman et al. 2017; Ren et al. 2024). This approach com-bines the generative expressiveness of diffusion models with the goal-directed precision of reinforcement learning, while ensuring that similar observations maintain distinct feature representations crucial for precise manipulation tasks. De-tailed theoretical framework and mechanism understanding can be found in Appendix A. This paper makes three key contributions: • Through extensive experiments and analysis, we identify 
+
+diffusion representation collapse in diffusion policies as the underlying cause of their inability to handle com-plex manipulation tasks. • We propose D²PPO, which addresses diffusion repre-sentation collapse by introducing dispersive loss that eliminates the dependency on positive-negative sample pair construction in contrastive learning. We compare three dispersive variants (InfoNCE-L2, InfoNCE-Cosine, Hinge) and analyze their effects across different feature layers. • We verify the impact of dispersive loss at different layers on task success rates across varying task complexities, discovering that more challenging tasks benefit increas-ingly from dispersive regularization. Building on this foundation, we further enhance the trained diffusion poli-cies using the policy gradient algorithm for fine-tuning, achieving improved accuracy with real robot validation .
+
+# Related Work 
+
+Diffusion Policy for Robot Control. Diffusion models rev-olutionized generative modeling through DDPM (Ho, Jain, and Abbeel 2020), DDIM (Song, Meng, and Ermon 2020), Latent Diffusion Models (Rombach et al. 2022), and One step diffusion (Frans et al. 2024). This paradigm inspired Diffusion Policy (Chi et al. 2023), which adapted iterative denoising to robot control by modeling action distributions as denoising processes. Recent extensions include 3D Dif-fuser Actor (Ke, Gkanatsios, and Fragkiadaki 2024), 3D Dif-fusion Policy (Ze et al. 2024b), and humanoid manipulation applications (Ze et al. 2024a). However, direct application to robotics revealed performance limitations on complex ma-nipulation tasks due to representation collapse, which our work addresses by enhancing diffusion policy representa-tions through dispersive loss regularization to improve ma-nipulation accuracy. 
+
+Policy Optimization for Diffusion-Based Control. Tra-ditional policy gradient methods (TRPO (Schulman et al. 2015a), PPO (Schulman et al. 2015b, 2017)) required adap-tation for diffusion policies’ iterative denoising process. Recent approaches include DPPO (Ren et al. 2024) with two-layer MDP formulations, ReinFlow (Zhang et al. 2025; Hafner et al. 2023) for flow matching with online rein-forcement learning, FDPP (Chen et al. 2025b) for human preference integration, and TrajHF (Li et al. 2025) for hu-man feedback-driven trajectory generation. However, these online fine-tuning methods focus primarily on algorithmic design while neglecting pre-trained diffusion policy repre-sentations. Our D²PPO provides a superior starting point for fine-tuning by enhancing representations during pre-training. 
+
+Representation Learning as the Missing Link. Con-trastive learning approaches (InfoNCE (van den Oord, Li, and Vinyals 2018), SimCLR (Chen et al. 2020), super-vised contrastive learning (Khosla et al. 2020)) have shown that regularizing learned representations improves general-ization. Related approaches in representation regularization include REPA (Yu et al. 2024) for alignment with exter-nal encoders like DINOv2 (Oquab et al. 2023), and var-ious contrastive learning extensions building on InfoNCE foundations. Dispersive loss (Wang and He 2025) provides an elegant “contrastive loss without positive pairs” that en-18892 Action diffusion                
+
+> Input 1st denoise Gauss. Noise N-th denoise k-th denoise
+> Dispersive loss Diffusion loss Pre-training
+> Linear Linear Linear Linear Linear Transformer Encoder *0123456789Linear Projection Patch + Position Embedding Vision Transformer
+> Environment MDP Diffusion MDP Policy Gradient Update Diffusion MDP
+> Fine-tuning
+> t = 0 t = 1 Diffusion Policy
+> Input
+
+Figure 2: D²PPO Framework Overview. The complete two-stage training paradigm: Left: Pre-training stage with Vision Trans-former (ViT) feature extraction and dispersive loss regularization to prevent representation collapse; Top-right: Action diffusion process showing iterative denoising from Gaussian noise to final actions; Bottom-right: Fine-tuning stage with policy gradient optimization using two-layer MDP formulation (Ren et al. 2024) for environment interaction. courages representational diversity. However, representation methods like dispersive loss have rarely been applied to dif-fusion policy learning. Our work bridges this insight with diffusion-based robot control, addressing representation col-lapse that limits complex task performance. To our knowl-edge, this is the first work to systematically address repre-sentation collapse in diffusion-based policy learning. 
+
+# Preliminaries 
+
+Diffusion Policy: Diffusion Policy (Chi et al. 2023) models the action distribution using a diffusion process. Given an observation ot, the policy generates actions through an iter-ative denoising process. The forward diffusion process adds Gaussian noise to the action: 
+
+q(a1, . . . , a K |a0) = 
+
+> K
+
+∏
+
+> k=1
+
+q(ak|ak−1) (1) where q(ak|ak−1) = N (ak; √1 − βkak−1, β kI) , a0 is the original clean action, ak represents the noisy action at de-noising timestep k, K is the total number of denoising steps, 
+
+βk is the noise schedule that controls the amount of noise added at each step, and I is the identity matrix. The reverse process learns to predict the noise  at each timestep: 
+
+pθ (ak−1|ak, o ) = N (ak−1; μθ (ak, k, o ), σ 2
+
+> k
+
+) (2) where pθ is the learned reverse process parameterized by θ,
+
+o is the observation, μθ (ak, k, o ) is the predicted mean of the denoising distribution, σ2 
+
+> k
+
+is the variance at timestep k, and 
+
+μθ (ak, k, o ) = 1
+
+√αk
+
+(
+
+ak − βk
+
+√1 − ¯αk
+
+θ (ak, k, o )
+
+)
+
+(3) with αk = 1 − βk, ¯αk = ∏ks=1 αs, and θ (ak, k, o ) is the neural network that predicts the noise added at timestep k.
+
+Dispersive Loss: The key insight of dispersive loss (Wang and He 2025) is to derive a “contrastive loss without pos-itive pairs” by reformulating traditional contrastive learn-ing objectives. Traditional contrastive learning optimizes the InfoNCE (van den Oord, Li, and Vinyals 2018) objective, which can be decomposed into two terms: 
+
+LInfoNCE = D(zi, z + 
+
+> i
+
+)
+
+τ + log ∑
+
+> j
+
+exp 
+
+(
+
+− D(zi, z j )
+
+τ
+
+)
+
+(4) where zi and z+ 
+
+> i
+
+are positive pairs, zj are negative samples, 
+
+D(·, ·) is a distance function, and τ is the temperature pa-rameter. The first term enforces alignment between positive pairs, while the second term encourages dispersion among all samples. The key insight of dispersive loss is to remove the pos-itive pair alignment term entirely, leading to the dispersive objective that focuses solely on representation dispersion: 
+
+LDisp = log Ei,j 
+
+[
+
+exp 
+
+(
+
+− D(zi, z j )
+
+τ
+
+)] 
+
+(5) Eq. (5) encourages all representations within a batch to be maximally dispersed in the hidden space, preventing repre-sentation collapse. 
+
+# Method 
+
+D²PPO: Enhanced Diffusion Policy Policy Optimization using Dispersive Loss. D²PPO addresses representation collapse in diffusion policies through dispersive loss reg-ularization. D²PPO adopts a two-stage training paradigm: 18893 dispersive pre-training followed by policy gradient opti-mization, as illustrated in Figure 2. Complete mathematical derivations are provided in Appendix B. Algorithm pseu-docode is provided in Appendix C. 
+
+Stage 1: Enhanced Pre-training with Dispersive Loss. 
+
+We augment the standard diffusion loss with dispersive regu-larization. Our approach employs a Vision Transformer en-coder (ViT) (Vaswani et al. 2017; Dosovitskiy et al. 2021) for visual feature extraction and applies regularization to se-lected intermediate layers of the MLP denoising network. We define our pre-training objective as: 
+
+Lpre-train D2PPO = Ldiff + λLdisp (6) This combined objective serves two purposes: the diffu-sion loss Ldiff ensures accurate noise prediction for proper denoising, while the dispersive loss Ldisp with weight λ en-courages representational diversity in the learned features. The dispersive loss is computed by averaging over all de-noising timesteps: 
+
+Ldisp = 1
+
+K
+
+> K
+
+∑
+
+> k=1
+
+Lvariant disp (Hk) (7) where K denotes the total number of denoising steps in the diffusion process, k is the current denoising timestep index, and Lvariant disp (Hk) represents the specific dispersive loss vari-ant (InfoNCE-L2, InfoNCE-Cosine, or Hinge) computed at timestep k. The notation Hk = {hi,k }Bi=1 denotes the col-lection of intermediate feature representations from all B
+
+samples in the batch at timestep k.We implement three main variants of dispersive loss, each derived from different contrastive learning methods by re-moving the positive alignment term: 
+
+1. InfoNCE-based Dispersive Loss with L2 Distance: 
+
+LInfoNCE-L2 disp = log Ei,j 
+
+[
+
+exp 
+
+(
+
+− || hi − hj || 22
+
+τ
+
+)] 
+
+(8) Eq. (8) uses squared `2 distance D(hi, h j ) = || hi − hj || 22,which measures Euclidean distance in the representation space. This formulation encourages dispersion based on ge-ometric distance between feature vectors. 
+
+2. InfoNCE-based Dispersive Loss with Cosine Distance: 
+
+LInfoNCE-Cos disp = log Ei,j 
+
+exp 
+
+− 1 − hTi hj 
+
+> || hi|| 2·|| hj|| 2
+
+τ
+
+ (9) Eq. (9) uses cosine dissimilarity D(hi, h j ) = 1 −
+
+hTi hj /|| hi|| 2 · || hj || 2, which captures angular differences between normalized representations. This formulation is scale-invariant and focuses on directional diversity. 
+
+3. Hinge Loss-based Dispersive Loss: 
+
+LHinge disp = Ei,j 
+
+[max(0 ,  − D (hi, h j )) 2] (10) Eq. (10) is derived from hinge loss by removing the posi-tive pair term, focusing purely on enforcing a minimum mar-gin  between all representation pairs. This formulation di-rectly penalizes representations that are closer than the mar-gin threshold, providing explicit control over the minimum dispersion distance. In our experiments, we evaluate all three variants across different network layers to determine optimal configurations for each task complexity level. 
+
+Stage 2: Dispersive loss-augmented diffusion policy opti-mization. In the optimization stage, D²PPO leverages the enhanced representations learned during pre-training to opti-mize diffusion policies through reinforcement learning. Our approach strategically focuses this stage on reward maxi-mization while preserving the representational structure es-tablished during pre-training. 
+
+Overall Objective: We aim to optimize the diffusion pol-icy πθ to maximize expected return: 
+
+J(θ) = Eτ ∼πθ [R(τ )] (11) For diffusion policies, the action probability involves the entire denoising chain from aKt (pure noise) to a0 
+
+> t
+
+(final ac-tion): 
+
+πθ (a0 
+
+> t
+
+|st) = 
+
+∫
+
+p(aKt )
+
+> K
+
+∏
+
+> k=1
+
+pθ (ak−1 
+
+> t
+
+|akt , s t)da 1: Kt (12) where the diffusion policy is a multi-step latent policy where we cannot directly obtain π(a|s) as in standard policies, but must consider the joint probability across the entire denois-ing chain. Using the chain rule, the log probability gradient be-comes: 
+
+∇θ log πθ (a0 
+
+> t
+
+|st) = 
+
+> K
+
+∑
+
+> k=1
+
+∇θ log pθ (ak−1 
+
+> t
+
+|akt , s t) (13) Since the previous step involves multi-step generation, we can only compute gradients for each conditional prob-ability step and accumulate them using the chain rule. This step crucially transforms the entire policy gradient into dif-ferentiable losses over individual denoising steps, enabling gradient-based optimization. To accelerate training, we employ importance sampling since computing gradients for all k = 1 , . . . , K steps is com-putationally expensive: 
+
+∇θ J(θ) ≈ 1
+
+|S| 
+
+∑
+
+> k∈S
+
+Kp(k) ∇θ log pθ (ak−1 
+
+> t
+
+|akt , s t) · ˆA(k)
+
+> t
+
+(14) where S denotes the sampled subset of denoising steps, |S| 
+
+is the subset size, p(k) is the sampling probability for step 
+
+k, and ˆA(k) 
+
+> t
+
+is the step-conditioned advantage estimate. This formulation enables efficient policy gradient computation while maintaining the enhanced representational structure from pre-training. 
+
+# Experiments 
+
+We evaluate D²PPO through a comprehensive three-stage experimental evaluation: (1) pre-training experiments that validate dispersive loss effectiveness, (2) fine-tuning ex-periments that demonstrate superior performance compared to existing algorithms, and (3) real robot experiments that 18894 Figure 3: Pre-training results across four tasks. (a) Performance comparison showing baseline (DPPO (Ren et al. 2024)) versus D²PPO success rates with error bars. (b) Distribution of improvement rates across five dispersive loss variants (InfoNCE L2 Early/Mid/Late, InfoNCE Cosine Early, Hinge Early). (c) Task difficulty correlation with log-normalized task complexity and maximum improvement rates. (d) Method suitability heatmap showing improvement percentages for each variant across tasks. showcase practical deployment capabilities. We conduct ex-periments on four representative tasks from the robomimic benchmark (Mandlekar et al. 2022; Todorov, Erez, and Tassa 2012): Lift, Can, Square, and Transport, spanning different manipulation complexities. Detailed experimental configu-rations, datasets, and supplementary experiments are pro-vided in Appendix D. 
+
+## Pre-training Experiments with Dispersive Loss 
+
+We evaluate dispersive loss effectiveness during pre-training, examining multiple variants and their impact on representation learning and policy performance. The four tasks represent increasing complexity levels: 
+
+Lift (basic object manipulation), Can (cylindrical object grasping), Square (precise peg-in-hole placement), and 
+
+Transport (multi-object coordination). We define task dif-ficulty using log-normalized execution steps, providing ob-jective complexity quantification as shown in Table 1:                
+
+> Task Steps Difficulty Complexity
+> Lift 108 0.000 Easiest
+> Can 224 0.459 Moderate
+> Square 272 0.581 High
+> Transport 529 1.000 Highest
+
+Table 1: Task difficulty hierarchy based on average execu-tion steps and log-normalized difficulty scores. 
+
+Figure 4: Effect of dispersive loss coefficient λ on Square task performance. Figure 3 presents comprehensive pre-training experi-mental results across all five dispersive loss variants and four robotic manipulation tasks. Figure 3(a) shows D²PPO achieving consistent improvements across all tasks, with enhancement rates ranging from +3.4% (Lift) to +36.2% (Transport). Figure 3(b) reveals the distribution of improve-ment rates across five dispersive loss variants, with dis-tinct markers for each algorithm type. Figure 3(c) demon-strates a strong positive correlation (R² = 0.92) between log-normalized task difficulty and maximum improvement rates, validating our hypothesis that representation quality becomes increasingly critical for complex robotic tasks. Fig-ure 3(d) provides empirical guidance for layer selection through a heatmap showing dispersive loss effectiveness at different network layers, establishing that simple tasks achieve optimal performance with early-layer application 18895 Figure 5: Policy gradient fine-tuning results across four robotic manipulation tasks. The learning curves demonstrate that D²PPO consistently achieves superior sample efficiency and final performance compared to baseline DPPO and Gaussian policies.                                                                                 
+
+> Method Success Rate Avg. Median Std. Rank Lift Can Square Transport LSTM-GMM (Mandlekar et al. 2022) 0.93 0.81 0.59 0.20 0.63 0.70 0.32 7IBC (Florence et al. 2022) 0.15 0.01 0.00 0.00 0.04 0.01 0.07 9BET (Shafiullah et al. 2022) 1.00 0.90 0.43 0.06 0.60 0.67 0.41 8DiffusionPolicy-C (Chi et al. 2023) 0.97 0.96 0.82 0.46 0.80 0.89 0.23 4DiffusionPolicy-T (Chi et al. 2023) 1.00 0.94 0.81 0.35 0.78 0.88 0.29 5DPPO (Ren et al. 2024) 1.00 1.00 0.83 0.60 0.86 0.92 0.18 2MTIL (10-step) (Zhou et al. 2025) 0.94 0.83 0.61 0.22 0.65 0.72 0.31 6MTIL (Full History) (Zhou et al. 2025) 1.00 0.96 0.83 0.48 0.82 0.90 0.23 3
+> D²PPO (Ours) 1.00 1.00 0.89 0.87 0.94 0.95 0.06 1
+
+Table 2: Fine-tuned performance on robomimic tasks. Bold indicates best, underline second-best. while complex tasks require late-layer regularization. These comprehensive pre-training results establish that D²PPO with dispersive loss achieves superior performance compared to DPPO, with an average improvement of 22.7% across all tasks. Among variants, L2-based dispersive loss applied to middle diffusion layers provides the best trade-off between stability and variance maximization. To further investigate the impact of the dispersive loss coefficient λ, we conduct detailed ablation studies on the Square task, which requires precise spatial coordination and is particularly sensitive to representation quality. Figure 4 reveals a non-monotonic relationship: performance peaks at 
+
+λ = 0 .5 (14.3% improvement over baseline), while λ = 0 .3
+
+degrades below baseline performance. This suggests insuffi-cient regularization fails to encourage adequate representa-tion diversity, while excessive values ( λ > 0.5) may inter-fere with task-relevant learning, highlighting the importance of balanced dispersive regularization. 
+
+## Fine-tuning Experiments 
+
+As the second phase of our evaluation, we validate the com-plete D²PPO method through comprehensive policy gradi-ent fine-tuning experiments, demonstrating how enhanced representations translate into superior reinforcement learn-ing performance and comparing against existing SOTA al-gorithms. For each task, we select the best-performing pre-trained model weights from our dispersive loss variants and use them as initialization for policy gradient fine-tuning. Figure 5 shows fine-tuning learning curves revealing three key insights: (1) D²PPO achieves faster convergence with fewer environment interactions; (2) superior final perfor-mance, especially in challenging scenarios; (3) more stable learning dynamics with reduced variance. D²PPO consistently outperforms both DPPO and Gaussian-based algorithms across all four tasks. Notably, in complex manipulation scenarios, D²PPO achieves substan-tial improvements: Square task performance increases from 47% (Gaussian) → 83% (DPPO) → 89% (Ours), while Transport task shows progression from 0% (Gaussian) →
+
+60% (DPPO) → 87% (Ours), demonstrating the critical im-portance of diffusion-based representations with dispersive regularization for complex manipulation. Table 2 reveals several critical insights into the effective-ness of our two-stage D²PPO approach. Most significantly, D²PPO achieves SOTA performance across all tasks, rank-ing first overall with an average success rate of 0.94, rep-resenting an average improvement of 26.1% across the four tasks. These fine-tuning results provide definitive validation that our two-stage training paradigm successfully translates representation enhancements into practical performance im-provements. Dispersive pre-training provides enhanced rep-resentations that improve policy gradient optimization, en-abling more efficient learning and better performance across robotic manipulation tasks. 18896 (a)                              
+
+> (c)
+> (d)
+> (e)
+> Time D2PPO lift D2PPO transport D2PPO square DPPO square w/o disp.
+> (b) D2PPO can
+> ①②⑤⑥⑦⑧⑨③④①②⑤⑥⑦⑧⑨③④①②⑤⑥⑦⑧⑨③④①②③④①②③④
+
+Figure 6: Real-world deployment results on RoboMimic tasks using D²PPO. Each row shows the complete task execution trajectory over time. (a-d) D²PPO with dispersive loss successfully completes all tasks: (a) Lift task with successful block grasping, (b) Can task with successful cylindrical object manipulation, (c) Transport task with successful object delivery to target area, and (d) Square task with precise peg-in-hole insertion (green checkmarks indicate successful completion with green circles highlighting key successful actions). (e) Baseline DPPO without dispersive loss fails in the Square task during final placement phases (red crosses and circles indicate failure points), demonstrating the effectiveness of dispersive representation learning for precise manipulation. 
+
+## Real Robot Experiments 
+
+As the final validation of our approach, we demonstrate the practical deployment capability of D²PPO through real robot experiments on the Franka Emika Panda robot. These exper-iments are conducted after completing the two-stage train-ing process (dispersive pre-training followed by PPO fine-tuning) and showcase comprehensive evaluation across mul-tiple RoboMimic tasks with direct comparison to baseline methods. We conduct 100 trials for each task to ensure sta-tistical reliability. On the most challenging transport task, we observe performance progression: 0% (Gaussian) → 45% (DPPO) → 70% (Ours). Quantitative experimental results are detailed in Appendix D. Figure 6 presents qualitative results from real robot ex-periments. These results reveal several critical insights: (1) Task Completion Success: D²PPO with dispersive loss suc-cessfully completes all four benchmark tasks, with each trajectory showing complete execution sequences from ini-tial approach to final success confirmation. (2) Precision in Complex Tasks: The Square task, requiring precise peg-in-hole insertion, demonstrates D²PPO’s ability to handle fine-grained manipulation where spatial accuracy is critical. (3) Baseline Comparison: DPPO without dispersive loss fails to complete the Square task, with clear failure points vis-ible in the final placement phases, highlighting the critical importance of dispersive representation learning for precise manipulation scenarios. 
+
+# Conclusion 
+
+This paper addresses representation collapse in diffusion-based policy learning, where similar observations lead to in-distinguishable features, causing failures in complex manip-ulation tasks. We introduce D²PPO, a two-stage framework applying dispersive loss regularization during pre-training, followed by policy gradient optimization for fine-tuning. Our contributions include: (1) systematic analysis identi-fying representation collapse as the underlying cause of poor performance in complex tasks; (2) D²PPO method that com-bats representation collapse through dispersive regulariza-tion; (3) comprehensive validation demonstrating state-of-the-art performance with 94% average success rate, achiev-ing 22.7% improvement in pre-training and 26.1% improve-ment after fine-tuning compared to baseline methods. Experimental results reveal that representation quality be-comes increasingly critical for complex tasks, with D²PPO showing universal effectiveness across varying task com-plexities. D²PPO requires no additional parameters and pro-vides plug-and-play integration with existing diffusion poli-cies. Real robot validation confirms practical deployment ef-fectiveness, establishing dispersive loss as a powerful tool for enhancing diffusion-based robotic policies and opening new directions for representation-regularized policy learn-ing. While our current evaluation focuses on manipulation tasks, future work could explore dispersive regularization in other robotic domains. 18897 Acknowledgments 
+
+This work was mainly supported by the National Nat-ural Science Foundation of China (NSFC) under Grant No. 62272497 (Hejun Wu) and the National Key Re-search and Development Program of China under Grant 2023YFB4301900. 
+
+# References 
+
+Arora, S.; Khandeparkar, H.; Khodak, M.; Plevrakis, O.; and Saunshi, N. 2019. A Theoretical Analysis of Contrastive Unsupervised Representation Learning. arXiv preprint arXiv:1902.09229 .Chen, J.; Tan, Z.; Zhou, G.; Pan, L.; and Zhou, K. 2025a. SARA: Structural and Adversarial Representation Alignment for Training-Efficient Diffusion Models. arXiv preprint arXiv:2502.19669 .Chen, T.; Kornblith, S.; Norouzi, M.; and Hinton, G. 2020. A simple framework for contrastive learning of visual repre-sentations. In International conference on machine learning ,1597–1607. PMLR. Chen, Y.; Jha, D. K.; Tomizuka, M.; and Romeres, D. 2025b. FDPP: Fine-tune Diffusion Policy with Human Preference. 
+
+arXiv preprint arXiv:2501.08259 .Chi, C.; Xu, Z.; Feng, S.; Cousineau, E.; Du, Y.; Burchfiel, B.; Tedrake, R.; and Song, S. 2023. Diffusion policy: Visuo-motor policy learning via action diffusion. The International Journal of Robotics Research , 02783649241273668. Dosovitskiy, A.; Beyer, L.; Kolesnikov, A.; Weissenborn, D.; Zhai, X.; Unterthiner, T.; Dehghani, M.; Minderer, M.; Heigold, G.; Gelly, S.; Uszkoreit, J.; and Houlsby, N. 2021. An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. arXiv preprint arXiv:2010.11929 .Florence, P.; Lynch, C.; Zeng, A.; Ramirez, O. A.; Wahid, A.; Downs, L.; Wong, A.; Lee, J.; Mordatch, I.; and Tomp-son, J. 2022. Implicit Behavioral Cloning. In Conference on robot learning , 158–168. PMLR. Frans, K.; Hafner, D.; Levine, S.; and Abbeel, P. 2024. One step diffusion via shortcut models. arXiv preprint arXiv:2410.12557 .Geng, Z.; Yang, B.; Hang, T.; Li, C.; Gu, S.; Zhang, T.; Bao, J.; et al. 2024. Instructdiffusion: A generalist modeling in-terface for vision tasks. 12709–12720. Hafner, D.; Tessler, C.; Micheli, V.; van der Pol, E.; and Strub, F. 2023. Generative Flow Networks as Entropy-Regularized RL. arXiv preprint arXiv:2310.12934 .He, K.; Fan, H.; Wu, Y.; Xie, S.; and Girshick, R. 2020. Momentum Contrast for Unsupervised Visual Representa-tion Learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 9729–9738. Ho, J.; Jain, A.; and Abbeel, P. 2020. Denoising Diffusion Probabilistic Models. Advances in Neural Information Pro-cessing Systems , 33: 6840–6851. Karras, T.; Aittala, M.; Aila, T.; and Laine, S. 2022. Eluci-dating the design space of diffusion-based generative mod-els. Advances in neural information processing systems , 35: 26565–26577. Karras, T.; Aittala, M.; Aila, T.; and Laine, S. 2023. Elu-cidating the Design Space of Diffusion-Based Generative Models. Advances in Neural Information Processing Sys-tems .Ke, T.-W.; Gkanatsios, N.; and Fragkiadaki, K. 2024. 3D Diffuser Actor: Policy Diffusion with 3D Scene Representa-tions. arXiv preprint arXiv:2402.10885 .Khosla, P.; Teterwak, P.; Wang, C.; Sarna, A.; Tian, Y.; Isola, P.; Maschinot, A.; Liu, C.; and Krishnan, D. 2020. Super-vised Contrastive Learning. In Advances in Neural Informa-tion Processing Systems , volume 33, 18661–18673. Lee, J.-Y.; Cha, B.; Kim, J.; and Ye, J. C. 2025. Aligning text to image in diffusion models is easier than you think. 
+
+arXiv preprint arXiv:2503.08250 .Li, D.; Ren, J.; Wang, Y.; Wen, X.; Li, P.; Xu, L.; Zhan, K.; et al. 2025. Finetuning generative trajectory model with re-inforcement learning from human feedback. arXiv preprint arXiv:2503.10434 .Li, X. L.; Thickstun, J.; Gulrajani, I.; Liang, P.; and Hashimoto, T. B. 2023. Diffusion-LM Improves Control-lable Text Generation. Advances in Neural Information Pro-cessing Systems .Mandlekar, A.; Xu, D.; Wong, J.; Nasiriany, S.; Wang, C.; Kulkarni, R.; Fei-Fei, L.; Savarese, S.; Zhu, Y.; and Mart´ ın-Mart´ ın, R. 2022. What Matters in Learning from Offline Human Demonstrations for Robot Manipulation. In Confer-ence on Robot Learning , 1678–1690. PMLR. Oquab, M.; Darcet, T.; Moutakanni, T.; Vo, H.; Szafraniec, M.; Khalidov, V.; Fernandez, P.; Haziza, D.; Massa, F.; El-Nouby, A.; Assran, M.; Ballas, N.; Galuba, W.; Howes, R.; Huang, P.-Y.; Li, S.-W.; Misra, I.; Rabbat, M.; Sharma, V.; Synnaeve, G.; Xu, H.; J´ egou, H.; Mairal, J.; Labatut, P.; Joulin, A.; and Bojanowski, P. 2023. DINOv2: Learning Robust Visual Features without Supervision. arXiv preprint arXiv:2304.07193 .Peebles, W.; and Xie, S. 2023. Scalable Diffusion Models with Transformers. In Proceedings of the IEEE/CVF Inter-national Conference on Computer Vision , 4195–4205. Ren, A. Z.; Lidard, J.; Ankile, L. L.; Simeonov, A.; Agrawal, P.; Majumdar, A.; Burchfiel, B.; Dai, H.; and Simchowitz, M. 2024. Diffusion Policy Policy Optimization. In CoRL 2024 Workshop on Mastering Robot Manipulation in a World of Abundant Data .Rombach, R.; Blattmann, A.; Lorenz, D.; Esser, P.; and Om-mer, B. 2022. High-Resolution Image Synthesis with Latent Diffusion Models. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition , 10684– 10695. Schulman, J.; Levine, S.; Abbeel, P.; Jordan, M.; and Moritz, P. 2015a. Trust Region Policy Optimization. In International Conference on Machine Learning , 1889–1897. Schulman, J.; Moritz, P.; Levine, S.; Jordan, M.; and Abbeel, P. 2015b. High-dimensional continuous control using generalized advantage estimation. arXiv preprint arXiv:1506.02438 .18898 Schulman, J.; Wolski, F.; Dhariwal, P.; Radford, A.; and Klimov, O. 2017. Proximal Policy Optimization Algorithms. 
+
+arXiv preprint arXiv:1707.06347 .Shafiullah, N. M.; Cui, Z. J.; Altanzaya, A.; and Pinto, L. 2022. Behavior Transformers: Cloning k modes with one stone. In Advances in neural information processing sys-tems , volume 35, 22955–22968. Song, J.; Meng, C.; and Ermon, S. 2020. Denoising diffusion implicit models. arXiv preprint arXiv:2010.02502 .Song, Y.; Dhariwal, P.; Chen, M.; and Sutskever, I. 2023. Consistency models. Todorov, E.; Erez, T.; and Tassa, Y. 2012. MuJoCo: A Physics Engine for Model-Predictive Control. 5026–5033. van den Oord, A.; Li, Y.; and Vinyals, O. 2018. Repre-sentation learning with contrastive predictive coding. arXiv preprint arXiv:1807.03748 .Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A. N.; Kaiser, Ł.; and Polosukhin, I. 2017. At-tention Is All You Need. In Advances in Neural Information Processing Systems , volume 30. Wang, R.; and He, K. 2025. Diffuse and Disperse: Im-age Generation with Representation Regularization. arXiv preprint arXiv:2506.09027 .Wang, T.; and Isola, P. 2020. Understanding Contrastive Representation Learning through Alignment and Uniformity on the Hypersphere. arXiv preprint arXiv:2005.10242 .Williams, R. J. 1992. Simple statistical gradient-following algorithms for connectionist reinforcement learning. Ma-chine learning , 8(3): 229–256. Yu, S.; Kwak, S.; Lee, J.; and Shin, J. 2024. Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think. arXiv preprint arXiv:2410.06940 .Ze, Y.; Chen, Z.; Wang, W.; Chen, T.; He, X.; Yuan, Y.; Peng, X. B.; and Wu, J. 2024a. Generalizable Humanoid Manipulation with 3D Diffusion Policies. arXiv preprint arXiv:2410.10803 .Ze, Y.; Zhang, G.; Zhang, K.; Hu, C.; Wang, M.; and Xu, H. 2024b. 3D Diffusion Policy: Generalizable Visuomotor Pol-icy Learning via Simple 3D Representations. In Robotics: Science and Systems (RSS) .Zhang, T.; Yu, C.; Su, S.; and Wang, Y. 2025. ReinFlow: Fine-tuning Flow Matching Policy with Online Reinforce-ment Learning. arXiv preprint arXiv:2505.22094 .Zhou, Y.; Lin, Y.; Peng, F.; Chen, J.; Zhou, Z.; Huang, K.; Yang, H.; and Yin, Z. 2025. MTIL: Encoding Full His-tory with Mamba for Temporal Imitation Learning. arXiv preprint arXiv:2505.12410 .18899
