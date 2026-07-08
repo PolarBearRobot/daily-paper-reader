@@ -212,6 +212,52 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-07-08T01:05:38.638Z'
+    - tag: representati
+      description: VLA和WAM模型的可解释性、诊断、因果归因，及机器人动作表征学习与表征错配
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: action representation learning
+          keyword_cn: 动作表征学习
+          query: learning better representations for robot actions
+        - keyword: latent action space
+          keyword_cn: 潜在动作空间
+          query: latent representations of robot actions
+        - keyword: hidden state representation
+          keyword_cn: 隐藏状态表征
+          query: hidden state representations and their mismatch with action control
+        - keyword: representation mismatch
+          keyword_cn: 表征错配
+          query: representation misalignment between model internals and action outputs
+        - keyword: model interpretability
+          keyword_cn: 模型可解释性
+          query: interpretability methods for vision-language-action architectures
+        - keyword: analysis of the robot motion generation process
+          keyword_cn: 机器人动作生成过程分析
+          query: generating robot actions from learned representations
+      intent_queries:
+        - query: What representations are most effective for VLA and WAM models to generate robot actions?
+          query_cn: 对于VLA和WAM模型生成机器人动作，哪些表征最有效？
+          enabled: true
+          source: manual
+          note: ''
+        - query: How to learn better latent representations for robot manipulation policies?
+          query_cn: 如何学习更好的潜在表征用于机器人操作策略？
+          enabled: true
+          source: manual
+          note: ''
+        - query: Methods for diagnosing and attributing causes in VLA and WAM models
+          query_cn: 用于诊断和归因VLA与WAM模型的方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: Challenges in aligning hidden state representations with action control in robot learning
+          query_cn: 机器人学习中隐藏状态表征与动作控制对齐的挑战
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-07-08T01:57:10.343Z'
 source_backends:
   arxiv:
     papers_table: arxiv_papers
