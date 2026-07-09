@@ -1,0 +1,318 @@
+Title: Imagining the Sense of Touch: Touch-Informed Manipulation via Imagined Tactile Representations
+
+URL Source: https://arxiv.org/pdf/2607.01684v1
+
+Published Time: Fri, 03 Jul 2026 00:38:39 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Imagining the Sense of Touch: Touch-Informed Manipulation via Imagined Tactile Representations 
+
+Zhiyuan Zhang ∗, Adeesh Desai ∗, Jyun-Chi Hu, Yosuke Saka, Quan Khanh Luu, Jiuzhou Lei, Davood Soleymanzadeh, Bihao Zhang, Minghui Zheng, Yu She †
+
+Abstract — Tactile sensing can substantially improve contact-rich robotic manipulation, yet its practical deployment remains limited by the fragility, calibration requirements, and mainte-nance burden of tactile hardware. This raises a fundamental question: can robots benefit from tactile knowledge without requiring tactile sensors at deployment? We present TacImag, a tactile imagination framework that predicts tactile observations from vision and proprioception and uses the generated signals to guide manipulation policies. Trained from paired visuotactile demonstrations, TacImag enables touch-informed manipulation using only visual observations at test time. We evaluate TacImag on six simulated and four real-world manipulation tasks. Across simulation and real-world experiments, imagined tactile obser-vations consistently improve manipulation performance without requiring tactile hardware. In real-world experiments, imagined force fields improve contact-sensitive tasks by 44.4% on aver-age, whereas imagined tactile images improve texture-sensitive tasks by 23.3%, revealing that the effectiveness of tactile imagination depends strongly on the relationship between tactile representation and task requirements. Our results further suggest that tactile imagination does not simply recover missing tactile measurements. Instead, it acts as a form of contact-aware supervision that transforms subtle visual interaction cues into representations that are easier for manipulation policies to exploit. Project Website: https://tacimag.github.io/ 
+
+I. INTRODUCTION Contact-rich manipulation, including insertion, assembly, screwing, and sorting, is a fundamental capability for robots operating in unstructured environments. Recent advances in imitation learning have enabled impressive progress on such tasks using visual observations alone [1]–[4]. How-ever, purely visual policies often struggle precisely when contact becomes critical. Under tight tolerances, occlusion, ambiguous appearance, or degraded lighting, the forces and micro-contacts that determine task success are difficult or impossible to infer directly from camera observations [5], [6]. Tactile sensing provides complementary information about physical interaction and has repeatedly been shown to improve robustness in contact-rich manipulation [5], [7]– [10]. High-resolution tactile sensors such as GelSight [11],           
+
+> This work was partially supported by the United States Department of Agriculture (USDA) under Grant Nos. 2023-67021-39072 and 2024-67021-42878, and by the National Science Foundation (NSF) under Grant Nos. 2423068 and 2520136.
+> ∗These authors contributed equally. †Corresponding author. Zhiyuan, Adeesh, Jyun-Chi, Yosuke, Quan, and Yu are with the De-partment of Industrial Engineering, Purdue University, West Lafayette, IN 47907, USA {zhan5570, desai274, hu1148, ysaka, luu15, shey }@purdue.edu
+> Jiuzhou, Davood, Bihao, and Minghui are with the Department of Me-chanical Engineering, Texas A&M University, College Station, TX 77843, USA {jiuzl, davoodso, bhzhang, mhzheng }@tamu.edu
+
+[12] and their simulated counterparts [13] have therefore be-come increasingly important components of modern robotic manipulation systems. Despite their effectiveness, tactile sensors remain difficult to deploy in practice. They require specialized hardware, careful calibration, additional wiring and synchronization, and are often susceptible to wear and damage during pro-longed contact. These challenges motivate a practical ques-tion: can robots benefit from tactile knowledge without re-quiring tactile sensors at deployment time? Such a capability would allow robots to leverage rich visuotactile training data while retaining the simplicity and reliability of vision-only hardware during execution. We address this question through Tactile Imagination (TacImag) (Fig. 1). Given paired visual and tactile demon-strations, TacImag learns a tactile imagination model that predicts tactile observations from visual observations and proprioceptive states. After training, the imagination model is frozen and used to generate tactile observations online, which are subsequently provided as additional inputs to a tactile-conditioned manipulation policy. At deployment, the robot operates entirely from visual observations while internally generating imagined tactile signals, eliminating the need for physical tactile sensors. Fig. 1 provides an overview of the motivation, framework, and key findings of TacImag. A natural intuition is that imagined touch could compen-sate for information missing from vision. However, in many manipulation scenarios, contact-relevant information is not entirely absent from visual observations. Instead, it may be weakly observable through subtle appearance changes, ob-ject deformation, relative motion, or contact-induced visual cues that are difficult to exploit through direct end-to-end policy learning. We therefore hypothesize that tactile imag-ination can serve as a form of contact-aware supervision, encouraging policies to identify and leverage visual features associated with physical interaction. Under this view, the benefit of tactile imagination arises not necessarily from recovering unseen information, but from exposing contact-relevant structure already latent in vision. To investigate this hypothesis, we instantiate TacImag using two tactile representations with distinct characteristics: high-dimensional tactile RGB images (TacRGB) and com-pact tactile force fields (TacFF). We evaluate TacImag across six contact-rich manipulation tasks in simulation and five real-world manipulation tasks. Across these tasks, imagined tactile observations provide a useful source of contact-related information for manipulation policies and can, in many cases,                     
+
+> arXiv:2607.01684v1 [cs.RO] 2 Jul 2026 (a) Motivation
+> Vision+Tactile ( with tactile sensors )High Performance
+> Can robots benefit from tactile knowledge without tactile sensors?
+> Vision Only ( no tactile sensors )Contact Ambiguity
+> (b) TacImag Framework (c) Simulation Findings
+> Vision Proprioception
+> TacImag
+> Tactile Imagination Model (Frozen Diffusion Model)
+> Imagined Tactile Signal
+> Tactile-Conditioned Manipulation Policy Action
+> Contact-Sensitive Tasks Texture-Sensitive Tasks Performance Drop
+> TacRGB TacFF (End-Effector Motion + Gripper)
+> Contact-Sensitive Tasks Texture-Sensitive Tasks
+> (d) Real-World Findings 53.1 51.7 51.9 58.0 57.1 56.1 63.5 59.7 59.1 57.5 17.8 13.3 62.2
+> Success Rate (%) Success Rate (%) Vision +TacRGB (Real) +TacRGB (Imag.) +TacFF (Real) +TacFF (Imag.)
+
+/
+
+> 30.0 40.0 53.3
+
+Fig. 1. TacImag: Touch-informed manipulation without tactile sensors. (a) Motivation. Vision-only policies often fail in contact-rich manipulation because contact states are difficult to infer from visual observations alone. In contrast, policies equipped with tactile sensing can directly access contact information and achieve substantially higher performance. ( b) TacImag framework. TacImag first trains a tactile imagination model to predict tactile observations from visual observations and proprioceptive states. The trained imagination model is then frozen and used to generate imagined tactile signals, which are subsequently consumed by a tactile-conditioned manipulation policy. ( c) Simulation findings. The effectiveness of tactile imagination depends strongly on tactile representation and task characteristics. For contact-sensitive tasks, imagined TacFF closely matches the performance of real tactile sensing and consistently outperforms imagined TacRGB. For texture-sensitive tasks, imagined TacRGB provides the largest performance gains. ( d) Real-world findings. Similar trends are observed on real robotic manipulation tasks. Imagined TacFF substantially improves performance on contact-sensitive tasks, while imagined TacRGB is most effective for texture-sensitive object discrimination. 
+
+recover a substantial portion of the benefit provided by real tactile sensing. A consistent pattern emerges across both simulation and real-world experiments, as summarized in Fig. 1(c,d), the effectiveness of tactile imagination depends strongly on both tactile representation and task characteristics. Imagined TacFF is most effective for contact-sensitive tasks such as insertion, assembly, and screwing, where force and contact-state information are critical for success. In contrast, imag-ined TacRGB provides larger gains in tasks that rely on surface appearance or texture discrimination. Furthermore, we find that tactile imagination is most beneficial when contact-relevant information is already partially encoded in visual observations. These findings support our hypothesis that tactile imagination acts primarily as a contact-aware supervisory signal, helping policies exploit subtle visual cues associated with physical interaction while substantially reducing dependence on tactile hardware. This paper makes the following contributions: 1) We introduce TacImag , a tactile imagination frame-work that couples a frozen vision-to-touch imagination model with a tactile-conditioned manipulation policy, enabling touch-informed control without requiring tac-tile hardware at deployment. 2) We systematically investigate tactile imagination across two tactile representations, TacRGB and TacFF, revealing that the effectiveness of imagined tactile information depends strongly on both tactile represen-tation and task characteristics. 3) We provide empirical evidence that tactile imagination does not hallucinate information absent from vision. Instead, TacImag transforms visually observable but difficult-to-exploit interaction cues into tactile repre-sentations that are easier for manipulation policies to utilize, offering new insight into how tactile knowledge can be recovered from visual observations. II. RELATED WORK 
+
+A. Visuotactile Manipulation 
+
+Tactile sensing provides rich information about contact geometry, force, and interaction dynamics that is often unavailable from vision alone. Vision-based tactile sensors such as GelSight [11], [12] and their simulated counterparts in TacSL [13] have enabled learning-based manipulation systems that jointly leverage vision and touch [7], [8], [14]. Recent benchmarks and studies, including ManiFeel [5] and ContactWorld [10], have systematically investigated the role of tactile sensing in contact-rich manipulation. A consistent observation across these works is that tactile representation plays a critical role in downstream performance: compact force-based representations often provide more useful control signals than high-dimensional tactile imagery for insertion, assembly, and screwing tasks. Parallel efforts have focused on learning transferable tac-tile representations through large-scale pretraining and self-supervised learning, including UniT [15], T3 [16], Any-Touch [17], and Sparsh [18]. However, most existing vi-suotactile manipulation approaches rely on physical tactile sensors during both training and deployment. In contrast, our goal is to retain the benefits of tactile information while eliminating tactile hardware during execution. 
+
+B. Tactile Imagination and Missing-Modality Learning 
+
+A growing body of work explores cross-modal generation between vision and touch. Early studies demonstrated that tactile observations can be predicted from visual inputs and vice versa, revealing strong correlations between the two sensing modalities [19]. More recently, diffusion-based ap-proaches have enabled increasingly realistic tactile synthesis. Touch2Touch [20] and Cross-Sensor Touch Generation [21] translate observations between different tactile sensors, while TactileGen [22] synthesizes tactile observations from visual inputs and contact conditions for simulation and sim-to-real transfer. Imagine2Touch [23] similarly predicts tactile signals from visual observations to anticipate physical interactions. These works demonstrate that tactile observations can be inferred from other sensing modalities, but primarily evaluate generation fidelity, perception accuracy, or sensor translation performance rather than downstream manipulation. Our work is also related to learning paradigms that exploit privileged modalities during training while operating with re-duced sensing at deployment. Prior work has explored privi-leged learning and policy distillation [24], as well as modality hallucination networks that infer missing modalities as aux-iliary supervision [25]. In robotic manipulation, privileged tactile latent distillation transfers tactile information into deployable policies through latent-space supervision [26], while tactile-conditioned diffusion policies directly utilize tactile observations during execution [27]. These approaches demonstrate that information from unavailable modalities can be transferred into deployable policies, but typically encode the privileged information implicitly within the policy parameters. As a result, it is often difficult to analyze how the missing modality contributes to downstream decision making. TacImag combines these two perspectives: it uses cross-modal generation to predict tactile observations while ad-dressing the missing-modality setting where tactile sensing is unavailable during deployment. Unlike prior work that focuses on generation quality, perception, or latent distilla-tion, TacImag investigates how imagined tactile observations influence downstream manipulation performance. III. TACTILE IMAGINATION FRAMEWORK 
+
+A. Problem Setup 
+
+We consider contact-rich manipulation as a supervised imitation learning problem. A demonstration dataset D =
+
+{(ot, at)}Nt=1 consists of multimodal observations and expert actions. At each timestep t, the observation is 
+
+ot = {ovis  
+
+> t
+
+, otac  
+
+> t
+
+, oprop  
+
+> t
+
+}, (1) where ovis  
+
+> t
+
+denotes visual observations, otac  
+
+> t
+
+denotes tactile observations, and oprop  
+
+> t
+
+denotes proprioceptive robot states. Following prior visuotactile benchmarks [5], we consider two tactile representations: tactile RGB images (TacRGB) and tactile force fields (TacFF). The action at corresponds to a relative end-effector motion command together with an optional gripper action. Conventional visuotactile policies require tactile observa-tions during both training and deployment, 
+
+π(at|ovis  
+
+> t
+
+, otac  
+
+> t
+
+, oprop  
+
+> t
+
+), (2) which necessitates physical tactile sensors at execution time. Our goal is to preserve the benefits of tactile information while eliminating tactile hardware during deployment. To this end, we introduce TacImag , a tactile imagination framework consisting of two components: (1) a tactile imag-ination model that infers tactile observations from visual and proprioceptive inputs, and (2) a tactile-conditioned manipula-tion policy that consumes the imagined tactile observations, as illustrated in Fig. 2. The imagination model is defined as 
+
+Gϕ : ( ovis  
+
+> t
+
+, oprop  
+
+> t
+
+) → ˆotac  
+
+> t
+
+, (3) where ˆotac  
+
+> t
+
+denotes an imagined tactile observation. The generated tactile signal is subsequently used in place of real tactile measurements during policy learning and deployment. 
+
+B. Tactile Imagination 
+
+The objective of tactile imagination is to generate plausible tactile observations conditioned on visual observations and proprioceptive robot states. Predicting tactile observations from vision is inherently ambiguous, since multiple con-tact states may correspond to similar visual appearances under occlusion, limited viewpoints, and partial observability. Rather than producing a deterministic prediction, TacImag models a conditional distribution over tactile observations, 
+
+p  otac  
+
+> t
+
+| ovis  
+
+> t
+
+, oprop 
+
+> t
+
+ . (4) To instantiate this idea, we employ a conditional denoising diffusion probabilistic model (DDPM) [28]. Let xtac 0 denote a tactile observation sampled from the dataset. During training, Gaussian noise is progressively added to obtain a noisy tactile sample xtac  
+
+> k
+
+at diffusion step k. The model then learns to predict the injected noise conditioned on visual observations and robot states using the standard DDPM objective, 
+
+Ldiff = Extac 0 ,k, ϵ
+
+h
+
+ϵ − ϵϕ
+
+ xtac  
+
+> k
+
+, k, ovis  
+
+> t
+
+, oprop 
+
+> t
+
+ 22
+
+i
+
+. (5) where ϵ ∼ N (0 , I) is the injected Gaussian noise, and ϵϕ is the diffusion network parameterized by ϕ.During inference, tactile observations are generated through iterative denoising conditioned on the visual and pro-prioceptive inputs, yielding an imagined tactile observation 
+
+ˆotac  
+
+> t
+
+= Gϕ
+
+ ovis  
+
+> t
+
+, oprop 
+
+> t
+
+ , (6) where Gϕ denotes the learned tactile imagination model. Importantly, the objective of TacImag is not to perfectly reconstruct tactile observations. Instead, we seek to generate tactile representations that preserve manipulation-relevant Stage 1: Train Tactile Imagination Model Stage 2: Touch-Informed Policy Learning  
+
+> Learn tactile imagination from paired visuotactile data Guide policy using frozen tactile imagination
+> Denoising UNet Gaussian Noise (Steps)
+> Conditioning Feature Tactile Type
+> Diffusion Model
+> OR Vision Encoder Vision Robot Proprioception
+> Vision Robot Proprioception
+> Tactile Imagination Model
+> Tactile Encoder Denoising UNet Vision-Proprio. Encoder
+
+＋＋ 
+
+> Touch-Informed Policy
+> Multistep Observations Real Imagined TacRGB (imag.) TacFF (imag.) Proprio. Encoder
+
+/Fig. 2. TacImag framework. TacImag enables touch-informed manipulation without tactile sensors at deployment. In Stage 1, a tactile imagination model is learned from paired visuotactile demonstrations using a conditional diffusion model that predicts tactile observations from visual observations and proprioceptive states. Separate models are trained for TacRGB and TacFF representations. After training, the imagination model is frozen. In Stage 2, imagined tactile observations generated by the frozen model are combined with visual and proprioceptive information to train a touch-informed manipulation policy. At deployment, the robot operates using only visual observations and proprioceptive states while internally generating tactile representations online. 
+
+contact information. Consequently, the quality of tactile imagination is evaluated through downstream manipulation performance rather than reconstruction fidelity alone. We instantiate the imagination model for two tactile representations with different structural properties. TacRGB preserves detailed contact appearance and surface texture, whereas TacFF encodes distributed normal and shear forces over a spatial grid. Training separate imagination models for TacRGB and TacFF enables a controlled study of tac-tile imagination across different tactile representations and allows us to investigate how the type of imagined tactile in-formation influences downstream manipulation performance. 
+
+C. Policy Learning with Imagined Tactile 
+
+As shown in Stage 2 of Fig. 2, the learned tactile imagi-nation model is frozen and used to generate imagined tactile observations for policy learning. To evaluate the utility of imagined tactile observations for manipulation, we employ a tactile-conditioned imitation learning policy based on Diffu-sion Policy [1]. The key distinction between TacImag and conventional visuotactile policies is that tactile information is synthesized rather than measured. Instead of relying on physical tactile sensors, TacImag supplies imagined tactile observations gen-erated by the frozen imagination model in Eq. 6. Each modality is encoded independently and fused into a shared observation representation, 
+
+zt = {zvis  
+
+> t
+
+⊕ ztac  
+
+> t
+
+⊕ zprop  
+
+> t
+
+}, (7) where ⊕ denotes feature concatenation. The imagined tactile observations are processed using the same tactile encoder architecture employed by policies trained with real tactile sensing, enabling a direct comparison between real and imagined tactile information. Following the two-stage training procedure shown in Fig. 2, gradients are not propagated into the imagination model during policy training. As a result, the tactile generator remains fixed and serves as an explicit source of imagined tactile information rather than being implicitly absorbed into the policy parameters. This design isolates the effect of tactile imagination and allows us to systematically study how differ-ent imagined tactile representations influence manipulation performance. At deployment, the robot operates entirely without tactile hardware. Visual observations and proprioceptive states are passed through the frozen imagination model to generate tactile representations online, enabling touch-informed ma-nipulation using only vision and proprioceptive sensing. IV. S IMULATION EXPERIMENTS 
+
+A. Simulation Setup 
+
+Tasks. We evaluate TacImag on six contact-rich manipula-tion tasks in the ManiFeel benchmark [5] built on TacSL [13] and IsaacGym [29]: USB insertion, power-plug insertion, peg-in-hole (PIH), gear assembly, bulb installation, and ball sorting under dim lighting. As illustrated in Fig. 3(A), the benchmark includes five contact-sensitive tasks (USB, (a) USB Insertion (b) Peg-in-Hole (c) Power Plug Insertion (d) Gear Assembly (e) Bulb Installation (f) Ball Sorting Contact-Sensitive Texture -Sensitive           
+
+> (A) Simulation Task Suites (B) Tactile Imagination Process
+> Visual Observations Progressive Denoising
+> Noise ()GT Imagined ()Contact-Sensitive Task Texture -Sensitive Task Fig. 3. Simulation tasks and tactile imagination process. (A) Simulation benchmark used for evaluating TacImag. Tasks (a)–(e) are contact-sensitive manipulation tasks, including insertion and assembly scenarios where task success primarily depends on accurate contact interactions. Task (f) is a texture-sensitive sorting task that relies on object appearance and surface texture. For each task, the left image shows the initial state and the right image shows the goal state. Contact-sensitive tasks are trained and evaluated using wrist-view observations, whereas the texture-sensitive sorting task uses front-view observations. (B) Examples of tactile imagination using conditional diffusion models. Given visual observations and proprioceptive states, the model progressively denoises a tactile signal from Gaussian noise. Results are shown for representative contact-sensitive (top) and texture-sensitive (bottom) tasks using both TacRGB and TacFF representations. From left to right, the tactile representation evolves from Gaussian noise ( k= 100 ) to the final imagined tactile observation ( k= 0 ), which closely matches the corresponding ground-truth tactile signal.
+
+Power, PIH, Gear, and Bulb) and one texture-sensitive task (Sorting), covering tight-tolerance insertion, multi-stage as-sembly, torque-sensitive manipulation, and visually degraded perception scenarios. 
+
+Observations and tactile representations. For the five contact-sensitive tasks (USB, Power, PIH, Gear, and Bulb), the agent receives wrist-view RGB observations. The wrist camera provides a close-up view of the interaction region but becomes heavily occluded during contact-rich manipu-lation, creating scenarios where tactile feedback is critical for precise alignment and insertion. In contrast, the texture-sensitive sorting task uses a front-view camera under dim lighting. Unlike a wrist-mounted camera, the front view does not reveal fine-grained surface details of the objects, preventing the policy from relying solely on visual appear-ance for object classification and encouraging the use of tactile information for discrimination. TacSL provides both a GelSight-style tactile image (TacRGB) and a tactile force-field representation (TacFF) [12]. Object poses and insertion targets are randomized at the beginning of each episode. 
+
+Sensing configurations. For each task, we train five policy variants: (i) Vision , which uses only visual observations and proprioceptive states; (ii) Vision+TacRGB and (iii) Vi-sion+TacFF , which additionally receive physical tactile RGB images and tactile force fields, respectively; and (iv) Vi-sion+TacRGB (imag.) and (v) Vision+TacFF (imag.) , which replace physical tactile measurements with imagined tactile observations generated by a frozen TacImag model. The lat-ter two settings require no tactile sensor during deployment. The imagined variants evaluate whether tactile sensing can be replaced by tactile imagination without requiring physical tactile hardware during deployment. All policy variants share the same policy architecture, visual encoder, and training procedure, enabling controlled comparisons between tactile representations (TacRGB vs. TacFF) and tactile sources (physical vs. imagined). 
+
+Training and evaluation. Visual observations are resized to 256 × 256 × 3, TacRGB observations have a resolution of 240 × 320 × 3, and TacFF observations are represented as a 10 × 14 × 3 force-field grid. We use observation, action, and prediction horizons of To = 2 , Ta = 8 , and 
+
+Tp = 16 , respectively. Both TacImag and the downstream diffusion policy are trained with 100 diffusion timesteps and use 10-step DDIM [30] sampling during inference. Each task contains 50 demonstrations, except bulb installation, which uses 20 demonstrations due to its longer trajectories. Reported success rates are averaged over the final 10 training checkpoints, 50 randomized environment initializations, and 3 random seeds, resulting in 1500 rollouts per policy. 
+
+B. Simulation Results 
+
+Table I reports success rates across six simulated ma-nipulation tasks. Among all configurations, physical TacFF achieves the highest average success rate ( 58 .2% ), followed closely by imagined TacFF ( 57 .5% ), which requires no tactile sensing during deployment. Compared with the vision-only TABLE I SUCCESS RATES (%) IN SIMULATION ACROSS SIX CONTACT -RICH MANIPULATION TASKS .Configuration USB Insertion Power Insertion Peg-in-hole Gear Assembly Bulb Installation Ball Sorting Avg. Vision 52.7 52.5 24.4 60.7 75.2 56.1 53.6 Vision + TacRGB 51.8 59.4 16.3 53.4 77.8 63.5 53.7 Vision + TacFF 57.5 63.0 29.2 57.8 82.4 59.1 58.2 
+
+Vision + TacRGB (Imag.) 53.3 52.3 23.8 55.1 75.0 59.7 53.2 Vision + TacFF (Imag.) 56.2 61.2 31.3 58.7 80.2 57.5 57.5 Vision uses only visual observations and proprioception. TacRGB and TacFF denote policies equipped with physical tactile sensing. Imag. variants replace physical tactile measurements with tactile observations generated by TacImag and therefore require no tactile sensor during deployment. Results are averaged over 3 random seeds, 50 environment initializations, and the final 10 checkpoints. +TacRGB (Real) +TacRGB (Imag.) +TacFF (Real) +TacFF (Imag.) Texture-Sensitive Contact-Sensitive +4.9% +4.0% -1.4% -1.2% +3.0% +1.4% +7.4% +3.6% 
+
+> Requires precise contact / force reasoning Requires surface appearance / texture recognition
+
+Fig. 4. Average success-rate improvement (%) over the Vision base-line for contact-sensitive and texture-sensitive tasks. Contact-sensitive tasks correspond to USB insertion, power-plug insertion, peg-in-hole, gear assembly, and bulb installation, while texture-sensitive tasks correspond to ball sorting. Physical tactile sensing and imagined tactile observations exhibit consistent task-dependent trends: TacFF provides larger gains on contact-sensitive tasks, whereas TacRGB is more beneficial for texture-sensitive tasks. The comparable improvements achieved by imagined tactile observations indicate that TacImag successfully captures task-relevant tactile information without requiring tactile hardware during deployment. 
+
+baseline ( 53 .6% ), imagined TacFF improves the average success rate by 3.9 percentage points and remains within 
+
+0.7 points of the corresponding physical tactile policy. Across individual tasks, imagined TacFF outperforms the vision-only baseline on five of the six tasks and achieves the best overall result on peg-in-hole ( 31 .3% ), slightly exceeding the physical TacFF policy ( 29 .2% ). One possible explanation is that the diffusion model learns a smoother, task-oriented tactile representation that suppresses irrelevant variability while preserving manipulation-relevant contact cues, making it easier for the policy to exploit. Given the relatively small margin, however, we do not interpret this result as evidence that imagined tactile is inherently superior to physical tactile. For USB insertion, power insertion, gear assembly, and bulb installation, the gap between imagined and physical TacFF remains below 2.2 percentage points, indicating that TacImag preserves most of the task-relevant tactile information re-quired for contact-rich manipulation. To better understand the role of tactile imagination, Fig. 4 groups tasks according to their dominant tactile require-ments. Contact-sensitive tasks (USB insertion, power in-sertion, peg-in-hole, gear assembly, and bulb installation) primarily depend on contact geometry and force feedback, whereas the texture-sensitive ball-sorting task relies on sur-face appearance and texture cues. 
+
+TABLE II TACTILE IMAGINATION QUALITY ON HELD -OUT VALIDATION EPISODES .Task TacFF Cos ↑ TacRGB SSIM ↑ TacRGB LPIPS ↓
+
+USB Insertion 0.854 0.952 0.138 Power Insertion 0.963 0.972 0.107 Peg-in-Hole 0.937 0.960 0.158 Gear Assembly 0.897 0.920 0.178 Bulb Installation 0.793 0.973 0.153 Ball Sorting 0.896 0.942 0.207 Average 0.890 0.953 0.157 TacFF is evaluated using force-direction cosine similarity. TacRGB is evaluated using structural similarity (SSIM) and learned perceptual image patch similarity (LPIPS). Metrics are computed on held-out validation episodes. 
+
+Consistent with prior observations in visuotactile manipu-lation, TacFF provides the largest gains on contact-sensitive tasks, while TacRGB is most beneficial on the texture-sensitive task. More importantly, imagined tactile observa-tions exhibit the same task-dependent trends as their phys-ical counterparts. Imagined TacFF achieves a 4.0% average improvement over the vision baseline on contact-sensitive tasks, closely matching the 4.9% improvement obtained by physical TacFF. Similarly, imagined TacRGB improves performance by 3.6% on the texture-sensitive sorting task, recovering a substantial portion of the gain provided by physical TacRGB ( 7.4% ). These results suggest that TacImag captures task-relevant tactile information rather than merely generating visually plausible tactile observations. 
+
+C. Similarity Analysis 
+
+Table II quantitatively evaluates the quality of imagined tactile observations on held-out validation episodes. For TacFF, TacImag achieves an average force-direction cosine similarity of 0.890 across all tasks, reaching 0.963 on power insertion and remaining above 0.79 even for the most challenging bulb-installation task. For TacRGB, TacImag achieves an average SSIM of 0.953 and LPIPS of 0.157 ,indicating high structural and perceptual similarity to phys-ical tactile images. Together, these results demonstrate that TacImag can ac-curately reconstruct both force-field and tactile-image rep-resentations from visual observations alone. Combined with the policy results in Table I and Fig. 4, these findings suggest that the generated tactile observations retain the task-relevant information required for downstream manipulation. 
+
+D. Case Studies 
+
+Figure 5 provides qualitative examples of tactile imagina-tion for both contact-sensitive and texture-sensitive tasks. For peg-in-hole, imagined TacFF remains largely unstruc-tured before contact and gradually develops coherent force patterns after contact is established. As insertion progresses, the predicted force field reveals contact geometry and force directions that are difficult to infer from vision alone, pro-viding additional cues for alignment and insertion. For ball sorting, imagined TacRGB captures discriminative texture information that is not directly observable from the selected camera viewpoint. When the gripper first contacts a ping-pong ball, the imagined tactile image exhibits asmooth appearance. After repositioning to the target golf ball, the imagined tactile image reveals the characteristic dimple pattern of the golf-ball surface. These observations indicate that TacImag can infer task-relevant tactile properties from visual context and use them to support downstream decision making. Together, these examples illustrate two complementary roles of tactile imagination: predicting contact and force information for contact-rich manipulation, and recovering texture information for object recognition and classification. V. R EAL -W ORLD EXPERIMENTS 
+
+A. Real-World Setup 
+
+The real-world setup is shown in Fig. 6(a). Experiments are conducted on a Franka Emika Panda robot arm equipped with a parallel-jaw gripper, a wrist-mounted Intel RealSense D415 camera, and a front-facing Intel RealSense D415 camera. During data collection, a GelSight R1.5 sensor [12] is mounted on the right gripper finger to record paired visuo-tactile demonstrations for training the TacImag model. After training, the sensor is removed and replaced with a dummy finger sharing the same external geometry. As a result, all deployment experiments are performed without tactile sensing, while tactile observations are generated online by the frozen TacImag model using only visual observations and proprioceptive states. We evaluate TacImag on four real-world manipulation tasks: bulb installation, whiteboard wiping, belt insertion, and ball sorting. Bulb installation, whiteboard wiping, and belt insertion are contact-sensitive tasks that require accurate force reasoning during interaction. Ball sorting is a texture-sensitive task that requires recognizing surface appearance cues to distinguish golf balls from ping-pong balls. For bulb installation, the bulb is initially inserted into the socket with a randomized amount of looseness. The robot must rotate the bulb until sufficient contact is established to complete the electrical circuit and illuminate the light. For whiteboard wiping, both the whiteboard and eraser are fixed, while the written content varies in size, orientation, and location. Successful wiping requires maintaining consistent contact between the eraser and the board surface. For belt insertion, both the belt and insertion slot remain fixed, but successful completion requires applying sufficient insertion force while preventing slippage. For ball sorting, the bowl locations remain fixed while the object identity varies. The robot must place golf balls into the yellow bowl and ping-pong balls into the blue bowl. All policies are trained using the same diffusion-policy architecture as in simulation. Each configuration is evaluated over 15 real-world trials. Following our simulation findings, contact-sensitive tasks use wrist-view observations to gener-ate imagined TacFF, while ball sorting is evaluated using both wrist-view and front-view observations to study the effect of viewpoint on tactile imagination. 
+
+B. Real-World Results 
+
+Table III summarizes the real-world results, while Fig. 6(b) groups tasks according to their tactile requirements. 
+
+Imagined TacFF substantially improves contact-sensitive manipulation. Across bulb installation, whiteboard wiping, and belt insertion, imagined TacFF consistently provides the largest performance gains. Compared with the vision-only baseline, success rates improve from 26.7% to 86.7% on bulb installation, from 20.0% to 60.0% on whiteboard wiping, and from 6.7% to 40.0% on belt in-sertion. Averaged across these three tasks, imagined TacFF improves success rates by 44.4 percentage points over vision-only policies. These results demonstrate that TacImag can successfully transfer contact-related tactile information into real-world manipulation without requiring tactile hardware during deployment. 
+
+Imagined TacRGB benefits texture-sensitive object dis-crimination. On ball sorting, imagined TacRGB achieves the highest performance among all evaluated configura-tions. Using wrist-view observations, success rates increase from 33.3% to 73.3%, substantially outperforming imagined TacFF (46.7%). This result mirrors the trends observed in simulation, where texture-sensitive tasks benefit more from tactile appearance representations than force-field represen-tations. 
+
+Task-dependent trends transfer from simulation to reality. The same relationship between tactile representation and task characteristics observed in simulation also appears in the real world. Imagined TacFF is most effective for contact-sensitive tasks requiring force reasoning, whereas imagined TacRGB is most effective for texture-sensitive object discrimination. These findings suggest that TacImag preserves task-relevant tactile information despite relying solely on visual observations at deployment. 
+
+C. Discussion 
+
+Figure 7 provides qualitative examples of tactile imagina-tion in real-world manipulation. 
+
+TacImag generates meaningful force patterns during contact-rich manipulation. In bulb installation, imagined TacFF remains largely inactive before contact and becomes increasingly structured once contact is established. During grasping, rotation, and tightening, the generated force field Front View Wrist View           
+
+> Imagined TacFF Imagined TacRGB
+> (a) Contact-Sensitive Task: Peg-in-Hole (b) Texture-Sensitive Task: Ball Sorting Approach Contact Alignment Insertion Completion Approach Contact (Wrong) Reposition Contact (Correct) Completion
+
+Fig. 5. Case studies of tactile imagination on contact-sensitive and texture-sensitive tasks. (a) In the peg-in-hole task, imagined TacFF remains weak before contact and becomes structured after contact, revealing force directions and contact geometry that facilitate alignment and insertion. (b) In the ball sorting task, imagined TacRGB captures discriminative surface appearance and texture cues. When the gripper contacts the wrong object, the imagined TacRGB shows a smooth appearance corresponding to the ping-pong ball. After repositioning to the target golf ball, the imagined TacRGB reveals the characteristic dimple pattern, enabling successful object identification. For visualization, both front and wrist views are shown. During tactile imagination, contact-sensitive tasks use the wrist view as input, while the texture-sensitive sorting task uses the front view as input. Texture-Sensitive    
+
+> Bulb Installation Whiteboard Wiping Belt Insertion Ball Sorting
+> Contact-Sensitive
+> Initial Interaction Final
+> +TacRGB (Imag.) +TacFF (Imag.) Texture-Sensitive Contact-Sensitive
+
++44.4% -4.5% +10.0% +23.3%  
+
+> Requires precise contact / force reasoning Requires surface appearance / texture recognition (a) Real-World Task Suite (b) Real-World Findings
+
+Fig. 6. Real-world experiments and findings. (a) Real-World Task Suite. Real-world manipulation tasks including bulb installation, whiteboard wiping, belt insertion, and ball sorting. Each task is visualized at three representative stages: initial, interaction, and final. (b) Real-World Findings. 
+
+Average success-rate improvement (%) over the vision-only baseline. Contact-sensitive tasks correspond to bulb installation, whiteboard wiping, and belt insertion, while texture-sensitive tasks correspond to ball sorting. Imagined TacFF provides the largest gains on contact-sensitive tasks, whereas imagined TacRGB is most effective for texture-sensitive object discrimination. Results for ball sorting are averaged over front-view and wrist-view settings. 
+
+reveals directional force patterns consistent with the in-teraction between the gripper, bulb, and socket. Notably, the imagined TacFF also highlights localized shear patterns associated with sliding contact during bulb rotation, sug-gesting that TacImag captures interaction dynamics beyond simple contact detection. These force cues provide useful information for detecting contact, maintaining grip stability, and preventing slippage, which helps explain the substantial performance improvements observed in Table III. 
+
+TacImag is constrained by the information available in vision. The ball-sorting task reveals an important limitation and insight of tactile imagination. When only front-view observations are provided, the visual cues distinguishing golf balls from ping-pong balls are weak. Consequently, the generated TacRGB observations remain ambiguous and provide only limited performance gains (26.7% to 33.3%). In contrast, wrist-view observations expose subtle surface details during grasping and transport. TacImag transforms TABLE III SUCCESS RATES (%) IN REAL -WORLD CONTACT -RICH MANIPULATION TASKS .Configuration Bulb Installation (Wrist View) Whiteboard Wiping (Wrist View) Belt Insertion (Wrist View) Ball Sorting (Front View) Ball Sorting (Wrist View) Vision 26.7 20.0 6.7 26.7 33.3 Vision + TacRGB (Imag.) 33.3 6.7 0.0 33.3 73.3 
+
+Vision + TacFF (Imag.) 86.7 60.0 40.0 33.3 46.7 Results are reported as success rates (%). All tactile observations are generated by TacImag and no tactile sensor is used during deployment. Each configuration is evaluated over 15 real-world trials. Tasks marked as Wrist View use wrist-camera observations for tactile imagination, while Front View uses front-camera observations. Approach              
+
+> (b1) Ball Sorting (Front View) (a) Bulb Installation Wrist View Imag. TacFF Front View Imag. TacRGB Wrist View Imag. TacRGB
+> Rotate Slip Detect Loose Success Approach Grasp Lift Transport Place (Fail) Approach Grasp Lift Transport Place (Success)
+> Golf Golf
+> Vision + Imag. TacFF 26.7% 86.7% Vision + Imag. TacRGB 26.7% 33.3% Vision + Imag. TacRGB 33.3% 73.3% (b2) Ball Sorting (Wrist View)
+> Limited Visual Cues Subtle Visual Cues
+
+Fig. 7. Real-world tactile imagination rollouts. (a) In bulb installation, imagined TacFF becomes structured after contact and revealing force directions associated with alignment, rotation, and localized slip events, leading to a large improvement over the vision-only policy ( 26 .7% → 86 .7% ). (b1–b2) In ball sorting, TacImag exhibits viewpoint-dependent behavior. With front-view observations, the visual cues for surface texture are weak, resulting in only limited improvement from imagined TacRGB ( 26 .7% → 33 .3% ). With wrist-view observations, local surface cues become more visible during grasping and transport, allowing imagined TacRGB to reveal discriminative texture patterns and substantially improve performance ( 33 .3% → 73 .3% ). These results suggest that TacImag does not hallucinate new information, but instead converts subtle visual cues into tactile representations that are easier for the policy to exploit. 
+
+these subtle visual cues into explicit tactile appearance patterns, enabling substantially better object discrimination and increasing success rates from 33.3% to 73.3%. Together, these observations suggest that TacImag does not hallucinate tactile information absent from the visual ob-servations. Instead, it acts as a task-dependent representation transformation that converts visually observable but difficult-to-use interaction cues into tactile representations that are easier for policies to exploit. This perspective explains why tactile imagination can improve manipulation performance without requiring physical tactile sensing during deployment. VI. CONCLUSIONS We presented TacImag , a tactile imagination framework that enables touch-informed manipulation without requiring tactile sensors during deployment. By learning a vision-to-touch diffusion model from paired visuotactile demonstra-tions, TacImag generates tactile representations online and provides them to a tactile-conditioned manipulation policy. Across six simulation tasks and four real-world tasks, TacImag consistently improved manipulation performance using only visual observations and proprioceptive states at execution time. We found that the effectiveness of tactile imagination depends strongly on both tactile representation and task characteristics: imagined force fields are most ben-eficial for contact-sensitive manipulation, whereas imagined tactile images provide larger gains for texture-sensitive object discrimination. These trends closely mirror those observed with physical tactile sensing. Our results further suggest that tactile imagination acts as a form of contact-aware supervision rather than hallucinat-ing information absent from vision. By transforming subtle visual interaction cues into tactile representations, TacImag enables policies to better exploit contact-relevant information while avoiding the complexity of tactile hardware. Future work will investigate long-horizon manipulation, richer tac-tile representations, and the integration of tactile imagination with world models and active perception. REFERENCES [1] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin Burchfiel, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. In Proceedings of Robotics: Science and Systems (RSS) , 2023. [2] Tony Z Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. In Proceedings of Robotics: Science and Systems (RSS) , 2023. [3] Yanjie Ze, Gu Zhang, Kangning Zhang, Chenyuan Hu, Muhan Wang, and Huazhe Xu. 3D diffusion policy: Generalizable visuomotor policy learning via simple 3D representations. In Proceedings of Robotics: Science and Systems (RSS) , 2024. [4] Zhiyuan Zhang, Zhengtong Xu, Jai Nanda Lakamsani, and Yu She. Canonical policy: Learning canonical 3d representation for equivariant policy. arXiv preprint arXiv:2505.18474 , 2025. [5] Quan Khanh Luu, Pokuang Zhou, Zhengtong Xu, Zhiyuan Zhang, Qiang Qiu, and Yu She. ManiFeel: Benchmarking and under-standing visuotactile manipulation policy learning. arXiv preprint arXiv:2505.18472 , 2025. [6] Roberto Calandra, Andrew Owens, Dinesh Jayaraman, Justin Lin, Wenzhen Yuan, Jitendra Malik, Edward H Adelson, and Sergey Levine. More than a feeling: Learning to grasp and regrasp using vision and touch. IEEE Robotics and Automation Letters , 3(4):3300– 3307, 2018. [7] Han Xue, Jieji Ren, Wendi Chen, Gu Zhang, Yuan Fang, Guoying Gu, Huazhe Xu, and Cewu Lu. Reactive diffusion policy: Slow-fast visual-tactile policy learning for contact-rich manipulation. arXiv preprint arXiv:2503.02881 , 2025. [8] Binghao Huang, Yixuan Wang, Xinyi Yang, Yiyue Luo, and Yunzhu Li. 3D-ViTac: Learning fine-grained manipulation with visuo-tactile sensing. In Conference on Robot Learning (CoRL) , 2024. [9] Yosuke Saka, Jyun-Chi Hu, Adeesh Desai, Zhiyuan Zhang, Bihao Zhang, Quan Khanh Luu, Md Rakibul Islam Prince, Minghui Zheng, and Yu She. CONTACT: Contact-aware tactile learning for robotic disassembly. arXiv preprint arXiv:2603.08560 , 2026. [10] Zhiyuan Zhang, Pokuang Zhou, Kaidi Zhang, Adeesh Desai, Temitope Amosa, Davood Soleymanzadeh, Jiuzhou Lei, Minghui Zheng, and Yu She. Contactworld: What matters in vision-tactile world models for contact-rich manipulation. arXiv preprint arXiv:2606.13877 , 2026. [11] Wenzhen Yuan, Siyuan Dong, and Edward H Adelson. GelSight: High-resolution robot tactile sensors for estimating geometry and force. 
+
+Sensors , 17(12):2762, 2017. [12] Shaoxiong Wang, Yu She, Branden Romero, and Edward Adelson. GelSight wedge: Measuring high-resolution 3D contact geometry with a compact robot finger. In IEEE International Conference on Robotics and Automation (ICRA) , pages 6468–6475, 2021. [13] Iretiayo Akinola, Jie Xu, Jan Carius, Dieter Fox, and Yashraj Narang. TacSL: A library for visuotactile sensor simulation and learning. IEEE Transactions on Robotics , 2025. [14] Liang Heng, Haoran Geng, Kaifeng Zhang, Pieter Abbeel, and Ji-tendra Malik. ViTacFormer: Learning cross-modal representation for visuotactile dexterous manipulation. arXiv preprint arXiv:2506.15953 ,2025. [15] Zhengtong Xu, Raghava Uppuluri, Xinwei Zhang, Cael Fitch, P G Crandall, Wan Shou, Dian Wang, and Yu She. UniT: Data efficient tactile representation with generalization to unseen objects. arXiv preprint arXiv:2408.06481 , 2025. [16] Jialiang Zhao, Yuxiang Ma, Lirui Wang, and Edward H Adelson. Transferable tactile transformers for representation learning across diverse sensors and tasks. In Conference on Robot Learning (CoRL) ,2024. [17] Ruoxuan Feng, Jiangyu Hu, Wenke Xia, Tianci Gao, Ao Shen, Yuhao Sun, Bin Fang, and Di Hu. AnyTouch: Learning unified static-dynamic representation across multiple visuo-tactile sensors. arXiv preprint arXiv:2502.12191 , 2025. [18] Carolina Higuera, Akash Sharma, Chaithanya Krishna Bodduluri, Taosha Fan, Patrick Lancaster, Mrinal Kalakrishnan, Michael Kaess, Byron Boots, Mike Lambeta, Tingfan Wu, and Mustafa Mukadam. Sparsh: Self-supervised touch representations for vision-based tactile sensing. In Conference on Robot Learning (CoRL) , 2024. [19] Yunzhu Li, Jun-Yan Zhu, Russ Tedrake, and Antonio Torralba. Connecting touch and vision via cross-modal prediction. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR) ,2019. [20] Samanta Rodriguez, Yiming Dou, Miquel Oller, Andrew Owens, and Nima Fazeli. Touch2Touch: Cross-modal tactile generation for object manipulation. arXiv preprint arXiv:2409.08269 , 2024. [21] Samanta Rodriguez, Yiming Dou, Miquel Oller, Andrew Owens, and Nima Fazeli. Cross-sensor touch generation. arXiv preprint arXiv:2510.09817 , 2025. [22] Xi Lin, Weiliang Xu, Yixian Mao, Jing Wang, Meixuan Lv, Lu Liu, Xihui Luo, and Xinming Li. Vision-based tactile image genera-tion via contact condition-guided diffusion model. arXiv preprint arXiv:2412.01639 , 2024. [23] Abdallah Ayad, Adrian R¨ ofer, Nick Heppert, and Abhinav Valada. Imagine2touch: Predictive tactile sensing for robotic manipulation using efficient low-dimensional signals. In ICRA ViTac Workshop ,2024. [24] Dian Chen, Brady Zhou, Vladlen Koltun, and Philipp Kr¨ ahenb¨ uhl. Learning by cheating. In Conference on Robot Learning (CoRL) , 2020. [25] Judy Hoffman, Saurabh Gupta, and Trevor Darrell. Learning with side information through modality hallucination. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , 2016. [26] Rosy Chen, Mustafa Mukadam, Michael Kaess, Tingfan Wu, Fran-cois R Hogan, Jitendra Malik, and Akash Sharma. PTLD: Sim-to-real privileged tactile latent distillation for dexterous manipulation. arXiv preprint arXiv:2603.04531 , 2026. [27] Erik Helmut, Niklas Funk, Tim Schneider, Cristiana de Farias, and Jan Peters. Tactile-conditioned diffusion policy for force-aware robotic manipulation. arXiv preprint arXiv:2510.13324 , 2025. [28] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. In Advances in Neural Information Processing Systems (NeurIPS) , 2020. [29] Viktor Makoviychuk, Lukasz Wawrzyniak, Yunrong Guo, Michelle Lu, Kier Storey, Miles Macklin, David Hoeller, Nikita Rudin, Arthur Allshire, Ankur Handa, and Gavriel State. Isaac gym: High perfor-mance GPU-based physics simulation for robot learning, 2021. [30] Jiaming Song, Chenlin Meng, and Stefano Ermon. Denoising diffusion implicit models. arXiv preprint arXiv:2010.02502 , 2020.

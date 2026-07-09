@@ -1,0 +1,473 @@
+Title: Closing the Reality Gap: Zero-Shot Sim-to-Real Deployment for Dexterous Force-Based Grasping and Manipulation
+
+URL Source: https://arxiv.org/pdf/2607.04940v1
+
+Published Time: Tue, 07 Jul 2026 02:50:41 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Closing the Reality Gap: Zero-Shot Sim-to-Real Deployment for Dexterous Force-Based Grasping and Manipulation 
+
+Zhe Zhao 1, Zhibin Li 2, Yilin Ou 1, and Mengshi Qi 11State Key Laboratory of Networking and Switching Technology Beijing University of Posts and Telecommunications, China 
+
+> 2
+
+University College London, United Kingdom 
+
+Abstract — Human-like dexterous hands with multiple fin-gers offer human-level manipulation capabilities but remain difficult to train the control policies that can deploy on real hardware due to contact-rich physics and imperfect actuation. We present a sim-to-real reinforcement learning that leverages dense tactile feedback combined with joint torque sensing to explicitly regulate physical interactions. To enable effective sim-to-real transfer, we introduce (i) a computationally fast tactile simulation that computes distances between dense virtual tactile units and the object via parallel forward kinematics, providing high-rate, high-resolution touch signals needed by RL; (ii) a current-to-torque calibration that eliminates the need for torque sensors on dexterous hands by mapping motor current to joint torque; and (iii) actuator dynamics modeling with randomization to account for non-ideal torque–speed effects and bridge the actuation gaps. Using an asymmetric actor–critic PPO pipeline, we train policies entirely in simulation and deploy them directly to a five-finger hand. The resulting policies demonstrated two essential human-hand skills: (1) command-based controllable grasp force tracking and (2) reorientation of objects in the hand, both of which were robustly executed without fine-tuning on the robot. By combining tactile and torque in the observation space with scalable sensing/actuation modeling, our system provides a practical solution to achieve reliable dexterous manipulation. To our knowledge, this is the first demonstration of controllable grasping on a multi-finger dexterous hand trained entirely in simulation and transferred zero-shot on real hardware. 
+
+I. INTRODUCTION Multi-finger dexterous hands offer human-like manipula-tion capabilities, but their high degrees of freedom and com-plex contact dynamics make control challenging. Most real-world applications still rely on simple parallel-jaw grippers, and robust in-hand manipulation remains an open problem. This work explores the use of full-state feedback —tactile sensing and motor currents—to learn policies that explic-itly sense and regulate contact forces. Unlike vision- or kinematics-only methods, we provide the policy with high-resolution tactile data and motor currents, capturing detailed interaction forces. Using these inputs, we train for two key skills: (i) force-adaptive grasping that tracks commanded grip forces, and (ii) in-hand object rotation .Deep reinforcement learning has advanced dexterous ma-nipulation, with methods such as large-scale domain ran-domization for sim-to-real transfer of object rotation [1]. Subsequent work in automatic domain randomization on a 
+
+> Corresponding author: Mengshi Qi (
+
+qms@bupt.edu.cn ). Simulation Real world 
+
+> Tactile sensor
+> Torque
+> Force-adaptive
+> grasping
+> In-hand
+> object rotation
+
+Fig. 1: Learning full-state policy with tactile sensing and joint torques for dexterous grasping and in-hand manipula-tion. Rubik’s Cube task [2] showed that sim-to-real is the key [3]. Recent simulation improved fidelity and robustness for cube reorientation on an Allegro Hand [4]. Tactile sensing further enhances dexterity, e.g., via visuotactile fusion [5] or binary touch signals [6]. Related advances include dexterous grasp-ing [7], humanoid manipulation [8], and in-hand manipula-tion of thin objects with binary tactile sensing [9], showing that sim-to-real RL can produce transferable policies. However, two practical hurdles limit the use of tactile sens-ing and joint torques: (i) Simulation of dense tactile contacts :Simulating high-resolution tactile/contact is computationally too slow for massive RL exploration, resulting in a brittle policy due to insufficient exploration of contact dynamics. (ii) Discrepancies of actuator dynamics and modeling : Most hands lack joint torque sensors and use current-based es-timates; lack of capturing motor dynamics in simulation hinders the sim-to-real transfer. As high-DoF dexterous hands become more avail-able, we are motivated to develop a reliable sim-to-real 
+
+recipe for learning full-state policies with tactile and joint torque/current feedback that achieves zero-shot deployment. Our contributions include:  
+
+> •
+
+Full-state policies. We formulate the policy observations that jointly take dense tactile sensing and joint torques, enabling explicit feedback that can infer contact states and contact forces.  
+
+> •
+
+Fast, high-resolution tactile simulation. We approximate tactile contacts by computing distances between a dense array of virtual tactile units and the object via parallel for-
+
+> arXiv:2607.04940v1 [cs.RO] 6 Jul 2026
+
+ward kinematics, offering more accurate, high-rate tactile feedback suitable for massive RL training.  
+
+> •
+
+Data-driven actuator modeling. We bridge the sim-to-real actuation gap by calibrated current-to-torque mapping and randomization to account for uncertain motor dynam-ics (e.g., torque-velocity curves), requiring no direct torque sensors and reducing sim-to-real torque discrepancies on real hardware.  
+
+> •
+
+Contact-rich sim-to-real RL policy training. We trained and deployed two contact-rich skills: (1) controllable grasping that tracks commanded grip forces and (2) in-hand object reorientation – full-state policies directly deployed for force-modulated grasps and reorientations on the real robot. In summary, we contributed an easy-to-replicate recipe for training full-state RL policies on a widely available 12-DoF dexterous hand. Our approach integrates tactile and motor-current sensing with computationally-fast simulation and robust actuator modeling, for zero-shot Sim-to-Real transfer of force-controllable grasping and in-hand manipulation. To our knowledge, this is the first demonstration of controllable grasping with grip-force tracking, force-adaptive grasping, and robust in-hand manipulation on a multi-finger hand. II. R ELATED WORKS 
+
+We review research work closely related to our focused techniques in our sim-to-real pipeline for dexterous hands, covering human-centric perception, grasp priors, tactile sim-ulation, motor dynamics modeling, and current-to-torque estimation without direct joint torque sensors. 
+
+A. Human-Centric Perception and Grasp Priors 
+
+Understanding human actions and hand-object interactions provides useful context for dexterous manipulation, even when the final control problem is robotic. Recent multimodal perception methods have studied complementary cues for image/video segmentation [10], audiovisual commonsense reasoning [11], action form and quality assessment [12], [13], balanced multimodal 3D human pose estimation [14], weakly-supervised temporal action localization [15], cross-modal video retrieval [16], few-shot video classification [17], and sports video captioning [18]. These works show that het-erogeneous visual, temporal, and semantic cues can improve human-centric understanding. In contrast, our focus is not high-level video understanding, but closed-loop dexterous control with tactile and motor-current feedback. More directly related to hand-object interaction, temporal-consistent self-training has been used for 3D hand-object joint reconstruction under synthetic-to-real domain shift [19]. Human grasp generation methods have also modeled part-aware hand-object interactions with decomposed vector-quantized representations [20] and extended this idea to both rigid and deformable objects [21]. These reconstruc-tion and generation studies provide useful human-like grasp priors from visual and generative modeling perspectives, whereas our work learns robot control policies for force-aware grasping and in-hand reorientation, and transfers them from simulation to real hardware without fine-tuning. 
+
+B. Tactile Simulation 
+
+High-fidelity, fast tactile simulation is a long-standing obstacle for learning contact-rich skills. For visuotactile sensors, recent systems libraries have pushed both realism and throughput. Akinola et al. builds a library within Isaac Gym that synthesizes visuotactile images and contact-force distributions, and couples them with a policy-learning toolkit aimed at sim2real transfer [22]. In parallel, Nguyen et al. integrate a soft-body FEM simulator with an optical visuotactile rendering pipeline inside Isaac Sim to capture elastomer deformation for GelSight-like skins [23]. Zhang 
+
+et al. focus on modeling multi-mode tactile imprints induced by different surface coatings/patterns and report high realism while remaining efficient enough for learning loops [24]. Beyond single-hand settings, works begin to exploit vi-suo–tactile simulation for complex, often bimanual, fine assembly: e.g., general sim2real protocols for marker-based visuotactile sensors [25], bimanual visuotactile assembly via simulation fine-tuning [26]. On the policy side, tactile-only or visuo–tactile in-hand reorientation has seen rapid progress. Yin et al. learns touch-only in-hand rotation on low-cost binary sensors, empha-sizing robustness to sensing imperfections [6]. Yuan et al. 
+
+propose a point-cloud tactile representation to fuse vision and touch for in-hand rotation [27]. Purely tactile in-hand manipulation with a torque-controlled hand was shown in [28], while works also demonstrate DRL-based tactile control for slender cylindrical objects [29]. For broader dexterous/bimanual touch, Lin et al. studies bimanual tactile manipulation with sim-to-real deep RL [30]. Collectively, these efforts motivate fast, high-fidelity tactile simulation and policy training; our distance-field–based tactile simulation targets this efficiency–fidelity trade-off specifically for RL. 
+
+C. Motor Modeling 
+
+For dexterous hands and manipulation, recent systems explicitly incorporate motor/drive limits or task-informed SysID. Huang et al. employ privileged learning, SysID, and DR to transfer functional grasps across diverse hands [31]. Tactile in-hand works with torque-controlled hands to build policies on top of explicit joint torque models [28], [29]. In non-prehensile manipulation, early sim-to-real studies showed the importance of accurate actuation/friction models plus ensemble dynamics to combat identification error [32]. In our setting, we explicitly model the motor’s 
+
+torque–speed envelope [33], then randomize these parame-ters (stall torque, speed constants, friction/ripple surrogates) to cover manufacturing tolerances and temperature/load vari-ation. This follows the spirit of recent agile-mobility works where actuator models are aligned via residual learning or unsupervised actuator nets [34], [35], but adapts them to the brushed-DC, gear-driven fingers typical of dexterous hands. D. Current-to-Torque Calibration 
+
+Most dexterous hands available nowadays typically re-port motor current but lack torque sensing. When torque feedback (or torque-conditioned policy inputs) is desired, estimating a reliable current →torque mapping becomes criti-cal. In industrial/manipulator literature, motor-current–based wrench estimation has a long history: Kalman/filtering and momentum-observer formulations estimate Cartesian forces/torques from joint currents and states [36], [37]. Gold 
+
+et al. consider torsional deflection plus motor current to estimate joint torques [38]. From a calibration/control per-spective, current-based impedance control explicitly fits ac-tuator current/torque ratios and friction for current-controlled robots—eschewing force/torque sensors [39]. Identification methods that retrieve physically consistent drive gains and dynamics are also relevant [40]. Compared to these, we target brushed-DC finger actuators in dexterous hands. We fit a current →torque map under quasi-static conditions to capture effective torque constants and biases (including gear train losses), Empirically, this pro-vides torque observables for policies and improves sim–real alignment without adding expensive joint-torque sensors. III. M ETHODOLOGY 
+
+This section first presents the problem formulation, i.e., controllable grasping and in-hand object reorientation. Then, we present the technical details of our full-state policy learning framework, including the design of the full-state observation and the recipe of sim-to-real transfer. 
+
+A. Problem formulation 
+
+This work addresses the sim-to-real transfer of dexterous manipulation policies for multi-fingered robotic hands, focus-ing on zero-shot deployment of simulation-trained policies onto real hardware. Despite progress in RL-based manipula-tion, transferring contact-rich, force-sensitive tasks—such as variable-force grasping and in-hand reorientation—remains challenging due to gaps in tactile simulation, actuator mod-eling, and contact physics. Formally, given a dexterous hand with N fingers equipped with tactile sensors and current-controlled motors (no torque sensors), we learn a policy π : ot 7 → at that maps observations in simulation that performs successfully on the physical system without fine-tuning. 
+
+1) Force-Adaptive Grasping: Achieve stable grasps with specified force levels across objects of varying shapes and physical properties. 
+
+2) In-Hand Object Rotation: Precisely rotate a grasped object around a defined axis through continuous, contact-rich multi-finger coordination. Experiments use a 12-DoF direct-drive dexterous hand (XHand) [41] and are conducted in the IsaacLab simulation environment [42]. 
+
+B. Identification of Sim-to-Real Gaps 
+
+Our study identified 4 primary sim-to-real gaps: TABLE I: Observation for force-adaptive grasping                            
+
+> Input Dimensionality Actor Critic Hand joints angles 12D ✓✓
+> Hand joints torque 12D ✓✓
+> Object position 3D ✓✓
+> Object linear velocity 3D ✓✓
+> Contact force 5D ✓✓
+> Contact center 15D ✓✓
+> Fingertip positions 15D ✓✓
+> Force command 1D ✓✓
+
+1) Perceptual Gap: Simulations use ground-truth states, while real systems rely on noisy visual sensing (e.g., cam-eras), introducing errors from calibration and lighting. 
+
+2) Discrepancies in Actuator Dynamics: Unmodeled joint-level discrepancies such as transmission backlash, nonlinear motor control, and response delays. 
+
+3) Discrepancies in Contact Physics: Inaccurate contact modeling due to simplified surface geometry, material prop-erties (e.g., stiffness, friction), and restitution. 
+
+4) Unseen State Distribution Shift: Mismatch between training and real-world observations during deployment. 
+
+C. Task Setup 1) Force-adaptive grasping: Traditional dexterous grasp-ing methods imitate human scenarios: objects are placed on a table, and the hand starts from a random pose to attempt grasping. This approach requires extensive exploration, is computationally expensive, and often leads to unnatural grasps that fail in real environments due to sim-to-real gaps. To address these issues, we introduce a creative setup of inverted “catch-the-object”, where the hand is fixed upside down and objects are dropped toward the palm (see Fig. 7 in the later section). The policy learns to catch and stably grasp objects under randomized object properties, dynamics, and external perturbations–which simplifies the learning process, reduces complexity of reward exploitation, and produces robust grasping behaviors using only real-world measurable observations, facilitating better sim-to-real transfer. 
+
+2) In-Hand Object Rotation: For the object rotation task, a cube is rotated along a single axis due to the hand’s limited degrees of freedom. Each successful 90-degree rotation about this axis triggers an update of the target pose by another 90°, enabling continuous rotation. 
+
+D. Policy learning in simulation 1) Force-adaptive grasping: The observations are sum-marized in the Tab. I. For the real-world setup, the object’s Z-coordinate is estimated using the distance between the center of the object mask—inferred via SAM [43]—and the palm, while the X and Y coordinates remain fixed. The object’s linear velocity is derived based on this positional information. The force command, which ranges from 0 to 1, is provided to the policy to indicate the desired grasping in-tensity. During the simulation training process, we designed a reward mechanism to guide the policy toward achieving stable and reliable grasping during inverted catching tasks. TABLE II: Observation for in-hand object rotation                                                    
+
+> Input Dimensionality Actor Critic Hand joints angles 12D ✓✓
+> Relative target orientation 6D ✓✓
+> Last actions 12D ✓✓
+> Contact center 15D ✓✓
+> Contact force 5D ✓✓
+> Fingertip positions 15D ✓✓
+> Object orientation 6D ×✓
+> Fingertip velocities 30D ×✓
+> Fingertip rotations 30D ×✓
+> Hand joints velocities 12D ×✓
+> Object linear velocity 3D ×✓
+> Object angular velocity 3D ×✓050 100 150 200 250
+> Real World Force
+> 030 60 90 120 150
+> 87.5
+> 75.0
+> 62.5
+> 50.0
+> 37.5
+> 25.0
+> 12.5
+> 420
+> 360
+> 300
+> 240
+> 180
+> 120
+> 60
+> 0
+> Current -Force Point
+> Fitted Curve
+> Current
+> Torque
+> Simulation Force
+> Torque -Force Point
+> Fitted Curve
+
+Fig. 2: Calibration and alignment of current-force (real robot) versus torque-force (simulation) properties. Once the fingers are in contact with the object, we employ torque command rewards Rtorque to encourage the agent to apply specific joint torques. The target torque τtarget is a con-tinuous value provided by the instruction of the environment, and the reward function has a special handling for the thumb compared to the other fingers. The total reward for this component is the sum of the individual finger torque rewards, which is applicable only when the finger is in contact with the object. 
+
+Rtorque = wtorque · X
+
+> i∈fingers
+
+Rtorque ,i · Icontact ,i , (1) where wtorque is the weight of this reward, Icontact ,i is the indicator function, which is 1 if the finger i is in contact with the object and 0 otherwise. The thumb has an opposing function, requiring greater force and a wider range of motion. Therefore, the reward for the thumb is binary, contingent on its torque Rtorque, thumb 
+
+being within a valid range: 
+
+Rtorque, thumb = I(0 .01 ≤ τthumb ≤ 1.1) , (2) Other four fingers’ reward is a Gaussian function centered around the instructed target, multiplied by a validity mask. 
+
+Rtorque ,i = exp 
+
+
+
+− (τi − τtarget )2
+
+2σ2
+
+
+
+· I(0 .01 ≤ τi ≤ 1.1) ,
+
+(3) For the contact force, similar to the joint torque reward, an appropriate contact force is encouraged. 
+
+Rforce = wforce · X
+
+> i∈fingers
+
+Rforce ,i · Icontact ,i , (4) 
+
+Rforce, thumb = I(0 .01 ≤ Fthumb ≤ 200) , (5) 
+
+Rforce ,i = exp 
+
+
+
+− (Fi − Ftarget )2
+
+2σ2
+
+
+
+· I(0 .01 ≤ Fi ≤ 200) ,
+
+(6) where Fi is the fingertip contact force of the root joint (finger 
+
+i), σ is the standard deviation of the Gaussian function, set at 0.10, I(·) is the indicator function. In addition to standard grasping rewards, we introduce a novel four-finger consistency reward to promote coordinated motion among the four homologous and structurally similar fingers. This term regulates the uniformity of their flexion and extension angles. In the human hand, biomechanical constraints limit the range of independent motion of the metacarpophalangeal joints, causing adjacent fingers to move correlatively. In contrast, robotic fingers are driven by inde-pendent motors. Without explicit coordination, reinforcement learning policies often produce unnatural and inefficient postures. The consistency reward encourages more human-like motion patterns, leading to more stable and physically plausible grasps with improved force distribution. The four-finger difference penalty Rdiff is defined as: 
+
+Rdiff = wdiff · Var ({qj | j ∈ inner fingers }), (7) where wdiff is the penalty weight, qj is position of the first joint of finger j, Var (·) is variance of the set of joint positions. To penalize the deviation of the outer finger joints (index, middle, ring, little) from their central position, which causes ineffective grasping, the penalty term Routter is defined as: 
+
+Routter = woutter · ∥ qoutter − coutter ∥2, (8) where woutter is the weight of this penalty, qoutter is current joint position vector for the outer joints, coutter is center position vector of the outer joints. Also, several standard penalty terms are incorporated to refine the agent’s behavior. A terminal state penalty is applied to prevent premature termination of the task. Furthermore, we penalize significant changes in action commands between consecutive time steps to encourage smoother control poli-cies. This is formulated as the action rate penalty: 
+
+Raction = waction · ∥ at − at−1∥22, (9) where Raction is the action rate penalty, waction is the weight of this penalty, at is the action vector at the current time step t, and at−1 is the action vector at the previous time step 
+
+t−1. And a joint velocity L2 penalty to discourage high joint velocities. This encourages the agent to generate smoother and more stable movements, avoiding abrupt motions. The penalty is defined as: 
+
+Rvel = wvel · ∥ ˙q∥22, (10) where ˙q represents the joint velocity vector, and wvel is the corresponding penalty weight. 
+
+2) In-Hand Object Rotation: To mitigate the sim-to-real gap for rotating objects, we utilize observations that are commonly available in the real world, as shown in Tab. II. We implemented and successfully trained two types of policies: one without the direct measurement of object orientation, TABLE III: Reward for in-hand object rotation                     
+
+> Reward Formula Weight Close to goal 1.0
+> |drot |+ϵ×11+ e400( dgoal −0.05) 1.0 Action penalty || at−at−1|| 2-0.0002 Reset reward Condition Value Reach goal bonus drot <0.3and dpos <0.05 250
+
+(a) Modeling of contact points to approximate tactile sensors that mitigate the sim-to-real gap. Mooney-Rivlin Model Stress-Strain Curve       
+
+> C1=-0.03215 MPa
+> C2= 0.14808 MPa
+> C3= 0.00217 MPa
+> Strain (ε)
+> -0.8 -0.6 -0.4 -0.2 0.0 0.2 0.4
+> Stress Magnitude |ơ| [MPa]
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+
+(b) Stress-Strain curve of the rubber materials of the tactile sensor on the dexterous hands. 
+
+Fig. 3: Contact point modeling and material properties. and the other with the feedback of the object orientation measured via an embedded IMU directly. The first type of policy excludes the relative target ori-entation from the observations and relies solely on the proprioceptive information of the dexterous hand to rotate the object. The second type of policy uses a low-cost IMU sensor embedded inside the object to obtain its orientation directly, and computes the relative rotation to the target. In particular, the technical know-how is to represent the orientation in a 6D continuous format [44], because the quaternion representation has a fundamental double-cover problem: every 3D rotation can be represented by two unit quaternions, q and -q, which correspond to the exact same orientation. This mathematical property creates an undesired discontinuity in the parameter space, disrupting policy learn-ing. In contrast, the 6D rotation representation provides a continuous and smooth mapping, which in turn makes the loss function continuous and relatively smooth in the 6D parameter space. To encourage continuous rotation, the agent is rewarded for returning the object to a reference position after rotation. However, unconstrained position error Rdist 
+
+initially dominates and creates a local optimum where the agent avoids rotation to preserve reward. To mitigate this, we combine position and rotation error into a single composite reward (Tab. III), preventing such suboptimal behavior and promoting continuous in-hand manipulation. 
+
+E. Sim-to-Real Transfer 
+
+We identified three primary contributors to the sim-to-real gap in our task: tactile sensing, complex in-hand contact simulation, and actuator dynamics. Our approach closes this gap through precise problem formulation and tailored simulation techniques. 
+
+1) Tactile Sensor Simulation: We implement a rapid, massively tactile sensor simulation using parallel forward kinematics, which calculates the distance from each sensor unit to the N-nearest surface points on the object. We consider a dexterous hand with N fingers. Typically, 
+
+N = 5 . The sensor set of the entire dexterous hand can be denoted as S. On the fingertip of each finger i (where 
+
+i ∈ {1, 2, . . . , N }), there is a set of sensors, which we represent as Si. Therefore, the total sensor set is the union of all fingertip sensor sets: 
+
+S =
+
+> N
+
+[
+
+> i=1
+
+Si.
+
+For each individual sensor j on each fingertip i (where j ∈{1, 2, . . . , M i}, and Mi is the total number of sensors on the 
+
+i - th fingertip), we define its key attributes: 
+
+Position : Through forward kinematics, we can calculate the spatial coordinates of each sensor from the hand degrees-of-freedom position, denoted as pij ∈ R3.
+
+Activation : On the real robot hand, the sensor is activated while reading is greater than a threshold. In the simulation, as shown in Fig. 3a, the nearest point po on the surface of the object is found for each sensor pij . A vector from the object pointing to each tacxiel , voij , is defined. The contact is detected if the sensor has deformed, which is determined by evaluating the dot product of voij and the normal vector of the object at po. The vector from po to pij is given by: voij =
+
+pij −po. Let no be the outward-pointing normal vector at the object point po. If the dot product of voij and no is negative, it implies that the sensor has penetrated the object’s surface, indicating a deformation. All points meeting such a condition are considered as equivalent contact points .Contact ⇐⇒ voij · no < 0. (11) 
+
+Force : On the real robot, normal forces are measured by the sensors. In the simulation, it is approximated using Mooney-Rivlin stress: strain relationship model to quantify the contact force of each sensor based on the distance 
+
+dij = |voij | between the sensor and the object surface and the total contact force per finger, denoted as fij ∈ R+.In our model, we use the fully actuated robotic hand Xhand with 12 degrees of freedom. Each fingertip has Mi =120 sensors, so the entire hand has PNi=1 Mi = 600 sensors. These sensors are concentrated in five independent “dense groups”. This high local resolution on each fingertip can capture fine pressure distributions. 
+
+2) Complex Contact Simulation: The simulation of intri-cate in-hand contacts is made more robust by randomizing the coefficients for surface friction, damping, and restitution. 
+
+Modeling of Tactile Sensors: Building on the dual char-acteristics of contact sparsity and high resolution, the tactile information from each fingertip is denoted as Ti to represent and process the tactile data. This modeling approach pre-serves critical contact states while accommodating the spatial sparsity of the data. Ti is defined as: 
+
+Ti = ( Fi, μ i). (12) where Fi is the total contact force, μi is the Force-weighted Mean Contact Position. 
+
+Total Contact Force ( Fi): The resultant contact force Fi
+
+is defined on the real robot as the sum of the total forces Thumb contact    
+
+> trace
+> Index finger contact
+> trace
+> Real world Simulation
+> Real world Simulation
+> Contact Force
+> 020
+
+Fig. 4: Visualization of real-world and simulated contact data during an in-hand rotation task. The close alignment between the contact points (Top) and contact forces (Bottom) shows the high fidelity of our contact simulation. from all active sensors on the i-th fingertip. In simulation, it is the resultant force between the fingertip and the object, reflecting the effect of all the finger-object point-contacts: 
+
+Fi = X
+
+> j∈S∗
+> i
+
+fij . (13) 
+
+Force-weighted Mean Contact Position ( μi): The mean contact position μi ∈ R3 is a force-weighted average position that represents the center of pressure: 
+
+μi =
+
+P
+
+> j∈S∗
+> i
+
+fij · pij 
+
+Fi
+
+. (14) Here, the position of each active sensor, pij , is weighted by its force value, fij . The denominator, Fi (the total contact force), ensures this is a normalized weighted average. In a simulation environment, this process can be simplified to: 
+
+μi,sim =
+
+P
+
+> j∈S∗
+> i
+
+dij · k · pij 
+
+Di · k =
+
+P
+
+> j∈S∗
+> i
+
+dij · pij 
+
+Di
+
+.
+
+As illustrated in Fig. 4, we plot force-weighted contact centers and force magnitudes during an object selection task performed by a dexterous hand in both real-world and simulation environments. It can be observed that the distributions of force-weighted contact centers and force magnitudes exhibit high similarity between the real world and simulation. Furthermore, the real-world contact region is contained within the simulation contact region, demon-strating that contact features can be effectively transferred from simulation to the real world. 
+
+3) Current-torque Calibration: To calibrate real-world motor current and simulated joint torque with contact force, we applied varying forces to each fingertip in both real and simulated environments. Real-world motor current and tactile sensor readings were recorded, while joint torque and applied force magnitudes were collected in simulation. Scatter plots and fitted curves (Fig. 2) show a proportional relationship be-tween contact force and both current and torque. We recorded the maximum current Imax , maximum torque τmax , and their corresponding maximum contact forces Fmax,real and 
+
+Fmax,sim . These values were normalized to [0 , 1] , aligning real-world current with simulated torque and their respective contact forces. 
+
+4) Actuator Model Randomization: To bridge the sim-to-real gap in dexterous manipulation, we use a random-ized actuator model that captures real-world motor non-linearities—such as torque-velocity saturation and backlash hysteresis—improving policy robustness against hardware variations. The torque is computed via a PD controller with randomized gains: 
+
+τc = kp · (qref − qm) + kd · ( ˙ qref − ˙qm) , (15) where kp and kd are the proportional and derivative gains, respectively, and qm denotes the measured joint position. A key feature of the model is the incorporation of back-lash, simulating mechanical dead zones due to gear play. The effective torque is modulated by a deadband function: 
+
+τb =
+
+(
+
+0 if |qref − qm| < ϵ τc otherwise , (16) where ϵ is the backlash threshold, randomized during training to mimic physical wear and tolerance variations. Further, the torque is constrained by a velocity-dependent saturation function due to the DC motor’s characteristics: 
+
+τ +
+
+> sat
+
+( ˙ q) = τ0
+
+
+
+1 − | ˙q|
+
+˙qmax 
+
+
+
+, τ −
+
+> sat
+
+( ˙ q) = −τ0
+
+
+
+1 − | ˙q|
+
+˙qmax 
+
+
+
+,
+
+(17) where τ0 is the stall torque and ˙qmax is the maximum no-load velocity. The final applied torque is given by: 
+
+τapplied = η · clip  τb, τ −
+
+> sat
+
+( ˙ q), τ +
+
+> sat
+
+( ˙ q) , (18) where η is a randomized factor that accounts for variations in motor torque constant and motor driver’s efficiency. All model parameters are resampled for each actuator at the beginning of every training episode. This comprehensive randomization strategy forces the control policy to adapt to a wide spectrum of actuator imperfections, significantly improving sim-to-real transfer performance. IV. E XPERIMENTAL RESULTS 
+
+Part of the simulation and experimental results are in-cluded in Section III (Fig. 4, 5, 6) for providing evidences to support the methodologies with better logical flow, here we present more results on the following three aspects. Power 10% 50% 100% 10% 50% 100% 
+
+> Toy  Spring  Pliers Chips
+> Doll  Protein  Bar
+
+Fig. 5: Grasping objects with controllable magnitudes of grasping forces – from low to high strength. TABLE IV: Ablation analysis of multiple observation combinations in the real world.                                                                             
+
+> Contact center Contact force Force Weighted Orientation representation Cons. success trials(sorted) Average Median Success time(Ave.) Time to fall (Ave.)
+> ✓✓✓6D 8,10,12,15,19,25,26,35,46,55 25.1 22.0 3.36 84.3
+> ✓✓✓Quaternion 1,1,1,1,2,3,4,5,5,6 2.9 2.5 5.24 15.2
+> ✓✓×6D 3,6,8,10,11,13,13,15,21,22 12.2 12.0 3.75 45.7
+> ✓×✓6D 2,6,10,11,13,14,16,18,21,21 13.2 13.5 3.19 42.1
+> ✓××6D 1,3,6,6,7,8,9,11,11,13 7.5 7.5 4.03 30.2 ×××6D 1,1,1,1,1,1,1,1,1,2 1.1 1.0 2.82 3.10
+> ✓✓✓×2,4,5,8,11,12,13,16,17,24 11.2 11.5 2.59 29.0 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00
+> 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00
+> Force command
+> Force command
+> Joint torque percent Contact force
+> 37.5
+> 50.0
+> 62.5
+> 75.0
+> 87.5
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> Force+Torque
+> Force
+> Torque
+
+Fig. 6: Varying joint torque and contact forces with force commands under different reward settings. 
+
+1) Force-adaptive grasping: We conducted an ablation study on the reward terms RForce and Rtorque , which are designed to regulate the magnitude of the grasping force. As summarized in Tab. V, using both terms together leads to stronger and wider ranges of contact forces and joint torques, reflecting more forceful and dynamic grasping. When only 
+
+RForce or Rtorque is used, both the contact force and joint torque ranges are reduced, indicating less assertive grasping. These findings confirm that both reward components are necessary for achieving robust and adaptive grasping. Further we investigated the relation of contact force and torque as functions of the force command, as shown in Fig. 6. Both contact force and torque exhibit an approximately linear positive correlation with the commanded force intensity. It can be observed that the strength of correlation decreases in the following order: when both reward terms are used, when only RForce is used, and when only Rtorque is applied. 
+
+2) In-Hand Object Rotation: Real-world ablation exper-iments were conducted to assess each observation compo-nent. Policies were evaluated on ten trials using consecutive successes, average duration, and time to failure as met-rics (Tab. IV). The full configuration(force-weighted contact center, contact force, and 6D orientation) achieved optimal performance with 25.1 consecutive successes and a 3.36-second average duration. Replacing 6D with quaternions caused a significant decrease to 2.9 successes, showing the need for a continuous rotation representation. Removing the force-weighted contact center reduced the successes to 12.2, while skipping the contact force resulted in 13.2 successes. Ablating both components further decreased performance to 7.5 successes. The baseline without contact sensing per-formed poorly (1.1 successes), confirming the importance of the tactile feedback. A model without explicit orientation encoding had 11.2 successes, underperforming that of the full configuration. These results show that contact information, force sensing, force weighting, and 6D rotation are critical to robust in-hand rotation. 
+
+3) Simulation and Experimental Results: As shown in Fig. 7 and Fig. 8, we present simulation and real-world results for both force-adaptive grasping and in-hand rotation. The policies exhibit consistent behavior across domains. Fig. 5 further demonstrates the response to different force Angular ball Cube Tennis ball Milk bottle Apple 
+
+> Real world  Simulation
+
+Fig. 7: Visualization results of force-adaptive grasping tasks in Real-world and simulation environments Start Hold Rotate Reset 
+
+Reset goal rotation     
+
+> Real world  Simulation
+> 0.00s 1.26s 1.57s 1.83s 2.73s
+
+Average: 
+
+3.36s/Succ. 
+
+Fig. 8: Visualization results of in-hand manipulation tasks in real-world and simulation environments TABLE V: Ablation on the rewards RForce and Rtorque .
+
+RForce Rtorque Contact force range Joint torque percent 
+
+✓ ✓ 44 .50 ∼ 93 .92 1.09 ∼ 1.52 
+
+✓ × 37 .29 ∼ 70 .02 0.69 ∼ 0.75 
+
+× ✓ 38 .45 ∼ 47 .12 0.85 ∼ 1.02 
+
+commands, showing that the policy modulates grasp intensity as intended. Moreover, Fig. 9 illustrates successful grasping of unseen irregular objects, indicating that the policy gener-alizes to novel shapes with stable and conforming contact. V. C ONCLUSION 
+
+We propose a reinforcement learning framework and a suite of sim-to-real techniques designed to achieve robust, force-aware dexterous manipulation using a five-finger dex-terous hand. To overcome the challenge of simulating tactile sensing without incurring high computational costs, we in-troduce a novel approximation method based on parallel dis-tance computation. This approach achieves good contact ap-proximation that enables zero-shot sim-to-real transfer, while ensuring the high sample efficiency required for training in simulation. To the best of our knowledge and experience, Gamepad Bowl 
+
+Fig. 9: Force-adaptive grasping of irregularly shaped objects that are unseen during training. our simulation-based RL techniques are broadly applicable for training dexterous manipulation policies on a wide range of commercial humanoid hands, thereby facilitating research progress toward human-level dexterity via simulation-based learning paradigm. REFERENCES [1] OpenAI, M. Andrychowicz, B. Baker, M. Chociej, R. J´ ozefowicz, B. McGrew, J. Pachocki, A. Petron, M. Plappert, G. Powell, A. Ray, J. Schneider, S. Sidor, J. Tobin, P. Welinder, L. Weng, and W. Zaremba, “Learning dexterous in-hand manipulation,” arXiv preprint arXiv:1808.00177 , 2018. [2] I. Akkaya, M. Andrychowicz, M. Chociej, M. Litwin, B. McGrew, A. Petron, A. Paino, M. Plappert, G. Powell, R. Ribas, J. Schneider, N. Tezak, J. Tworek, P. Welinder, L. Weng, Q. Yuan, W. Zaremba, L. Zhang, and OpenAI, “Solving rubik’s cube with a robot hand,” 
+
+arXiv preprint arXiv:1910.07113 , 2019. [3] J. Tobin, R. Fong, A. Ray, J. Schneider, W. Zaremba, and P. Abbeel, “Domain randomization for transferring deep neural networks from simulation to the real world,” in Proc. IEEE/RSJ Int. Conf. on Intelligent Robots and Systems (IROS) , Vancouver, Canada, 2017. [4] A. Handa, A. Allshire, V. Makoviychuk, A. Petrenko, R. Singh, J. Liu, D. Makoviichuk, K. Van Wyk, A. Zhurkevich, B. Sundaralingam, Y. Narang, J.-F. Lafleche, D. Fox, and G. State, “Dextreme: Transfer of agile in-hand manipulation from simulation to reality,” in Proc. IEEE Int. Conf. on Robotics and Automation (ICRA) , 2023, see also arXiv:2210.13702. [5] Y. Yuan, H. Che, Y. Qin, B. Huang, Z.-H. Yin, K.-W. Lee, Y. Wu, S.-C. Lim, and X. Wang, “Robot synesthesia: In-hand manipulation with visuotactile sensing,” arXiv preprint arXiv:2312.01853 , 2023. [6] Z.-H. Yin, B. Huang, Y. Qin, Q. Chen, and X. Wang, “Rotating without seeing: Towards in-hand dexterity through touch,” in Robotics: Science and Systems (RSS) , Daegu, Republic of Korea, 2023. [7] H. Zhang, Z. Wu, L. Huang, S. Christen, and J. Song, “Robustdex-grasp: Robust dexterous grasping of general objects from single-view perception,” arXiv preprint arXiv:2504.05287 , 2025. [8] T. Lin, K. Sachdev, L. Fan, J. Malik, and Y. Zhu, “Sim-to-real reinforcement learning for vision-based dexterous manipulation on humanoids,” arXiv preprint arXiv:2502.20396 , 2025. [9] W. Hu, B. Huang, W. W. Lee, S. Yang, Y. Zheng, and Z. Li, “Dexterous in-hand manipulation of slender cylindrical objects through deep reinforcement learning with tactile sensing,” Robotics and Autonomous Systems , vol. 186, p. 104904, 2025. [10] M. Qi, P. Zhu, X. Li, X. Bi, L. Qi, H. Ma, and M.-H. Yang, “DC-SAM: In-context segment anything in images and videos via dual consistency,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 48, no. 4, pp. 4642–4656, 2026. [11] M. Qi, C. Lv, and H. Ma, “Robust disentangled counterfactual learning for physical audiovisual commonsense reasoning,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 48, no. 3, pp. 2514– 2527, 2026. [12] M. Qi, Y. Wu, W. Yun, X. Zhang, and H. Ma, “Explainable action form assessment by exploiting multimodal chain-of-thoughts reasoning,” 
+
+IEEE Transactions on Image Processing , vol. 35, pp. 6371–6384, 2026. [13] M. Qi, H. Ye, J. Peng, and H. Ma, “Action quality assessment via hierarchical pose-guided multi-stage contrastive regression,” IEEE Transactions on Image Processing , vol. 34, pp. 6461–6474, 2025. [14] M. Qi, J. Peng, X. Zhang, and H. Ma, “Towards balanced multi-modal learning in 3D human pose estimation,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2026, pp. 21 231–21 241. [15] W. Yun, M. Qi, C. Wang, and H. Ma, “Weakly-supervised temporal action localization by inferring salient snippet-feature,” Proceedings of the AAAI Conference on Artificial Intelligence , vol. 38, no. 7, pp. 6908–6916, 2024. [16] M. Qi, J. Qin, Y. Yang, Y. Wang, and J. Luo, “Semantics-aware spatial-temporal binaries for cross-modal video retrieval,” IEEE Transactions on Image Processing , vol. 30, pp. 2989–3004, 2021. [17] M. Qi, J. Qin, X. Zhen, D. Huang, Y. Yang, and J. Luo, “Few-shot ensemble learning for video classification with SlowFast memory networks,” in Proceedings of the 28th ACM International Conference on Multimedia , 2020, pp. 3007–3015. [18] M. Qi, Y. Wang, A. Li, and J. Luo, “Sports video captioning via attentive motion representation and group relationship modeling,” 
+
+IEEE Transactions on Circuits and Systems for Video Technology ,vol. 30, no. 8, pp. 2617–2633, 2020. [19] M. Qi, E. Remelli, M. Salzmann, and P. Fua, “Unsupervised domain adaptation with temporal-consistent self-training for 3D hand-object joint reconstruction,” 2020. [20] Z. Zhao, M. Qi, and H. Ma, “Decomposed vector-quantized variational autoencoder for human grasp generation,” in Computer Vision – ECCV 2024 . Springer Nature Switzerland, 2024, pp. 447–463. [21] M. Qi, Z. Zhao, and H. Ma, “Human grasp generation for rigid and deformable objects with decomposed VQ-VAE,” 2025. [22] I. Akinola, J. Xu, J. Carius, D. Fox, and Y. Narang, “Tacsl: A library for visuotactile sensor simulation and learning,” IEEE Transactions on Robotics , vol. 41, p. 2645–2661, 2025. [23] D. H. Nguyen, T. Schneider, G. Duret, A. Kshirsagar, B. Belousov, and J. Peters, “Tacex: Gelsight tactile simulation in isaac sim – combining soft-body and visuotactile simulators,” 2024. [24] C. Zhang, S. Cui, J. Hu, T. Jiang, T. Zhang, R. Wang, and S. Wang, “Tacflex: Multimode tactile imprints simulation for visuotactile sensors with coating patterns,” IEEE Transactions on Robotics , vol. 41, pp. 3965–3985, 2025. [25] W. Chen, J. Xu, F. Xiang, X. Yuan, H. Su, and R. Chen, “General-purpose sim2real protocol for learning contact-rich manipulation with marker-based visuotactile sensors,” IEEE Transactions on Robotics ,vol. 40, pp. 1509–1526, 2024. [26] B. Huang, Y. Wang, X. Yang, Y. Luo, and Y. Li, “3d vitac:learning fine-grained manipulation with visuo-tactile sensing,” in Proceedings of Robotics: Conference on Robot Learning(CoRL) , 2024. [27] Y. Yuan, H. Che, Y. Qin, B. Huang, Z.-H. Yin, K.-W. Lee, Y. Wu, S.-C. Lim, and X. Wang, “Robot synesthesia: In-hand manipulation with visuotactile sensing,” 2024. [28] L. Sievers, J. Pitz, and B. B¨ auml, “Learning purely tactile in-hand ma-nipulation with a torque-controlled hand,” in International Conference on Robotics and Automation , 2022, pp. 2745–2751. [29] W. Hu, B. Huang, W. W. Lee, S. Yang, Y. Zheng, and Z. Li, “Dexterous in-hand manipulation of slender cylindrical objects through deep reinforcement learning with tactile sensing,” p. 104904, 2025. [30] Y. Lin, A. Church, M. Yang, H. Li, J. Lloyd, D. Zhang, and N. F. Lepora, “Bi-touch: Bimanual tactile manipulation with sim-to-real deep reinforcement learning,” IEEE Robotics and Automation Letters ,vol. 8, no. 9, pp. 5472–5479, 2023. [31] L. Huang, H. Zhang, Z. Wu, S. Christen, and J. Song, “Fungrasp: Functional grasping for diverse dexterous hands,” IEEE Robotics and Automation Letters , vol. 10, no. 6, pp. 6175–6182, 2025. [32] K. Lowrey, S. Kolev, J. Dao, A. Rajeswaran, and E. Todorov, “Re-inforcement learning for non-prehensile manipulation: Transfer from simulation to physical system,” 2018 IEEE International Conference on Simulation, Modeling, and Programming for Autonomous Robots (SIMPAR) , pp. 35–42, 2018. [33] Y.-H. Shin, T.-G. Song, G. Ji, and H.-W. Park, “Actuator-constrained reinforcement learning for high-speed quadrupedal locomotion,” 2023. [34] T. He, J. Gao, W. Xiao, Y. Zhang, Z. Wang, J. Wang, Z. Luo, G. He, N. Sobanbabu, C. Pan, Z. Yi, G. Qu, K. Kitani, J. Hodgins, L. J. Fan, Y. Zhu, C. Liu, and G. Shi, “Asap: Aligning simulation and real-world physics for learning agile humanoid whole-body skills,” arXiv preprint arXiv:2502.01143 , 2025. [35] N. Fey, G. B. Margolis, M. Peticco, and P. Agrawal, “Bridging the sim-to-real gap for athletic loco-manipulation,” 2025. [36] A. Wahrburg, J. B¨ os, K. D. Listmann, F. Dai, B. Matthias, and H. Ding, “Motor-current-based estimation of cartesian contact forces and torques for robotic manipulators and its application to force control,” IEEE Transactions on Automation Science and Engineering ,vol. 15, no. 2, pp. 879–886, 2018. [37] L. Han, J. Mao, P. Cao, Y. Gan, and S. Li, “Toward sensorless interaction force estimation for industrial robots using high-order finite-time observers,” IEEE Transactions on Industrial Electronics ,vol. 69, no. 7, pp. 7275–7284, 2022. [38] T. Gold, A. V¨ olz, and K. Graichen, “External torque estimation for an industrial robot arm using joint torsion and motor current measurements,” IFAC-PapersOnLine , vol. 52, pp. 352–357, 01 2019. [39] J. de Wolde, L. Knoedler, G. Garofalo, and J. Alonso-Mora, “Current-based impedance control for interacting with mobile manipulators,” in 
+
+2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2024, pp. 753–760. [40] S. Briot and M. Gautier, “Global identification of joint drive gains and dynamic parameters of parallel robots,” Multibody System Dynamics ,vol. 136, 01 2013. [41] Generic, “Xhand product page,” https://www.robotera.com/en/goods1/ 4.html. [42] M. Mittal, C. Yu, Q. Yu, J. Liu, N. Rudin, D. Hoeller, J. L. Yuan, R. Singh, Y. Guo, H. Mazhar, A. Mandlekar, B. Babich, G. State, M. Hutter, and A. Garg, “Orbit: A unified simulation framework for interactive robot learning environments,” IEEE Robotics and Automa-tion Letters , vol. 8, no. 6, pp. 3740–3747, 2023. [43] A. Kirillov, E. Mintun, N. Ravi, H. Mao, C. Rolland, L. Gustafson, T. Xiao, S. Whitehead, A. C. Berg, W.-Y. Lo, et al. , “Segment anything,” in Proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 4015–4026. [44] Y. Zhou, C. Barnes, J. Lu, J. Yang, and H. Li, “On the continuity of rotation representations in neural networks,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2019, pp. 5745–5753.

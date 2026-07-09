@@ -1,0 +1,600 @@
+Title: Metallic Ultrasound Waveguides as a Distributed Tactile Sensing Platform for Contact Localization, Force Estimation, and Material Class Discrimination
+
+URL Source: https://arxiv.org/pdf/2607.02827v1
+
+Published Time: Tue, 07 Jul 2026 00:17:00 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# METALLIC ULTRASOUND WAVEGUIDES AS A DISTRIBUTED 
+
+# TACTILE SENSING PLATFORM FOR CONTACT LOCALIZATION ,FORCE ESTIMATION , AND MATERIAL CLASS DISCRIMINATION 
+
+Alexandros Rosakis 1,†,* , Alessio Tamborini 1,† , Basile Fakhoury 1, Cole Bailey 1, and Morteza Gharib 1
+
+> 1
+
+Division of Engineering and Applied Science, Caltech, Pasadena, CA, USA 
+
+> †
+
+These authors contributed equally. 
+
+> *
+
+Corresponding author: ayrosaki@caltech.edu 
+
+Abstract— Tactile sensing is central to how robotic systems interact with the real world, yet current solutions face a tradeoff between sensing area and system complexity. This work investigates metallic ultrasound waveguides as distributed tactile sensors fully interrogated from a single proximal transducer. Using cylindrical indenters, we characterized the acoustic response to single and multi-point contacts with varying forces and contact materials. For single point indentation, the applied force was well captured by a linear relationship with the ratio of the reflection to transmission coefficients ( F = α · R/T )across all nine tested materials ( R2 ≥ 0.95 ). The calibration slope, α, correlated strongly with the material’s effective contact modulus (log–log Pearson r = −0.98 ). The reflected energy partition was found to be a load-independent parameter related to the contacting material’s properties, enabling material classification independent of force. For the two-indenter experiment, both contact forces were recovered from the waveguide signal and were in close agreement with reference load cell measurements (contact 1, R2 = 0 .97 ; contact 2, R2 = 0 .95 ). The approach was extended to two-dimensional metallic sheets, confirming both contact localization and material-dependent effects. Overall, these results validate metallic waveguides as a robust platform for distributed tactile sensing, providing contact localization, force estimation, and material-class discrimination for the contacting body. 
+
+Keywords Ultrasound waveguide, acoustic waveguide, tactile sensing, distributed force sensing, contact localization, material classification. 
+
+1 Introduction 
+
+The sense of touch is an invaluable tool for how humans interact with the world. Recently, there has been considerable research on how to grant this ability to robotic systems, especially for dexterous manipulation of objects and tasks such as robotic-assisted surgery [ 1, 2]. One major challenge is creating a sensor or sensor array capable of measuring both force and its location on a robotic manipulator’s surface. Several different sensor types have been proposed. Some common examples are capacitive sensing [ 3, 4 ], piezoresistive sensing [ 5], piezoelectric sensing [ 6], and magnetic sensing [ 7 ]. Typically, these sensors are only capable of point measurements and need to be arrayed to measure multiple separate forces and their locations, which adds to overall design complexity. Optical techniques have also been investigated. One method is to use cameras to image contact gel layers that deform when touched [ 8]. This method allows for spatial force measurements but suffers from the large form factor. Optical Fiber Bragg Grating (FBG) techniques have also been investigated [ 9]. FBGs change their reflectance spectra under mechanical stress, and several can be multiplexed onto a single fiber. However, they require large, power-intensive FBG interrogators to convert the light signals into usable data, which limits their use in robotic systems. More recently, acoustic and ultrasonic waveguides have received attention as tactile sensors [ 10 ]. One implementation used a soft polymer waveguide with embedded piezoelectric transducers, in which ultrasonic wave packets are launched at one end and received at the other [ 11 ]. Mechanical deformation alters the wave propagation characteristics; for example, stretching the waveguide lengthens the effective propagation length and increases the transit time between emission and reception. The same principle has been applied for hand gesture recognition using soft waveguides [12]. In a pulse-echo configuration, the contact location along the polymer waveguide can be measured from the time-of-flight 
+
+> arXiv:2607.02827v1 [cs.RO] 2 Jul 2026
+
+Ultrasound Waveguides for Distributed Tactile Sensing of the reflected wave packet. Liquid-filled acoustic waveguides have also been proposed [ 13 ]. Ye et al. [ 14 ] used a soft silicone waveguide with transducers at both ends to simultaneously resolve two contact forces and locations. Beyond soft media, acoustic waveguides have been integrated into structural elements such as robot wheels for terrain and collision sensing [ 15 ]. While soft and liquid-filled waveguides are highly shape-compliant, the strong attenuation of acoustic energy with propagation distance limits their achievable sensing length. Acoustic methods have also been used to localize contact on rigid waveguides [ 16 ]. Ing et al. used acoustic time reversal to localize finger impact on a plate [ 17 ]. Bahrami et al. used ultrasonic Lamb waves on touch glass to perform contact localization via a machine learning approach [ 18 ]. Applications on stiff media exploit the low attenuation of acoustic waves to enable larger-area sensing. Metallic ultrasonic waveguides have a rich history of study. Cylindrical metallic waveguides have been used for distributed temperature sensing in extreme environments [ 19 ], measurements of viscous liquid properties [ 20 ], soil loading and pressure measurements [ 21 ], liquid level sensing [ 22 , 23 ], and cure monitoring of adhesives [ 24 ]. Compared with soft polymers and biological materials, metals have higher wave speeds, lower acoustic attenuation, and higher acoustic impedance. This results in faster sampling, larger sensing area, and minimal energy leakage to the surroundings. Furthermore, there are several methods for exciting and measuring ultrasound waves in metallic substrates, allowing for measurement flexibility. Despite these advantages, the use of metallic waveguides for tactile sensing remains largely unexplored. This study investigates the use of metallic ultrasound waveguides as distributed tactile sensors. Three separate experiments were conducted. First, single-point forces were applied to cylindrical metallic waveguides to explore the interaction between force and wave propagation. Second, two simultaneous and variable forces were applied to the waveguide to test distributed force sensing. Finally, a planar metal waveguide was used to demonstrate the parallel between the one-dimensional and the two-dimensional case. 
+
+2 Methods 
+
+2.1 Transduction Mechanisms for Ultrasonic Waveguides 
+
+Thin carbon steel wires were used as ultrasound waveguides in this experiment; the material properties of these waveguides are summarized in Table 1. Magnetostrictive excitation was performed at one end of the wire using coils made from thin enamel-coated wire and a bias magnet [ 25 ]. Separate actuation and sensing coils were used in the transducer design. The wire waveguides were electroplated with nickel to increase the magnetostrictive coefficient. A multifunction oscilloscope (Analog Discovery Pro ADP2230) was usedfor both waveform generation to excite ultrasound waves and signal acquisition to measure returning echoes. The sensing coil was connected to an ultrasonic preamplifier (Model 5678, Olympus). Data sampling was performed at a 25 MHz sampling rate for a signal length of 
+
+400 μs.
+
+2.2 Single Point Force Measurements 
+
+A testing stand supported the transducer to suspend the waveguide. A portion of the waveguide was placed onto a PLA backing plate connected to a load cell, which was attached to a rigid frame. A rail system was designed around the load cell for repeatable perpendicular contact between the cylindrical indenter and the waveguide; the indenter holder further serves as a platform for placement of weights, it had an approximate weight of 50 g . The entire system (backing plate and rails) ensured the cylindrical indenter contacted only the waveguide. Nine different stock materials were Table 1: Structural properties of the waveguide. Property Value Material Carbon steel Alloy ASTM A228 Shape Wire Diameter 0.64 mm 
+
+Length 914 mm 
+
+Density, ρ 7850 kg m −3
+
+Longitudinal wave speed, cL 5900 m s −1
+
+Young’s modulus, E 210 GPa 
+
+Poisson’s ratio, ν 0.313 2Ultrasound Waveguides for Distributed Tactile Sensing (a)          
+
+> (b)
+> (c)
+> 1
+> 0
+> 1
+> Amp. (V)  Baseline (0.0 N) Touch reflection End echo
+> (d)
+> 1
+> 0
+> 1
+> Amp. (V)  Light contact (1.9 N)
+> 50 75 100 125 150 175 200
+> Time ( s)
+> 1
+> 0
+> 1
+> Amp. (V)  Firm contact (41.5 N)
+
+Figure 1: Overview of ultrasound waveguides and experiment setup. (a) Shows the experimental setup comprising the ultrasound transducer, the wire waveguide, the loadcell and backing plate and the indenter. (b) and (c) show a schematic of ultrasound wave propagation within a wire waveguide illustrating the energy partitions at each indentation site. (d) shows sample ultrasound signals at baseline, light contact, and firm contact. sourced as cylindrical indenters, all materials had a 1/8th inch diameter, these included Acrylic, Aluminium, Ceramic Alumina, Copper, Garolite G-10/FR4, Quartz Glass, Nylon, 1045 Steel, and Tungsten Carbide. Material properties of the indenters are summarized in Table 2. The electronics included an Arduino Uno, a load cell with a signal amplifier module, and a multifunction oscilloscope. The Arduino Uno served as the synchronization board in a master-slave communication architecture, sending a trigger to the oscilloscope to initiate each capture. The Arduino also served as the data-capture system for the load cell. The load cell used a standard Wheatstone Bridge configuration to measure loads up to a maximum of 5 kg and was connected to a signal amplifier (HX711) operating at 80 Hz . The system was configured so that each capture cycle consisted of 50 samples acquired at 80 Hz . Load cell calibration was performed using standard procedures to determine the gain factor, using calibration weights of 500 g , 1000 g , and 2000 g .The experimental procedure for single-point force tests used calibration weights to generate repeatable contact forces between the waveguide and the indenter. First, the load cell was tared with the backing plate, but without the wire lying on it. Then the wire would be laid on the backing plate, and a capture cycle is performed to compute the baseline. The indenter is then placed on the rails and contacted to the waveguide; a second capture cycle is performed. The load was then sequentially increased by 200 g using calibration weights on the indenter’s platform; at each step, a capture cycle was performed. This process was repeated 10 times until the total load on the waveguide reached 2050 g . Lastly, all load was removed from the waveguide, and another capture cycle was performed. This process was repeated with every indenter material. 
+
+2.3 Energy Framework for Wave Propagation 
+
+An analytical framework was developed to model wave propagation along a 1D waveguide and to recover the energy partition of multiple reflection events from the set of coupled returning echoes. Each reflection event is registered at the co-located emission/sensing site as a returning wave packet with a characteristic amplitude and arrival time. The waveguide was assumed lossless (no measurable attenuation builds as the wave propagates along the wire), so that all unrecovered energy is accounted for at the reflection sites. 3Ultrasound Waveguides for Distributed Tactile Sensing Table 2: Material properties of the cylindrical indenters used for force testing. Material E (GPa ) ν ρ (kg m −3) cL (m s −1)Acrylic 3.2 0.37 1190 2730 
+
+Aluminium 69 0.33 2700 6350 
+
+Ceramic Alumina 372 0.22 3875 10 520 
+
+Copper 117 0.34 8912 5010 
+
+Garolite G-10/FR4 14 0.12 2050 3000 
+
+Glass Quartz 72 0.17 2214 5740 
+
+Nylon 3 0.39 1140 2600 
+
+1045 Steel 200 0.29 7850 5900 
+
+Tungsten Carbide 630 0.21 15 000 7000 
+
+Each contact along the waveguide produces a single partial reflection (Fig. 1b). At such event, the incident energy is partitioned into reflected, transmitted, and lost fractions whose sum equals unity, 
+
+R + T + L = 1 (1) where R, T , and L ∈ [0 , 1] are the reflection, transmission, and loss coefficients, respectively, and each is expressed as a fraction of the incident energy. The loss term L groups all the energy that cannot be recovered at the transducer level: energy that either leaks into the indenter or undergoes mode conversion into waves that the transducer does not measure. For incident energy Ein , a reflection event therefore distributes as follows, 
+
+ER = Ein R, ET = Ein T, EL = Ein L (2) in which ER, ET , and EL are the reflected, transmitted, and lost energies, respectively. Considering the emission and sensing site are co-located at one end of the waveguide, only returning waves are measured. On a bare wire with no contacts, the incident waves propagate to the wire end and reflect back. Reflections at the wire end are treated as perfect reflectors, that is Rend = 1 , Tend = 0 , and Lend = 0 . Hence, we can define 
+
+¯Eend ,0 = Ein Rend = Ein (3) where ¯Eend ,0 denotes the measured energy at the sensor location for the end reflection with no intermediate reflections. This bare-wire echo serves as the incident energy reference. Introducing a single contact produces at least two returning wave packets: one from the contact and one from the end reflection. Tracking energy partition along each path gives the following, 
+
+¯E1 = Ein R1 (4) 
+
+¯Eend ,1 = Ein T 21 Rend (5) The end echo carries the squared transmission coefficient, T 21 , because it interacts twice with the contact point, once forward and once on return, each time attenuating the signal by T1. Generalizing, the energy measured from the n-th reflection site along the waveguide is, 
+
+¯En = Ein 
+
+> n−1
+
+Y
+
+> k=1
+
+T 2
+
+> k
+
+!
+
+Rn (6) The above formulation states that the measured energy of reflection n equals the incident energy reduced by the squared transmission coefficients of every upstream contact, each traversed twice, and scaled by the reflection coefficient of the 
+
+n-th site, Rn. The index n covers all reflection sites encountered along the waveguide, ordered by wave arrival time, and includes the wire end reflection site. This mathematical framework assumes that all interactions generate distinct peaks with respect to time of arrival and does not account for decoupling superposed waves. 
+
+2.4 Signal Analysis 
+
+The signal measured using the transducer is a voltage–time trace of the returning ultrasound wave packets. Voltage–time traces from the transducer were filtered with a forward–backward (zero-phase) 4th-order Butterworth bandpass filter (high-pass cutoff 200 kHz , low-pass cutoff 400 kHz ; sampling rate 25 MHz ). The signal envelope was then obtained as the magnitude of the analytic signal computed from the Hilbert transform of the real-valued trace. The peak envelope 4Ultrasound Waveguides for Distributed Tactile Sensing amplitudes within a predefined region of interest were used as the amplitude metrics. Regions of interest to isolate contact locations were predefined using time of flight from sensor distance and longitudinal wave speed. Assuming the squared wave packet amplitude in the voltage domain is proportional to the energy allows us to bridge the gap between the energy framework and the measured wave signal, 
+
+A2 ∝ E (7) First, we quantify the incident wave energy from the amplitude of the end reflection in the no-load instance, 
+
+¯Eend ,0 = Ein = A2 
+
+> end ,0
+
+(8) Using this as a baseline, we can solve for the single-point reflection and transmission coefficients from Eqs. (4) and (5) above, and L can be subsequently quantified using Eq. (1), 
+
+R1 = ¯E1
+
+Ein 
+
+=
+
+ A1
+
+Aend ,0
+
+2
+
+, T1 =
+
+s ¯Eend ,1
+
+¯Eend ,0
+
+= Aend ,1
+
+Aend ,0
+
+, L1 = 1 − R1 − T1 (9) The analysis then quantified the energy partition, defined as the ratio of reflected energy to total extracted energy (the sum of reflected and lost energy). A calibration model was subsequently established by linear regression of the applied force against the ratio of reflected to transmitted energy, constrained to pass through the origin, as follows, 
+
+F = α RT (10) 
+
+2.5 Distributed Force Measurements 
+
+The experimental setup for the single-point force measurements was adapted to add a second loading and measurement point to the rigid-body frame. This involved adding an additional load cell (with a signal amplifier) and an indenter rail system to the rigid-body frame, which was placed along the path of the suspended waveguide. Both rail systems were preassembled with steel indenters for this test. Both load cells were connected to the Arduino for simultaneous logging of measurements at a trigger rate of 80 Hz . The master–slave communication architecture between the Arduino (master) and the oscilloscope (slave) was maintained. Capture cycles were configured as previously described, in user-activated bursts of 50 samples. The distributed point force measurement procedure involved varying the loads applied to both indenters. The cumulative load applied on the waveguide was kept within 20 N . The protocol first applied loads to each indenter individually and then tested combinations of loads across the two locations. Loads were applied as discrete steps using calibration weights, with each step held while a burst of samples was acquired. Combinatorial loading followed a mirrored pattern in which one contact was held at a fixed level while the other was stepped through its range, and vice versa, thereby isolating each contact’s response and enabling quantification of crosstalk. The ultrasound waveguide signal was analyzed using the energy framework presented above, extended to the case with two indenters. This analysis decoupled the sequential contributions, extracting the energy partition ( R, T , and L) at each reflection event, with the loss coefficient L providing the closure needed to resolve the two-contact system. The R
+
+and T coefficients were then mapped to the force at each indenter location through the steel-indenter calibration model of Eq. (10) , assuming the calibration applied uniformly throughout the waveguide. Agreement between the estimated and measured forces was quantified by the Pearson correlation coefficient ( r) and the root-mean-square error (RMSE), computed separately for each contact. Estimation accuracy was further summarized by the coefficient of determination (R2) relative to the 1:1 identity line and by the mean ± standard deviation of the residual error. 
+
+2.6 Two-Dimensional Waveguide Force Experiment 
+
+Thin stainless-steel sheets ( 150 mm × 150 mm ) were used as two-dimensional waveguides. Three piezoelectric disks (SMD07T02R412WL, 300 kHz nominal resonant frequency) served as combined transmitter–receiver elements and were acoustically coupled to the sheet surface with a thin layer of cyanoacrylate. A heat-set adhesive was applied over each disk to provide mechanical damping. The three disks were distributed near the perimeter of the sheet so that the triangle they formed spanned the full measurement area, with one disk taken as the coordinate origin (T2) and the other two at approximately (145 , 4) mm and (74 , −124) mm relative to it. A pulser–receiver (DPR300, BYK) operating in pulse-echo mode excited each disk to generate a guided ultrasonic wave and then captured and amplified the echoes received by the same disk. Signals were digitized at a 25 MHz sampling rate using the same data-acquisition system described above. The three disks were excited and recorded sequentially. 5Ultrasound Waveguides for Distributed Tactile Sensing The first part of the experiment localized a point contact on the waveguide. The sheet rested on a flat steel surface acting as a backing plate. For each transducer, a reference signal was first acquired with no applied load. A 100 g cylindrical calibration weight ( 25 mm diameter) was then placed on the sheet and a 500 g weight stacked on top, producing a combined 600 g contact load. Each disk was excited and recorded in turn. The weight stack was applied at five different locations across the plate, and the corresponding contact coordinates were independently measured from calibrated photographs for ground-truth reference. For each transducer the loaded signal was subtracted from its no-load reference to isolate the reflection produced by the contact. The arrival time of the contact-induced wave was estimated from the difference signal using an Akaike information criterion (AIC) onset picker applied within a search window, with the window automatically expanded if the initial pick fell too early. Arrival time was converted to distance using a wave propagation speed of 5400 m s −1
+
+and accounting for round-trip paths. The contact location was then estimated by trilateration using a nonlinear least-squares minimization of the residuals between the measured ranges and the contact-to-transducer distances, given the known transducer geometry. Localization accuracy was reported as the Euclidean distance between the estimated and ground-truth positions across the five test points. The second part of the experiment examined how the material in contact with the waveguide influences the reflected signal. Thin ( < 1 mm ) circular shims of a single material were placed both above and below the plate at a fixed central location to define a constant, repeatable contact patch; the materials tested were stainless steel, aluminum, and PLA. For each material, a no-load signal was acquired as a reference. A 100 g calibration weight was then placed on the shim stack at the center of the sheet, and the load was increased in 100 g increments up to 2000 g , with a signal recorded at each step. The 100 g base weight remained in place throughout to maintain a consistent contact patch. At each load level, the difference relative to the no-load reference was computed. The amplitude of the reflected wave was measured from the maximum of the difference signal within a fixed time window and reported as a function of applied load for each material. 
+
+3 Results 
+
+3.1 Single Point Force Measurements 
+
+The single-point force experiment was performed on the carbon steel waveguide using nine different materials; the material properties of the indenters are listed in Table 2. Figure 2a shows example curves of the stepwise loading for the single-point indentation (top) and the reflection/transmission analysis results ( R, T , and R + T ) on the measured signal (bottom) for tungsten, run 1. The R + T sum falls below 1, indicating that energy is lost into the indenter or converted to a different mode. Figures 2b and 2c show the computed R and T values, respectively, plotted against load force (in newtons) for the nine different materials. As more force is applied, we observe a monotonically increasing relationship for reflected energy R and a monotonically decreasing relationship for transmitted energy T . Figure 2d plots the estimated lost energy L, computed as L = 1 − R − T from Eqn. (1) , against the applied force, which also increases monotonically with increasing load. Clear material effects are observed in the R, T , and L relationships with force. The extracted energy partition R/ (1 − T ), which represents the percentage of reflected energy relative to extracted energy, appears to be a force-independent material property, as indicated by the flat lines in Figure 2e. Figure 2f plots the ratio R/T against the loading force and fits the calibration model presented in Eq. (10) to each material’s data. The Table 3: Results of the F versus R/T fit for the single-indenter experiments. E∗ is the effective contact modulus, 
+
+αμ and αSD are the mean and standard deviation of the fitted calibration slope, R2 is the coefficient of determination, RMSE is the root-mean-square error, and %FS is the percentage of full-scale span. Material E∗ (GPa ) αμ (N) αSD (N) R2 RMSE ( N) RMSE (%FS) Nylon 3.5 7335 742 0.98 0.7 3.7
+
+Acrylic 3.6 6220 63 0.96 1.0 5.4
+
+Garolite 13 .4 1469 51 0.98 0.8 4.3
+
+Glass 55 .7 834 29 0.97 0.9 5.0
+
+Aluminium 57 .5 422 10 0.96 1.0 5.2
+
+Copper 83 .1 199 9 0.96 1.1 5.7
+
+Steel 110 .5 235 8 0.95 1.2 6.0
+
+Ceramic 142 .3 219 7 0.98 0.8 3.9
+
+Tungsten 167 .1 218 9 0.99 0.6 3.2
+
+6Ultrasound Waveguides for Distributed Tactile Sensing 0.0                                          
+
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> Force (N)
+> aTungsten
+> 0200 400 600
+> Frame (n)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Fraction of incident energy
+> R
+> T
+> R+T
+> 0510 15 20
+> Force (N)
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> Reflected  R
+> b
+> 0510 15 20
+> Force (N)
+> 0.80
+> 0.85
+> 0.90
+> 0.95
+> 1.00
+> Transmitted  T
+> c
+> 0510 15 20
+> Force (N)
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> 0.14
+> Leakage  L = 1  R T
+> d
+> 0510 15 20
+> Force (N)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Partition  R/(1  T)
+> e
+> 0.00 0.02 0.04 0.06 0.08 0.10
+> R/T
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> Force (N)
+> f
+> 10 110 2
+> Effective contact modulus E*(GPa)
+> 10 3
+> Fit slope  a (N)
+> Acrylic
+> Aluminium
+> Ceramic
+> Copper
+> Garolite
+> Glass
+> Nylon
+> Steel Tungsten
+> r= -0.98
+> g
+> Acrylic Aluminium Ceramic Copper Garolite Glass Nylon Steel Tungsten
+
+Figure 2: Single indenter experiment. (a) shows a sample step wise loading curve and the reflection (R) and transmission (T) analysis in the top and bottom plots, respectively. (b), (c), and (d) show the results of the energy framework analysis on the tested materials in the form of force versus reflection, transmission, and leakage, respectively. (e) plots the energy partition analysis with respect to indentation force. (f) plots the ratio of reflected to transmitted energy versus the applied force for all tested materials with a linear model fit. (g) log-log plot of the effective contact modulus between indenter and waveguide versus the slope of the F vs R/T fit. Error bars represent the standard deviation amongst experiment runs. fit coefficient and results are reported in Table 3. As shown in Figure 2g, the fitted slope α of the linearized force model (Eq. (10) ) is inversely correlated with the indenter’s effective contact modulus, E∗, across the nine materials, with a Pearson correlation r = −0.98 (p < 0.05 ) on the log-transformed values. 
+
+3.2 Distributed Force Measurements 
+
+The metallic ultrasound waveguide was used for multipoint force localization and measurement. The waveguide was loaded on a test rig with two independent load cells and steel indenters; variable loads were applied at the load cell locations, generating unique reflection patterns (Figure 3a). The steel-indenter force versus R/T curve in the 0 N 
+
+to 10 N range (Figure 3b) is used as the universal calibration for the waveguide on steel contact; the curve yielded a calibration factor α = 206 N . The coupled reflection and transmission analysis is performed for both contacts to extract the R/T coefficients and converted to force using Eq. (10) . Figure 3c shows the measured force traces from the load cells (top) and the ultrasound waveguide (bottom) for both contact points. Both contacts report an accurate force estimate (contact 1, r = 0 .99 ; contact 2, r = 0 .98 ) and a low associated root-mean-square error (contact 1, RMSE = 0 .69 N ; contact 2, RMSE = 0 .90 N ). Ultrasound waveguide force estimate accuracy is reported against the load cell (true) in true-versus-predicted plots (Figure 3d) and residual plots (Figure 3e) for both contacts; results show strong linearity as measured with the coefficient of determination (contact 1, R2 = 0 .97 ; contact 2, R2 = 0 .95 ) and minimal force overestimation (contact 1, mean error = 0 .10 N ; contact 2, mean error = 0 .25 N ). Figure 3f depicts measurement coupling between the two contact points on the waveguide, showing no coupling for contact 1 ( +0 .1% )and minimal coupling for contact 2 ( +4 .1% ). 
+
+3.3 Two-Dimensional Waveguide Force Experiment 
+
+The flat steel sheet was configured for tactile sensing using three piezoelectric sensors as shown in Figure 4a. Wave arrival time was measured for each sensor as the signal difference with respect to the baseline (Figure 4b) and, using the longitudinal wave speed, was then used to compute the intersection point via trilateration (Figure 4c). Figure 4d shows the ground-truth versus estimated positions for five tested contact points. The method reports an average localization error of 9.3(31) mm ; individual point results are summarized in Table 4. Qualitatively, the measured signal difference from contact shows a force dependence, with the amplitude growing with increasing force (Figure 4e). In Figure 4f, the relationship between the maximum reflected amplitude and the applied force is examined for different contact materials. 7Ultrasound Waveguides for Distributed Tactile Sensing 150 200 250 300 350 400 
+
+Time of flight ( s) 
+
+0
+
+200 
+
+400 
+
+600 
+
+800 
+
+1000 
+
+1200 
+
+> Frame (n)
+
+A1 A2 Ae
+
+(a) 
+
+0.00 0.02 0.04 
+
+R/T
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+> Force (N)
+
+(b)     
+
+> Cal. ramps
+> F=a(R/T)
+> a= 206 N
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+> Force (N)
+> Load cell
+
+(c) 
+
+0 200 400 600 800 1000 1200 
+
+Frame (n) 
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0   
+
+> Force (N)
+> Waveguide C1: r=0.99, RMSE=0.69 N
+> C2: r=0.98, RMSE=0.90 N
+
+0
+
+5
+
+10 
+
+> Estimated (N)  R2=0.97
+
+(d) 
+
+0.0 2.5 5.0 7.5 10.0 
+
+Load-cell force (N) 
+
+0
+
+5
+
+10 
+
+> Estimated (N)  R2=0.95
+
+2
+
+0
+
+2
+
+> Error (N)
+> mean error=0.10 N
+> SD error=0.68 N
+
+(e) 
+
+0.0 2.5 5.0 7.5 10.0 
+
+Load-cell force (N) 
+
+2
+
+0
+
+2
+
+> Error (N)
+> mean error=0.25 N
+> SD error=0.86 N
+
+2 4 6 8
+
+Force on contact 2 (N) 
+
+0.5 
+
+0.0 
+
+0.5    
+
+> F1 (N)
+> F1/F2= +0.1%
+> @5N -2.3% @10N +2.3%
+
+(f) 
+
+4 6 8
+
+Force on contact 1 (N) 
+
+0.5 
+
+0.0 
+
+0.5    
+
+> F2 (N)
+> F2/F1= +4.1%
+> @5N +4.6% @10N +3.6%
+
+Contact 1 Contact 2 
+
+Figure 3: Distributed force measurement on waveguide. (a) waterfall plot of the signal amplitude versus time of flight for all samples in the recording. (b) shows the calibration curve of Force versus R/T for the steel indenter. (c) the dynamic force experiment traces showing the load cell measurements and the waveguide measurement in the top and bottom subplot, respectively. (d) shows the true versus estimated force separated for each contact point. (e) shows the residual (Estimated – True) analysis for the contact points. (f) shows the measurement coupling for the two contact point measurements on the waveguide. 8Ultrasound Waveguides for Distributed Tactile Sensing (a)                                         
+
+> 1
+> 0
+> 1
+> V
+> S1 (b)
+> 1
+> 0
+> 1
+> V
+> S2
+> 010 20 30 40 50 60 70 80
+> Time (us)
+> 1
+> 0
+> 1
+> V
+> S3
+> 025 50 75 100 125 150
+> X (mm)
+> 120
+> 100
+> 80
+> 60
+> 40
+> 20
+> 0
+> Y (mm)
+> S1
+> S2
+> S3
+> 9.8 mm
+> (c)
+> Ground truth
+> Estimate
+> 025 50 75 100 125 150
+> X (mm)
+> 120
+> 100
+> 80
+> 60
+> 40
+> 20
+> 0
+> Y (mm)
+> S1
+> S2
+> S3
+> TP1
+> TP2
+> TP3
+> TP4
+> TP5
+> (d)
+> Ground truth
+> Estimate
+> 010 20 30 40 50 60 70 80
+> Time (us)
+> 1.5
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> Amplitude (V)
+> (e) Steel
+> 30.0 32.5 35.0 37.5 40.0
+> 0.4
+> 0.2
+> 0.0
+> 0.2
+> 0.4
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> Force (N)
+> 0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5
+> Force (N)
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> Max amplitude (V)
+> (f)
+> PLA
+> Aluminium
+> Steel
+
+Figure 4: Two-dimensional waveguide tactile sensing experiment. (a) shows the experimental setup comprising the sheet waveguide, the sensors and the weight. (b) shows sample traces of the three signals differences from reference with detected wave arrival time for S1, S2, and S3. (c) Example contact localization on the two-dimensional sheet using trilateration on time of arrival from the three sensors. (d) Shows five estimated versus ground truth localizations. (e) plots the signal from S1 with varying applied contact force. (f) shows the relationship between the maximum reflection amplitude and the applied force in newtons for different materials. Table 4: Two-dimensional sheet waveguide localization error ( n = 5 ). RMSE is the root-mean-square error. SD is the standard deviation. Point Ground truth Estimated Error 
+
+(x, y ) (mm ) (x, y ) (mm ) (mm )TP1 (67 .7, −18 .3) (72 .1, −19 .4) 4.5
+
+TP2 (108 .3, −36 .3) (99 .5, −40 .7) 9.9
+
+TP3 (31 .2, −66 .8) (19 .3, −73 .0) 13 .3
+
+TP4 (76 .6, −65 .0) (72 .6, −56 .2) 9.6
+
+TP5 (3 .7, −110 .4) (−0.2, −102 .2) 9.1
+
+Mean ± SD ( mm ) 9.3 ± 3.1
+
+RMSE ( mm ) 9.7
+
+Max ( mm ) 13 .3
+
+As reported above the two-dimensional sheet waveguide also displayed material-dependent effects for the force to amplitude relationship. 
+
+4 Discussion 
+
+In this study, we investigated the use of metallic ultrasound waveguides as distributed tactile sensors, in which a proximal transducer interrogates contact along the waveguide’s entire length via pulse-echo signal analysis. We demonstrated three main results: (1) analysis of the reflected and transmitted wave energy yields quantitative, distributed force measurements along the waveguide; (2) the material properties of the contacting body alter the acoustic signature upon contact in a load-invariant manner, enabling material discrimination; and (3) the concept of waveguides as tactile 9Ultrasound Waveguides for Distributed Tactile Sensing sensors generalizes across dimensions, extending from wires to sheets. Together, these results demonstrate a versatile platform technology for contact sensing with a wide array of applications. The first part of this study focused on characterizing force-dependent contact behaviors, as measured in the ultrasound signal, between our cylindrical waveguide and a cylindrical indenter while undergoing crossed contact. An ultrasound energy framework was developed to describe how ultrasound waves interacted with different waveguide contact locations. Increasing contact force consistently yielded a monotonically increasing reflection coefficient, indicating that a larger proportion of the incoming wave was being reflected. Interestingly, the material of the contacting indenter strongly influenced the magnitudes of the reflection, transmission, and loss coefficients at a given contact force, as clearly shown in Figure 2b–d. The implications of this finding are twofold. Firstly, it implies that for an accurate direct force measurement from the waveguide, information about the contacting material is necessary, as the slopes of the force versus R/T curves for different materials differ dramatically. This also allows different contact materials to be used to control the waveguide’s sensing range. Secondly, it suggests an underlying material property modulates contact mechanics. Analyzing the extracted energy partition, that is, the percentage of energy reflected versus energy removed from forward propagation (i.e., reflected plus leaked energy), revealed a clear material-dependent stratification. Most importantly, the extracted energy-partition-versus-force curves leveled off at ∼2 N and remained at that value up to the maximum measured force of ∼20 N . At lower force values ( F < 2 N ), which correspond to the indenter’s weight alone, the observed noise in the data most likely originates from signal noise and weak contact. This indicates that the energy partition parameter is a load-independent metric that can discriminate between material classes based on their properties. These findings are consistent with the broader principle established in guided-wave theory that mode energy is sensitive to the acoustic properties of the waveguide’s boundary conditions. Prior work by Vogt et al. [ 20 , 26 ] demonstrated this principle for fully immersed waveguides, showing that guided-wave modes leak energy into a surrounding viscous liquid and that the resulting attenuation depends on the acoustic properties of that liquid. Our results demonstrate that metallic waveguides subject to discrete, localized solid contacts produce reflection events whose characteristics depend on the material properties of the contacting body. This demonstrates that guided-wave interactions can be used to discriminate material properties from localized solid contact extending the applicability of guided-wave material sensing to a fundamentally different contact regime. The second part of this study built upon the single-point force analysis to simultaneously measure two separate loads along the waveguide using a single transducer at the proximal end. The primary challenge in measuring distributed forces along the waveguide arises from the cascaded coupling of sequential reflections; that is, how different contact locations interact with the propagating ultrasound waves. For example, if two separate point forces are applied to the waveguide, any force modulation to the contact closer to the transducer will affect the amount of transmitted energy that reaches the downstream locations. Therefore, the contributions of each contact location must be calculated using the power framework presented above before the force at each location can be estimated. While the wave propagation analysis herein was performed for two contact points for this experiment, it can be extended to an arbitrary number of points along the wire. In this experiment, to convert wave contributions to force, a single calibration curve for a given contact material was applied to the entire wire. This approach assumed a consistent calibration along the waveguide and was foundationally grounded in the material homogeneity of the waveguide along its length. The high correlations obtained in the results, as presented in Figure 3d, corroborate this assumption. Yet, there are a couple of aspects of this approach worth discussing. Firstly, we observe a non-linearity in the errors at the tested load regimes (Figure 3e) which are also observable in our calibration model (Figure 3b). This indicates that while we simplified the calibration to a single linear parameter, a more complex model is required to capture the full calibration curve. Secondly, we observe greater variance in the error at the second contact point than at the first, as illustrated in Figure 3e. This observation is in line with the expected coupling of wave reflections, which, as a consequence, also introduces cumulative errors in downstream force estimations. Nevertheless, upon applying the power framework to decouple measured amplitudes to actual reflection and transmission coefficients, the output at the second contact has only minimal ( ∼4%) coupling to the first contact. Hence, the proposed analytical framework decouples the relative contributions of each reflection for independent measurements. The final part of this study extends the concept of a one-dimensional distributed-force waveguide sensor to two-dimensional planar waveguides. We first explored contact-point localization on the planar waveguide. As in the one-dimensional scenario, time-of-flight can also be used to identify the contact location in two-dimensions. Yet, given the additional dimension, multiple time-of-flight measurements must be used to determine the position via trilateration. Our setup consisted of the simultaneous analysis of pulse-echo signals from three adhered piezoelectric transducers. In contrast to one-dimensional waveguides, where wave propagation is confined to a single axis and yields a visually interpretable signal, two-dimensional waveguides propagate waves radially, creating a significantly more complex 10 Ultrasound Waveguides for Distributed Tactile Sensing return pattern. Hence, to emphasize the arrival of the reflected wave from contact, we analyzed the signal difference with respect to the baseline (the signal with no contact). As shown in Figure 4b, this preprocessing method clearly demarcates the wave arrival, allowing the computation of the contact location given the wave speed (Figures 4c and 4d). The contact location in this experiment was determined by placing a calibration weight at each of the five marked locations. While a calibration weight was used to ensure consistent contact force, it has a diameter of 25 mm and cannot be considered a point contact. The waves propagating from our sensors might encounter different reflection boundaries depending on the direction, leading to ambiguities in the localization process. Although, as the mean localization error is smaller than the weight’s radius, it indicates that our localization was within the margins of contact. Future work should aim to develop a testing setup that enables a more ideal point contact while maintaining controlled force. Beyond localization, we also explored the force dependence of the signal reflection in sheet waveguides. This confirmed the monotonically increasing relationship between applied force and reflection amplitude, and testing different contact materials showed similar signal characteristics as observed in one-dimensional waveguides. While these results are more qualitative, they establish a parallel between one-dimensional and two-dimensional waveguides as tactile sensors. The experimental results collected throughout this study lay the groundwork for the design and implementation of metallic ultrasound waveguides as distributed tactile sensors across a wide range of applications. Firstly, the ultrasound waveguide platform technology uses a single sensor to interrogate a large sensing area and can deconvolve multiple contact points for independent readouts. Secondly, we observed that the contacting materials on the bare waveguide significantly influence the coupling behavior. Knowledge of this material effect can be used to design specific indenters or coatings to both modulate the sensor’s operating range, which can vary along its length, and balance the trade-off between the number of measurement points and the amount of reflected energy. Furthermore, the material effect can also be exploited to classify the contacting material in a load-independent manner. Given the robust yet flexible nature of metallic waveguides, we see strong potential in integrating this technology into robotic systems for enhanced haptic sensing that not only gives force feedback but also has contacting material awareness. Future work will be focused on the direct integration of this technology into robotic hands. 
+
+5 Conclusion 
+
+Several methods for distributed tactile sensing using metallic ultrasound waveguides have been presented. Firstly, this work presented and validated the use of ultrasound waveguides as distributed force sensors using a single proximal transducer. An energy-based framework was developed to model ultrasound wave propagation within the waveguide and decouple the effects of multiple sequential contact points. Application of this framework decouples contributions from individual measurement points and enables independent, accurate computation of force at each location. While two-point force measurements were shown, the method can be extended to an arbitrary number of points. Further, the findings provide evidence of load-independent material effects that can be used to measure the properties of the contacting materials. Finally, the method was extended to show feasibility in two-dimensional planar waveguides. 
+
+References 
+
+[1] Michael H. Friebe. Haptic and Palpation Sensing for Robotic Surgery: Engineering Perspectives on Design and Integration. Sensors , 26(4):1126, January 2026. [2] Tong Li, Yuhang Yan, Chengshun Yu, Jing An, Yifan Wang, and Gang Chen. A comprehensive review of robot intelligent grasping based on tactile perception. Robotics and Computer-Integrated Manufacturing , 90:102792, December 2024. [3] Longquan Ma, Xuecheng Yu, Yuanyuan Yang, Yougen Hu, Xinyu Zhang, Huayuan Li, Xing Ouyang, Pengli Zhu, Rong Sun, and Ching-ping Wong. Highly sensitive flexible capacitive pressure sensor with a broad linear response range and finite element analysis of micro-array electrode. Journal of Materiomics , 6(2):321–329, June 2020. [4] Ruiqing Li, Qun Zhou, Yin Bi, Shaojie Cao, Xue Xia, Aolin Yang, Siming Li, and Xueliang Xiao. Research progress of flexible capacitive pressure sensor for sensitivity enhancement approaches. Sensors and Actuators A: Physical , 321:112425, April 2021. [5] Hoang-Phuong Phan, Dzung Viet Dao, Koichi Nakamura, Sima Dimitrijev, and Nam-Trung Nguyen. The Piezore-sistive Effect of SiC for MEMS Sensors at High Temperatures: A Review. Journal of Microelectromechanical Systems , 24(6):1663–1677, December 2015. [6] Li Ping Shi, Jie Huang, Xi Wen Wei, and Yan Bo Wei. Investigation on Multi-Piezoelectric Effects from the First Positive Piezoelectric Effect. Key Engineering Materials , 609-610:1398–1403, 2014. [7] Lorenzo Jamone, Lorenzo Natale, Giorgio Metta, and Giulio Sandini. Highly Sensitive Soft Tactile Sensors for an Anthropomorphic Robotic Hand. IEEE Sensors Journal , 15(8):4226–4233, August 2015. 11 Ultrasound Waveguides for Distributed Tactile Sensing [8] Jianhua Li, Siyuan Dong, and Edward Adelson. Slip Detection with Combined Tactile and Visual Information. In 
+
+2018 IEEE International Conference on Robotics and Automation (ICRA) , pages 7772–7777, May 2018. [9] Mahmoud Meribout, Natnael Abule Takele, Olyad Derege, Nidal Rifiki, Mohamed El Khalil, Varun Tiwari, and Jing Zhong. Tactile sensors: A review. Measurement , 238:115332, October 2024. [10] Zhiheng Li, Yuan Lin, Peter B. Shull, and Hongliang Ren. Disentangling Contact Location for Stretchable Tactile Sensors from Soft Waveguide Ultrasonic Scatter Signals. Advanced Intelligent Systems , 7(5):2400561, 2025. [11] Jean-Baptiste Chossat and Peter B. Shull. Soft Acoustic Waveguides for Strain, Deformation, Localization, and Twist Measurements. IEEE Sensors Journal , 21(1):222–230, January 2021. [12] Medhanit Y. Alemu, Yuan Lin, and Peter B. Shull. EchoGest: Soft Ultrasonic Waveguides Based Sensing Skin for Subject-Independent Hand Gesture Recognition. IEEE Transactions on Neural Systems and Rehabilitation Engineering , 32:2366–2375, 2024. [13] Yuan Lin and Peter B. Shull. Novel, Soft, Water-Filled Acoustic Waveguides for Simultaneous Tactile Force and Location Sensing. IEEE Transactions on Industrial Electronics , 71(7):8141–8155, July 2024. [14] Yufan Ye, Yuan Lin, Huiming Pan, Xinjun Sheng, Jianjun Meng, Shuo Jiang, and Peter B. Shull. Multipoint Simultaneous Tactile Force and Location Sensing Through Soft Acoustic Waveguides. IEEE Transactions on Instrumentation and Measurement , 75:9521712–9521712, 2026. [15] Wilfred Mason, David Brenken, Falcon Z. Dai, Ricardo Gonzalo Cruz Castillo, Olivier St-Martin Cormier, and Audrey Sedal. Acoustic tactile sensing for mobile robot wheels, February 2024. [16] Zengchong Yang, Xiucheng Liu, Bin Wu, and Ren Liu. Adaptability of Ultrasonic Lamb Wave Touchscreen to the Variations in Touch Force and Touch Area. Sensors , 21(5):1736, January 2021. [17] Ros Kiri Ing, Nicolas Quieffin, Stefan Catheline, and Mathias Fink. In solid localization of finger impacts using acoustic time-reversal process. Applied Physics Letters , 87(20):204104, November 2005. [18] Sahar Bahrami, Jérémy Moriot, Patrice Masson, and François Grondin. Machine Learning for Touch Localization on an Ultrasonic Lamb Wave Touchscreen. Sensors , 22(9):3183, January 2022. [19] S. Periyannan, P. Rajagopal, and K. Balasubramaniam. Robust Ultrasonic Waveguide Based Distributed Tempera-ture Sensing. Physics Procedia , 70:514–518, January 2015. [20] T.K. Vogt, J.S. Lowe, and P. Cawley. Measurement of the material properties of viscous liquids using ultrasonic guided waves. IEEE Transactions on Ultrasonics, Ferroelectrics, and Frequency Control , 51(6):737–747, June 2004. [21] M. V. Kurlenya, V. E. Petrov, S. N. Popov, and Kh. B. Tkach. Applicability of acoustic waveguides for stress measurement in soils. Journal of Mining Science , 33(1):88–93, January 1997. [22] V.I Melnikov and V.N Khokhlov. Waveguide ultrasonic liquid level transducer for nuclear power plant steam generator. Nuclear Engineering and Design , 176(3):225–232, November 1997. [23] Shuiqiang Duan, Minggang Li, Jiaming Li, Tongxi Li, Changhua Nie, Zumao Yang, and Jun Hu. Research on magnetostrictive liquid level gauge for water level measurement of steam generator. Nuclear Engineering and Technology , 56(12):5422–5427, December 2024. [24] T. Vogt, M. Lowe, and P. Cawley. Cure monitoring using ultrasonic guided waves in wires. The Journal of the Acoustical Society of America , 114(3):1303–1313, August 2003. [25] Matthew M. Kropf and B. R. Tittmann. Ultrasonic magnetostrictive transducers for guided ultrasonic waves in thin wires. In Health Monitoring of Structural and Biological Systems 2007 , volume 6532, page 183. SPIE, April 2007. [26] T. Vogt, M. Lowe, and P. Cawley. The scattering of guided waves in partly embedded cylindrical structures. The Journal of the Acoustical Society of America , 113(3):1258–1272, February 2003. 12
