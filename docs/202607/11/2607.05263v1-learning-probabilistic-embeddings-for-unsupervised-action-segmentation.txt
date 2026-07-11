@@ -1,0 +1,616 @@
+Title: Learning Probabilistic Embeddings for Unsupervised Action Segmentation
+
+URL Source: https://arxiv.org/pdf/2607.05263v1
+
+Published Time: Tue, 07 Jul 2026 03:32:40 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# Learning Probabilistic Embeddings for Unsupervised Action Segmentation 
+
+Shuai Li 1, Duc Manh Vu 1, and Juergen Gall 1,2 
+
+> 1
+
+University of Bonn, Germany  
+
+> 2
+
+Lamarr Institute for Machine Learning and Artificial Intelligence, Germany 
+
+{lishuai,gall}@iai.uni-bonn.de 
+
+Abstract. This paper concerns the problem of unsupervised temporal action segmentation for long, untrimmed videos. Recent successful ap-proaches follow a joint representation learning and clustering paradigm, where optimal transport (OT) is adopted to produce pseudo labels for learning frame representations. These approaches alternate between es-timating pseudo labels using OT and optimizing the parameters with gradient descent during training, where OT is used for obtaining the fi-nal temporal action segmentation. A major limitation of these works is that they learn a deterministic embedding for frame representations. The iterative procedure between learning deterministic embeddings based on pseudo labels and estimating pseudo labels from the learned embedding can thus get quickly stuck in a local optimum. As an alternative, we thus propose to learn a probabilistic embedding for frame representations. The embeddings are modeled by Gaussian distributions and we sample from the distributions before estimating the pseudo labels. We evaluate our approach on several challenging temporal action segmentation datasets and achieve results comparable to, and in some cases, better than the state of the art. Compared to baselines with deterministic embeddings, our approach improves MoF up to 20.7% and F1-score up to 19.0%. Our code is available at https://github.com/derkbreeze/PEOT .
+
+Keywords: Unsupervised Temporal Action Segmentation · Probabilis-tic Embedding · Optimal Transport 
+
+## 1 Introduction 
+
+Unsupervised temporal action segmentation is highly relevant for many applica-tions, such as monitoring and optimizing workflows in manufacturing, phenotyp-ing human or animal behavior, as well as human-robot interaction and collabo-ration [23, 39]. The task, however, is challenging, as videos can contain different numbers of actions and actions can happen in a different order within the video. Furthermore, the same action can occur multiple times within a video. To tackle this problem, approaches based on joint representation learning and cluster-ing [17, 32] have recently become popular. They iterate during training between estimating pseudo-labels, using optimal transport (OT), and updating the frame embeddings by using the estimated pseudo-labels as target for the cross-entropy     
+
+> arXiv:2607.05263v1 [cs.CV] 6 Jul 2026 2S. Li et al. OT OT
+> Encoder Encoder
+> GT
+> Preds
+> GT
+> Preds
+> Fig. 1: Most previous works learn deterministic embeddings as frame embeddings; we propose to learn probabilistic embeddings such that frame representations are samples from Gaussian distributions that explicitly model embedding uncertainty. Our repre-sentations lead to more accurate segmentations compared to the baseline [38]. Different colors indicate different actions.
+
+loss. Following this paradigm, Xu and Gould [38] recently proposed ASOT. The core idea is to use a combination of Kantorovic and Gromov-Wasserstein opti-mal transport, which offers temporal consistency. They also relax the balanced action assignment assumption in prior works [17, 32] via an unbalanced OT for-mulation. Similar to the idea of [32], CLOT [3] extends ASOT by building a three-level OT that introduces feedback between frame embeddings and action embeddings, which improves the detection of short segments. We notice that all previous unsupervised works [3,16–18,30,32,34] learn a de-terministic embedding as frame representations before computing pseudo-labels. This, however, has the disadvantage that the optimization using optimal trans-port can get very quickly stuck in a local optimum such that the deterministic embedding overfits to the wrong pseudo-labels. In this work, we thus propose to learn probabilistic frame embeddings using Gaussian distributions as illustrated in Fig. 1. We then sample features for each frame from the learned Gaussian dis-tributions, and apply OT to compute the pseudo labels on the sampled features. For estimating the probabilistic frame embeddings, we find that Graph Convo-lutional Networks (GCN) [13] perform better than an MLP, as it is commonly used for deterministic frame embeddings, or a TCN [7]. We evaluate our approach on four challenging unsupervised temporal ac-tion segmentation benchmarks, namely Breakfast [14], Youtube Instructional [1], 50Salads [28], and Desktop Assembly [17], where the results are comparable to, and in some cases, better than the state of the art. More importantly, we demon-strate that the probabilistic frame embeddings improve unsupervised temporal action segmentation compared to a deterministic embedding, using state-of-the-art approaches like ASOT [38] or VASOT [2] as baselines. Compared to ASOT, our approach improves MoF up to 20 .7% (+12 .2) and F1-score up to 19 .0% 
+
+(+12 .1). Compared to VASOT, our approach improves MoF up to 16 .5% (+8 .8)Learning Probabilistic Embeddings for Unsupervised Action Segmentation 3
+
+and F1-score up to 8.4% (+5 .9). This shows that probabilistic embeddings are a simple yet efficient approach for improving unsupervised temporal action seg-mentation. 
+
+## 2 Related Work 
+
+Fully supervised action segmentation approaches yield promising results, but annotating the labels per frame is tedious and time-consuming. While research on weakly-supervised action segmentation requires less labor-intensive effort, unsupervised approaches do not require video labels at all and can scale to large datasets, making them more desirable. 
+
+Unsupervised Action Segmentation. Learning to solve a pretext task is a common paradigm within the unsupervised learning literature. Following this trend, Kukleva et al . [16] train a model to predict relative timestamps for repre-sentation learning, followed by a K-means clustering and HMM to produce final segmentation. In a similar vein, VidalMata et al . [34] extend this method to in-corporate visual information while the clustering procedure remains the same. Li and Todorovic [18] further improve the representation learning and use an HMM with a length model to tackle this problem and achieve decent results. As pointed out by Kumar et al . [17], this paradigm separates representation learning from clustering and as a result, yields sub-optimal segmentation results. They there-fore propose a joint representation learning and online clustering method, where a temporal optimal transport is used to estimate pseudo-labels during training. However, the performance of such approaches is limited by the strong fixed ac-tion ordering assumption. To address this limitation, Xu and Gould [38] propose a new method for action segmentation called ASOT, which uses a combination of Kantorovic and Gromov-Wasserstein optimal transport for joint representa-tion learning and clustering, the key innovation is that fixed action ordering assumption is no longer enforced, also ASOT does not assume that different actions are evenly distributed across videos by introducing an unbalanced reg-ularization term. This approach yields promising results. More recently, Elena and Dimiccoli [3] extend ASOT by introducing the feedback between frame and segment representations. However, the method contains optimal transport on three levels, which makes the model overly complex. In contrast, we adopt a sin-gle optimal transport while focusing on learning a better frame representation by modeling uncertainty within representation learning. 
+
+Probabilistic Embeddings. Probabilistic embeddings have been studied in previous works. Vilnis and McCallum [35] use Gaussian embeddings for word representation learning, and the KL divergence between two Gaussians is used as a similarity measure between embeddings. Oh [21] describes a similar idea for learning image embeddings, where the model is trained using a variational information bottleneck objective, in order to handle occlusion in images. Shi and Jain [26] propose probabilistic face embeddings that improve face recognition performance. Sun et al . [29] follow [21] and advocate the use of probabilistic embeddings to address 3D-2D human pose ambiguity. They use the learned embeddings for human pose retrieval and action alignment. However, all these methods work in the supervised learning setup, which requires manual labels to 4 S. Li et al. 
+
+specify whether a pair of observations is matched or not during training, while we address temporal action segmentation and aim to learn probabilistic embeddings in a completely unsupervised manner. 
+
+Graph Convolutional Network for Video Understanding. Graph Convo-lutional Networks (GCN) [13] have been widely used for video understanding. Wang [37] describes a spatial-temporal GCN to model object interactions for action recognition, where 2D bounding boxes across frames serve as nodes and edges model their spatial-temporal interaction. Zeng [41] adopts GCN for ac-tion detection. In the context of temporal action segmentation, Huang et al . [8] propose a classification and a regression GCN, where initial action segments are treated as nodes of the graph, which successfully improves the baseline segmen-tation performance [7], particularly in ego-centric cases. More recently, Khan et al . [10] use a GCN to address timestamp-supervised action segmentation. Our work on the other hand, tackles a more challenging unsupervised temporal action segmentation problem by using a GCN to learn smooth frame representations and uncertainty, which has not been done before. 
+
+## 3 Approach 
+
+Problem Formulation. Given a dataset D := {V b}Bb=1 consisting of B videos, frame-wise embeddings X ∈ RN ×D are extracted by an MLP for each video 
+
+Vb, where N is the number of video frames and D the dimension of the em-bedding. We aim to learn new embeddings Z ∈ RN ×D , as well as a set of K
+
+action prototypes, represented as A := [ a1, . . . , aK ] ∈ RK×D , where ai ∈ RD
+
+corresponds to the i-th action prototype. In this section, we briefly revisit the optimal transport (OT) formulation [38] for unsupervised action segmentation, then detail our proposed learning pipeline in Sec. 3.2. 
+
+3.1 Optimal Transport Formulation 
+
+Our work uses the same OT proposed by Xu and Gould [38], which is a combi-nation of Kantorovic Optimal Transport (KOT) [31] and Gromov-Wasserstein Optimal Transport (GWOT) [22]. 
+
+Kantorovic Optimal Transport. The classical Kantorovich optimal transport is essentially a linear program. Given the cost matrix Ck ∈ RN ×K 
+
+> +
+
+and p = 1 
+
+> N
+
+1N
+
+and q = 1 
+
+> K
+
+1K , where 1N and 1K are N and K dimensional vectors of ones, the optimization aims to find the minimum assignment T∗:
+
+min  
+
+> T∈T
+
+FKOT (Ck, T) := ⟨Ck, T⟩, (1) 
+
+T ∈ RN ×K 
+
+> +
+
+: T1 K = p, T⊤1N = q , (2) where T represents a set of possible transportation polytopes. In the context of temporal action segmentation, Ck can be interpreted as the cost of assigning N
+
+frames to K actions. Learning Probabilistic Embeddings for Unsupervised Action Segmentation 5
+
+Gromov-Wasserstein Optimal Transport. The Gromov-Wasserstein opti-mal transport extends the Kantorovich formulation by allowing for the compar-ison of histograms defined over incomparable spaces. Given two metric-measure pairs (Cv , p) and (Ca, q), the objective function is defined as: 
+
+FGW (Cv , Ca, T) := X
+
+> i,k ∈[n],j,l ∈[m]
+
+L(cvik , c ajl )tij tkl , (3) where L : R × R → R measures the discrepancies between the cost matrices, and 
+
+[n] and [m] denote the set of video frames and action embeddings. In order to model the long-tail nature of action segments, ASOT [38] further relaxes the second hard constraint in Eq. (1) into a soft constraint by minimizing the KL divergence between action marginals and a uniform action distribution across frames, where a small λ encourages a more unbalanced solution T [4, 5]. Finally, an entropy regularization term is added to the objective. Therefore, the final OT objective is defined as: 
+
+min  
+
+> T∈T
+
+αFGW (Cv , Ca, T) + (1 − α)FKOT (Ck, T)+ 
+
+λD KL (T⊤1N ∥ q) − ϵH (T), (4) with the solution satisfying { T ∈ RN ×K 
+
+> +
+
+: T1 K = p}. This non-convex opti-mization problem is solved using the efficient mirror descent [22, 38] algorithm with time complexity O(N K ) per iteration. 
+
+Cost Matrices. Eq. (4) contains a set of cost matrices, C := {Ck, Cv , Ca}
+
+for the KOT and GWOT problem. Specifically, Ck is the visual component and is defined as ckij = 1 − x⊤   
+
+> i·aj
+> ∥xi∥∥ aj∥
+
++ ρ · rij and R ∈ RN ×K is the temporal prior commonly used in [17, 38] defined as rij = |i/N − j/K | for ρ ≥ 0.The cost matrices Cv ∈ RN ×N and Ca ∈ RK×K serve as structural prior by penalizing associating adjacent frames (|i − k| ≤ N r, i ̸ = k) to different actions 
+
+(j̸ = l) for two different assignments tij and tkl . However, no penalty is applied to assignments outside the temporal radius N r or if adjacent frames are mapped to the same action (j = l).
+
+3.2 Probabilistic Embeddings 
+
+Prior unsupervised segmentation works [3,17,32,38] essentially learn determinis-tic embeddings as frame representations, which are used to obtain pseudo-labels via OT. However, networks trained with deterministic embeddings can quickly overfit to the data. We argue that it is more natural to learn a probabilistic embedding rather than its deterministic counterpart by incorporating the data-dependent (heteroscedastic) uncertainty [9] into the embeddings. To this end, we propose to parametrize the embeddings such that they follow a Gaussian distribution with a diagonal covariance matrix: 
+
+p(z|xi) = N (μi, diag( σ2 
+
+> i
+
+)) . (5) 6 S. Li et al.                 
+
+> Fig. 2: Pipeline of our training scheme. Features of an input video are fed through an MLP to obtain per-frame embeddings X. A temporally weighted graph is constructed, and the normalized adjacency matrix ˜Aalong with frame embeddings Xare fed into a Graph Convolutional Network (GCN), which produces the mean and covariance of the frame embeddings. The re-parametrization trick is used during training to obtain prob-abilistic frame embeddings Z, along with trainable action embeddings A, to produce the cost Ckfor OT that finds the pseudo-label T∗. We optimize the cross-entropy loss between the framewise probability distribution and the pseudo-label T∗.Blue boxes indicate the architectural components of the model that are trainable, and arrows denote computation/gradient flow.
+
+where μi and σi are both D-dimensional vectors predicted by the network for the 
+
+i-th frame xi. In particular, we sample a standard Gaussian noise ϵ during train-ing and use the differentiable re-parametrization trick [12] to sample the frame embeddings in the forward pass, i.e ., zi = μi + ϵσi. The sampled embeddings 
+
+z are then used to estimate pseudo-labels from OT. Due to the sampling, more variations of the pseudo-labels are generated during training. While the loss is at the beginning higher compared to a deterministic embedding, it converges in general to a better solution as shown in the supplementary material. When the embedding is trained, we use only μi for inference, i.e ., the probabilistic embedding does not increase the inference time compared to an approach with a deterministic embedding. 
+
+Predicting Probabilistic Embeddings In order to integrate temporal con-text into probabilistic modeling, we propose to use Graph Convolutional Net-works (GCN) [13] to learn smooth representations and uncertainty as shown in Fig. 2. Given an input video V, we first feed it into an MLP ϕ to get per-frame embeddings X ∈ RN ×D , where D is the dimension of the embedding. Inspired by [24, 37], we construct a temporally weighted graph G = ( V, E) where each frame represents a node and the edges connect every two adjacent frames. The edge weight aij in the adjacency matrix Aadj ∈ RN ×N is defined as the cosine similarity of pairwise features 
+
+aij = ϕ(xi)T ϕ(xj )
+
+|| ϕ(xi)|| 2|| ϕ(xj )|| 2 . (6) We show in the ablation study that using a weighted adjacency matrix works better than using an unweighted adjacency matrix. We then add self-connections to the adjacency matrix, i.e ., ˆA = Aadj + I where I ∈ RN ×N is the identity matrix. This self-connected adjacency matrix is further normalized via ˜A =
+
+ˆD− 12 ˆA ˆ D− 12 where ˆD is the degree matrix of ˆA. In particular, given the input Learning Probabilistic Embeddings for Unsupervised Action Segmentation 7
+
+representation X and the normalized adjacency matrix ˜A, the output of one GCN layer is computed as: 
+
+Z = σ( ˜AXW ) (7) where W ∈ RD×D denotes the weights of the GCN network while σ is the activation function and Z ∈ RN ×D . GCN makes it possible for the model to incorporate inductive bias in videos. As a result, we use GCN to predict the probabilistic embeddings: 
+
+μ = GCN mean (X, ˜A), log σ2 = GCN var (X, ˜A), (8) where μ ∈ RN ×D and σ ∈ RN ×D indicate the mean and covariance of the predicted Gaussian distribution for each frame. The network estimates the log 
+
+of the variance to ensure positivity. We then use Z = μ + ϵσ during training where ϵ is the noise sampled from standard Gausssian, to estimate pseudo-labels via OT. We will show in the ablation studies that computing Z using a GCN leads to better embeddings than using an MLP or TCN. 
+
+Training. Previous works [3,17,32,38] adopt a joint representation learning and clustering paradigm, where the methods alternate between using OT to gener-ate pseudo-labels and optimizing the standard cross-entropy loss using gradient descent, following the Expectation-Maximization (EM) algorithm [6]. Given a frame i and its deterministic frame embedding xi, the probability of assigning frame i to action j is defined as pij = exp (xTi aj /τ )    
+
+> P
+> lexp (xTial/τ )
+
+where τ is the temperature. Together with the pseudo-label T ∈ RN ×K derived from OT, the cross-entropy loss is defined as: 
+
+Lce = − 1
+
+N
+
+> N
+
+X
+
+> i=1
+> K
+
+X
+
+> j=1
+
+tij log pij . (9) However, such modeling assumes a single “winner-takes-all” pseudo-label; models can be over-confident with this pseudo-label and may overfit to the noise inherent in the data. In order to address this problem, we further propose to optimize a novel uncertainty-based cross-entropy loss: 
+
+Luncer = Epϕ(Z|X)Lce . (10) By using probabilistic embeddings Z rather than its deterministic counter-parts X, the algorithm essentially considers different pseudo-labels during train-ing, to avoid the model from overfitting to noisy pseudo-labels T. As it is in-tractable to integrate the expectation in Eq. (10), we propose to approximate the uncertainty loss via Monte Carlo sampling. Concretely, we sample M times from the Gaussian distribution during training to obtain the sampled features and the corresponding cross-entropy losses, followed by averaging them to ap-proximate Eq. (10): 8 S. Li et al. 
+
+Luncer ≈ − 1
+
+M N 
+
+> M
+
+X
+
+> m=1
+> N
+
+X
+
+> i=1
+> K
+
+X
+
+> j=1
+
+t(m) 
+
+> ij
+
+log p(m) 
+
+> ij
+
+. (11) During inference, we simply take μ = GCN mean (X, ˜A) as the final frame embeddings Z ∈ RN ×D to calculate the cost in Ck and obtain the final segmen-tation using OT as described in Section 3.1. 
+
+Computational Complexity. In comparison to prior works [2,38] which relies on a single pseudo label per EM iteration, our approach requires M pseudo labels during each training iteration and our training complexity is thus O(M T N K )
+
+compared to O(T N K ) where T is the number of steps for gradient descent. Since 
+
+M is small during training, it adds only a very small additional computational cost as shown in the supplementary material. 
+
+## 4 Experiments 
+
+4.1 Experimental Setup Implementation Details. Following [38], we design the encoder MLP with a single hidden layer and ReLU activation. We use a one-layer GCN with a graph connecting every 3 neighboring frames. For training, we sample M = 3 times from the Gaussian distributions. Adam optimizer [11] is adopted with a learning rate of 10 −3 for the representation learning with a weight decay of 10 −4. We use K-means clustering to initialize the action embeddings, where K equals the ground truth number of actions per activity [3, 16–18, 32, 38]. For each video, we sample 256 frames from uniformly distributed intervals [17, 38]. We provide more hyperparameter setting details in the supplementary material. 
+
+Datasets and Features. We conduct experiments on four datasets. For each dataset, we use the same pre-extracted features for training and inference, con-sistent with prior works [3, 16–18, 38]. 
+
+– Breakfast (BF) [14] is a large-scale dataset that includes 10 cooking ac-tivities. Each video spans a few seconds to several minutes, with multiple actions, where actions can be performed in a different temporal order, for example, add teabag can happen before/after pour water action across videos in the Tea activity. Also, repetitive actions such as squeeze orange 
+
+and pour juice in the Juice activity can occur multiple times within a video, making it particularly challenging for unsupervised action segmenta-tion. This dataset has a total of 48 actions across 1712 videos. We use the IDT [36] features. 
+
+– Youtube Instructional (YTI) [1] has 5 activities and each activity has 30 videos. The average per-video length is roughly 2 minutes, with a large portion of frames being background frames. We use the features provided by [1]. Learning Probabilistic Embeddings for Unsupervised Action Segmentation 9
+
+– 50Salads (FS) [28] comprises 50 videos of actors making salad. Following prior works [3, 16, 18, 38], we evaluate our model on the Eval granularity, which contains 12 action classes, where actions such as cut tomato and cut cheese are treated as a single cut action. IDT [36] features are used as input. 
+
+– Desktop Assembly (DA) [17] has 76 videos of actors performing one assembly activity, where each video is roughly 1.5 minutes long. Each actor conducts 22 actions in a fixed temporal order. We use the features shared by [17]. 
+
+Evaluation Metrics. We use the evaluation protocol proposed by [16, 25] for evaluating unsupervised action segmentation. We match the predicted segmen-tations with the ground truth segmentations via the Hungarian algorithm [15] across all videos of the same activity, as done by [3, 16–18, 25, 32, 38]. We use three metrics, namely mean-over-frames (MoF), F1-score, and mean intersection-over-union (mIoU). MoF calculates the percentage of correct per-frame predictions. F1-score is defined on the per-segment level, i.e ., for a pre-dicted segment that is matched to a ground truth segment. If the number of correct frames exceeds 50% of the ground truth segment length, it is regarded as a true positive segment [16]. mIoU averages IoU over all classes. We report F1 and mIoU averaged across all activities for a dataset. 
+
+4.2 Comparison with State of the Art 
+
+We name our unsupervised segmentation approach as probabilistic embeddings optimal transport (PEOT) and evaluate it on Breakfast [14], Youtube Instr. [1], 50Salads (Eval) [28], as well as Desktop Assembly [17]. The results are summa-rized in Table 1. Our method outperforms the state of the art for 9 out of 12 metrics and datasets. On Breakfast and Desktop Assembly, our approach out-performs the state of the art for all metrics. On Youtube Instr. and 50Salads (Eval), the very recent works VASOT [2] and CLOT [3], which are complemen-tary extensions of ASOT, report better results for some metrics, whereas our approach achieves the highest MoF. VASOT [2] is a recently proposed method that jointly solves action alignment and action segmentation by extending the fused Gromov-Wasserstein optimal transport to match a pair of videos from the same activity. It surpasses ASOT at the cost of increased computational com-plexity. Our approach consistently yields better results than VASOT in terms of MoF and F1, despite having a much simpler methodology design. CLOT [3] is another recent extension to ASOT. It introduces feedback between frame-wise and segment-wise representations via the cross-attention [33] mechanism. The system also integrates a projection-based sliced Wasserstein distance [20] that successfully detects small segments, a significant limitation of ASOT. On the Breakfast and Desktop Assembly dataset, our approach outperforms CLOT on all metrics and it performs comparable than CLOT on the Youtube Instr. and 50Salads (Eval) datasets with lower mIoU and higher MoF. The gain compared to ASOT [38] is most important since it is our baseline. MoF compared to ASOT is increased by +4.6 (8.2%) on Breakfast, +1.5 (4.7%) on YTI, +5.6 (9.4%) on 50Salads, and +0.8 (1.1%) on Desktop Assembly, and 10 S. Li et al. 
+
+Table 1: Comparisons of action segmentation performance obtained by applying the Hungarian matching at the activity-level on the Breakfast [14], Youtube Instr. [1], 50Salads (Eval) [28] and Desktop Assembly [17] datasets. The highest accuracy is indicated in bold , and the second highest is underlined.                                                                                                                                                                
+
+> Methods Breakfast YTI 50Salads (Eval) DA MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU CTE [16] 41.8 26.4 -39.0 28.3 -35.5 --47.6 44.9 -VTE [34] 48.1 ---29.9 -30.6 -----UDE [30] 47.4 31.9 -43.8 29.6 -42.2 34.4 ----ASAL [18] 52.5 37.9 -44.9 32.1 -39.2 -----TOT [17] 47.5 31.0 -40.6 30.0 -47.4 42.8 -56.3 51.7 -TOT+ [17] 39.0 30.3 -45.3 32.9 -44.5 48.2 -58.1 53.4 -UFSA [32] 52.1 38.0 -49.6 32.4 -55.8 50.3 -65.4 63.0 -ASOT [38] 56.1 38.3 18.6 52.9 32.1 24.7 59.3 53.6 30.1 70.4 68.0 45.9 HVQ [27] 54.4 39.7 -50.3 35.1 -------VASOT [2] 57.5 39.0 18.8 53.2 35.7 25.2 60.6 57.4 34.5 70.9 75.1 49.3 CLOT [3] 60.1 40.1 18.5 54.4 36.7 23.4 59.4 63.2 38.8 68.8 72.6 48.1 PEOT (Ours) 60.7 40.5 19.0 55.4 37.4 22.9 64.9 58.9 30.2 71.2 75.8 51.7
+
+Table 2: Effect of probabilistic embeddings on the four datasets for ASOT and VA-SOT: Breakfast [14], Youtube Instr. [1], 50Salads (Eval) [28], and Desktop Assem-bly [17]. The results of the baselines have been computed using the public available source codes.                                                                
+
+> Breakfast YTI 50Salads (Eval) DA Methods MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU ASOT [38] 56.4 35.7 17.2 49.0 34.1 23.7 59.4 56.7 25.6 59.0 63.7 40.6 ASOT [38] + Prob. 60.7 40.5 19.0 55.4 37.4 22.9 64.9 58.9 30.2 71.2 75.8 51.7 VASOT [2] 54.5 35.3 15.5 47.5 30.4 18.0 53.4 51.9 26.7 67.9 70.2 48.0 VASOT [2] + Prob. 57.2 36.1 15.8 52.5 32.5 18.8 62.2 53.6 26.4 71.1 76.1 51.8
+
+the F1-score is increased by +2.2 (5.7%) on Breakfast, +5.3 (16.5%) on YTI, +5.3 (9.9%) on 50Salads, and +7.8 (11.5%) on Desktop Assembly. While we compare in Table 1 our approach to results that have been re-ported in the literature, we also provide a direct comparison to ASOT [38] and VASOT [2] using the public available source code in Table 2. Since the source code of CLOT [3] is only partially available, we could not include it in the comparison. To demonstrate that probabilistic embeddings im-prove deterministic embeddings, we added them to ASOT [38] and VASOT [2] as baselines. In both cases, we observe improvements with the largest gains on the Desktop Assembly dataset. Compared to ASOT, our approach improves MoF up to 20 .7% (+12 .2) and F1-score up to 19 .0% (+12 .1). Compared to VASOT, our approach improves MoF up to 16 .5% (+8 .8) and F1-score up to 8.4% (+5 .9). This shows that probabilistic embeddings are a simple yet efficient approach for improving unsupervised temporal action segmentation. We provide qualitative results in Section 4.4. Learning Probabilistic Embeddings for Unsupervised Action Segmentation 11 
+
+Table 3: Impact of probabilistic embedding and GCN on the four datasets: Break-fast [14], Youtube Instr. [1], 50Salads (Eval) [28] and Desktop Assembly [17].                                                                 
+
+> Breakfast YTI 50Salads (Eval) DA Prob. GCN MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU 56.4 35.7 17.2 49.0 34.1 23.7 59.4 56.7 25.6 59.0 63.7 40.6
+> ✓59.2 34.9 15.1 49.4 33.7 20.0 60.1 56.3 23.7 63.8 63.9 42.3
+> ✓58.2 40.7 18.5 48.9 33.9 22.9 50.4 48.7 17.2 63.8 70.5 46.2
+> ✓✓60.7 40.5 19.0 55.4 37.4 22.9 64.9 58.9 30.2 71.2 75.8 51.7
+
+Table 4: Comparison of MLP, TCN, and GCN on Breakfast [14].             
+
+> Methods MoF F1 mIoU MLP 59.2 34.9 15.1 TCN 59.2 38.9 17.9 GCN 60.7 40.5 19.0
+
+Table 5: Ablation study of graph connec-tivity for GCN on Breakfast [14].          
+
+> Connectivity MoF F1 mIoU 5 frames 58.9 40.0 18.5 3 frames 60.7 40.5 19.0
+
+Table 6: Impact of weighted adjacency matrix for GCN on Breakfast [14].          
+
+> Methods MoF F1 mIoU Unweighted adjacency matrix 59.5 40.2 18.0 Weighted (learned) adjacency matrix 60.7 40.5 19.0
+
+Table 7: Impact of number of samples on Breakfast [14].                    
+
+> Samples MoF F1 mIoU
+> M= 1 60.0 39.4 18.4
+> M= 2 60.3 40.1 18.8
+> M= 3 60.7 40.5 19.0
+> M= 5 60.6 40.3 18.9
+
+4.3 Ablation Study Impact of Probabilistic Embeddings and GCN. We study the impact of different components on our system in Table 3. If we do not use probabilistic embeddings and a GCN to estimate them, our approach is the same as ASOT [38] since we use the same MLP architecture and OT formulation as ASOT. If we learn the probabilistic embeddings using an MLP (row 2 of Table 3), 
+
+i.e ., by parameterizing μ and log σ2 of the Gaussian distributions with one added MLP layer, it consistently improves MoF on all datasets. However, it does not improve F1 and mIoU, it even decreases these metrics in most cases. Since the MLP estimates the Gaussian distributions using the features of only one frame, the estimates are not very reliable. If we learn the probabilistic embeddings using a GCN (row 4) instead of an MLP, we get except of mIoU on YTI a substantial improvement for all metrics and datasets compared to the baseline (row 1). The MoF is improved by +4 .3 (7.6%), +6 .4 (13.1%), +5 .5 (9.3%), and +12 .2 (20.7%) for the Breakfast, YTI, 50Salads, and Desktop Assembly datasets, respectively. The F1-score is improved by +4 .8 (13.4%), +3 .3 (9.7%), +2 .2 (3.9%), and +12 .1
+
+(19.0%). In particular the improvements over the baseline for MoF and F1-score 12 S. Li et al. 
+
+Table 8: Comparison with other stochastic regularization approaches: Gauss: GCN+fix Gaussian noise, Drop: GCN+Dropout, Ours: GCN+Learned uncertainty.                                                    
+
+> Breakfast YTI 50Salads (Eval) DA Stoch. MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU MoF F1 mIoU Gauss 58.3 38.7 18.1 53.5 34.9 21.3 61.0 58.8 30.2 61.9 63.2 42.0 Drop 58.5 40.7 18.4 48.5 34.3 22.3 62.0 58.6 29.6 65.3 73.8 48.6 Ours 60.7 40.5 19.0 55.4 37.4 22.9 64.9 58.9 30.2 71.2 75.8 51.7
+
+are very large. We show that these improvements are not only due to the GCN (row 3). While the GCN improves the baseline as well in many cases, the largest and most consistent improvements are due to the probabilistic embeddings. In Table 4, we also evaluate the impact of replacing the GCN layer by a TCN [7] layer, i.e ., a 1-dimensional temporal convolution of kernel size 3. While TCN performs better than an MLP, the GCN layer performs best. While TCN uses a convolution kernel with fixed weights over all temporal frames, the GCN layer adaptively adjusts the weights based on the input features. 
+
+Impact of Graph Connectivity in GCN. We investigate the impact of adding more connections to build the graph V for the GCN. By default, each node is connected to three nodes, i.e ., the node at frame i is connected to the nodes at frames i − 1, i, and i + 1 . We tried more connections such that the node at frame i is connected to the nodes at frames i − 2 and i + 2 as well, but the results in Table 5 show that increasing the number of connections does not increase the performance. This might be attributed to the fact that adding more edges in the graph leads to the over-smoothing problem in GCNs [13, 41]. For this reason, we use the 3-frames connection graph for the GCN. 
+
+Impact of Weighted Adjacency Matrix in GCN. We investigate the bene-fit of using a weighted adjacency matrix (6) in our GCN in Table 6. For compar-ison, we use a GCN layer without weighted adjacency matrix, i.e ., aij in Aadj is 1 if there is a connection between frame i and j and 0 otherwise. We notice that using a weighted adjacency matrix for the GCN leads to better performance. 
+
+Impact of M . We study the effect of using a different number of Monte Carlo samples during training (11) in Table 7. Note that for M = 1 we still have a probabilistic embedding, but we sample only once from the learned Gaussian distributions. We notice that increasing M from 1 to 3 increases the performance, but it saturates after M = 3 .
+
+Comparisons of Probabilistic Embeddings with Stochastic Regular-izations. We compare to stochastic regularization approaches in Table 8, i.e ., adding Gaussian noise to deterministic embeddings or adding dropout to the GCN. All methods use the same GCN architecture for fair comparison. Except of F1 on Breakfast, where dropout performs slightly better, our approach out-performs the stochastic regularization methods. For instance, F1 is +2 .5 (7.2%) higher on YTI and MoF is +5 .9 higher (9%) on DA. It demonstrates that our approach is more effective than other stochastic regularization approaches. Learning Probabilistic Embeddings for Unsupervised Action Segmentation 13       
+
+> (a) Breakfast [14] ASOT
+> Ours
+> GT
+> YTI:changing_tire_0019 (b) Youtube Instructional [1]
+> (c) 50Salads [28] (d) Desktop Assembly [17]
+
+Fig. 3: Qualitative results. Comparing ASOT [38], PEOT (ours), and ground truth (GT) across different datasets and activities. 
+
+Fig. 4: Qualitative results. Two examples when using VASOT [2] as baseline. The examples are from the Breakfast [14] dataset. 
+
+4.4 Qualitative Results 
+
+We finally provide some qualitative segmentation results in Fig. 3, comparing our approach to the ASOT baseline. In the example from the Breakfast dataset, our method is able to identify the long purple segment as opposed to the baseline approach which splits it into several segments. In the example from YTI, our method successfully segments very short actions. While ASOT finds good seg-ments as well, more segments are not correctly clustered, i.e ., not associated to the correct action. The black color indicates background frames. In the example from 50Salads, our method can detect reoccurring actions whereas ASOT does not recognize that some actions reoccur in this case. In the example from the Desktop Assembly dataset, the segments estimated by our approach are better aligned with the ground-truth. We further show some qualitative results for adding probabilistic embed-dings to VASOT [2] as baseline in Fig. 4. In these examples, VASOT generates additional segments for the green and gray cluster. With the probabilistic em-beddings, the segments are better aligned with the ground truth. 
+
+Qualitative Results of Learned Frame Embeddings. We visualize the learned frame embeddings by calculating the temporal self-similarity matrix for a given video, where 1 minus the cosine similarity between every two frames is computed. We see in Fig. 5 that our approach gives better embeddings than ASOT [38], which uses a deterministic embedding. In the first example our learned representations are more temporally coherent even for short segments, although it is slightly misaligned with the ground truth action boundaries. For 14 S. Li et al. 0 50 100 150 200 250 
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+
+TSM (ASOT)      
+
+> 050 100 150 200 250
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+
+TSM (Ours)      
+
+> 050 100 150 200 250
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+
+TSM(GT) 
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(a) Breakfast: P12_webcam01_P12_tea 0 200 400 600 800 1000 1200 
+
+> 0
+> 200
+> 400
+> 600
+> 800
+> 1000
+> 1200
+
+TSM (ASOT)       
+
+> 0200 400 600 800 1000 1200
+> 0
+> 200
+> 400
+> 600
+> 800
+> 1000
+> 1200
+
+TSM (Ours)       
+
+> 0200 400 600 800 1000 1200
+> 0
+> 200
+> 400
+> 600
+> 800
+> 1000
+> 1200
+
+TSM(GT)  
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(b) Breakfast: P15_stereo01_P15_juice 
+
+Fig. 5: Qualitative results of the learned frame-wise representations. Com-paring ASOT [38] (left), our approach (middle), and ground truth (right) in terms of the temporal self-similarity matrix. Our approach learns better representations that are closer aligned to the ground truth segmentation. 0 1 2 3 4 5 6 7 8 9 10 11 12 13    
+
+> Epochs
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> F1
+> Uncer. of correct frames Uncer. of incorrect frames
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> 1.8
+> 1
+> 2
+> 3
+> 4
+> || || F
+> || || F
+> Salat from Breakfast
+
+(a) Uncertainty progress during training (left) and statistics of frame-wise uncertainty (right). 0 
+
+> 2
+> || || F
+> Pred
+> GT
+> BF:P26_cam01_P26_salat
+
+(b) Qualitative result of segmentation and un-certainty estimation for one video of Breakfast. 
+
+Fig. 6: Analysis of the learned uncertainty. GT 
+
+Epoch02 Epoch14 
+
+PEOT w.o. Prob 
+
+PEOT 
+
+Fig. 7: Difference between probabilistic embeddings and deterministic embeddings dur-ing training. After 2 epochs, the approach using the deterministic embedding (row 2) recognizes the pink action, while the probabilistic embedding (row 3) misses it. After 14 epochs, the segmentation with the deterministic embedding only changes by shift-ing the boundaries between the segments whereas the pink action now also appears for the probabilistic embedding. The segmentation of the latter is now also closer to the ground truth. The video is P52_stereo01_P52_friedegg taken from Breakfast. 
+
+the large blue squares in the ground truth matrix of the second example, ASOT shows stronger dissimilar patterns in the self-similarity matrix, which is an in-dicator that the learned representation focuses too much on subtle details that are not relevant for distinguishing actions. 
+
+4.5 Analysis of the Learned Uncertainty. 
+
+We report the progress of the learned covariance during training in Fig. 6, using the Frobenius norm || Σ|| F to measure the frame-wise uncertainty. In Fig. 6a, we average the uncertainty across all frames of the Salat activity of Breakfast. The uncertainty is high at the beginning of the training. As the training progresses, Learning Probabilistic Embeddings for Unsupervised Action Segmentation 15 
+
+the learned features become better and the uncertainty decreases. It might be beneficial to sample more often at the beginning of the training when the un-certainty is high, which we leave as a future work. We also observe that a low uncertainty is an indicator for overfitting. We report a box plot (right of Fig. 6a) for the uncertainties of all correctly predicted vs. all incorrectly predicted frames after training. It shows that the estimated uncertainty is in general higher for incorrectly predicted frames, but some incorrectly predicted frames have a low uncertainty. This is visualized in Fig. 6b. For the missed orange segment, the peaks of the uncertainty are higher compared to the correctly detected segments, but the uncertainty is not high for all frames within the orange segment. We further plot the evolution of the results for two different training epochs in Fig. 7. The example shows that the deterministic embedding provides a bet-ter segmentation at the early epoch, but the probabilistic embedding changes more during training. At the later epoch, the segmentation of the probabilistic embedding is closer to the ground-truth. 
+
+## 5 Conclusion 
+
+In this work, we proposed learning probabilistic instead of deterministic em-beddings for frame representations, which brings a novel perspective to unsu-pervised temporal action segmentation. We incorporated the approach into two state-of-the-art baselines, namely ASOT [38] and VASOT [2], and evaluated it on four challenging benchmarks. The results showed that the probabilistic em-beddings consistently improved MoF and F1-score over all datasets. Compared to the state of the art, our approach achieves the best performance for 9 out of 12 metrics/datasets. Future work can make the pseudo label generation process differentiable [19] and the probabilistic embeddings might be also useful for other tasks like action anticipation [40]. 
+
+## Acknowledgements 
+
+The work has been supported by the project iBehave (receiving funding from the programme “Netzwerke 2021”, an initiative of the Ministry of Culture and Science of the State of Northrhine Westphalia) and the ERC Consolidator Grant FORHUE (101044724). The authors would like to thank Elena Bueno-Benito, Federico Spurio and Yazan Abu Farha for helpful discussions. 
+
+## References 
+
+> 1. Alayrac, J.B., Bojanowski, P., Agrawal, N., Sivic, J., Laptev, I., Lacoste-Julien, S.: Unsupervised learning from narrated instruction videos. In: Proceedings of the IEEE conference on computer vision and pattern recognition. pp. 4575–4583 (2016)
+
+16 S. Li et al. 2. Ali, A.S., Mahmood, S.A., Saeed, M., Konin, A., Zia, M.Z., Tran, Q.H.: Joint self-supervised video alignment and action segmentation. In: Proceedings of the IEEE/CVF International Conference on Computer Vision. pp. 10807–10818 (2025) 3. Bueno-Benito, E., Dimiccoli, M.: Clot: Closed loop optimal transport for unsuper-vised action segmentation. In: Proceedings of the IEEE/CVF International Con-ference on Computer Vision. pp. 10719–10729 (2025) 4. Chizat, L., Peyré, G., Schmitzer, B., Vialard, F.X.: Scaling algorithms for unbal-anced optimal transport problems. Mathematics of computation 87 (314), 2563– 2609 (2018) 5. De Plaen, H., De Plaen, P.F., Suykens, J.A., Proesmans, M., Tuytelaars, T., Van Gool, L.: Unbalanced optimal transport: A unified framework for object de-tection. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 3198–3207 (2023) 6. Dempster, A.P., Laird, N.M., Rubin, D.B.: Maximum likelihood from incomplete data via the em algorithm. Journal of the royal statistical society: series B (method-ological) 39 (1), 1–22 (1977) 7. Farha, Y.A., Gall, J.: Ms-tcn: Multi-stage temporal convolutional network for ac-tion segmentation. In: Proceedings of the IEEE/CVF conference on computer vi-sion and pattern recognition. pp. 3575–3584 (2019) 8. Huang, Y., Sugano, Y., Sato, Y.: Improving action segmentation via graph-based temporal reasoning. In: Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. pp. 14024–14034 (2020) 9. Kendall, A., Gal, Y.: What uncertainties do we need in bayesian deep learning for computer vision? Advances in neural information processing systems 30 (2017) 10. Khan, H., Haresh, S., Ahmed, A., Siddiqui, S., Konin, A., Zia, M.Z., Tran, Q.H.: Timestamp-supervised action segmentation with graph convolutional networks. In: 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). pp. 10619–10626. IEEE (2022) 11. Kingma, D.P., Ba, J.: Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 (2014) 12. Kingma, D.P., Welling, M.: Auto-encoding variational bayes. arXiv preprint arXiv:1312.6114 (2013) 13. Kipf, T.: Semi-supervised classification with graph convolutional networks. arXiv preprint arXiv:1609.02907 (2016) 14. Kuehne, H., Arslan, A., Serre, T.: The language of actions: Recovering the syn-tax and semantics of goal-directed human activities. In: Proceedings of the IEEE conference on computer vision and pattern recognition. pp. 780–787 (2014) 15. Kuhn, H.W.: The hungarian method for the assignment problem. Naval research logistics quarterly 2(1-2), 83–97 (1955) 16. Kukleva, A., Kuehne, H., Sener, F., Gall, J.: Unsupervised learning of action classes with continuous temporal embedding. In: Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition. pp. 12066–12074 (2019) 17. Kumar, S., Haresh, S., Ahmed, A., Konin, A., Zia, M.Z., Tran, Q.H.: Unsuper-vised action segmentation by joint representation learning and online clustering. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 20174–20185 (2022) 18. Li, J., Todorovic, S.: Action shuffle alternating learning for unsupervised action segmentation. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 12628–12636 (2021) Learning Probabilistic Embeddings for Unsupervised Action Segmentation 17 19. Li, S., Kong, Y., Rezatofighi, H.: Learning of global objective for network flow in multi-object tracking. In: Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. pp. 8855–8865 (2022) 20. Nguyen, K., Ho, N.: Energy-based sliced wasserstein distance. Advances in Neural Information Processing Systems 36 , 18046–18075 (2023) 21. Oh, S.J., Murphy, K., Pan, J., Roth, J., Schroff, F., Gallagher, A.: Modeling uncer-tainty with hedged instance embedding. arXiv preprint arXiv:1810.00319 (2018) 22. Peyré, G., Cuturi, M., Solomon, J.: Gromov-wasserstein averaging of kernel and distance matrices. In: International conference on machine learning. pp. 2664–2672. PMLR (2016) 23. Romeo, L., Marani, R., Perri, A.G., Gall, J.: Multi-modal temporal action segmen-tation for manufacturing scenarios. Engineering Applications of Artificial Intelli-gence 148 (2025) 24. Sarfraz, S., Murray, N., Sharma, V., Diba, A., Van Gool, L., Stiefelhagen, R.: Temporally-weighted hierarchical clustering for unsupervised action segmentation. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 11225–11234 (2021) 25. Sener, F., Yao, A.: Unsupervised learning and segmentation of complex activities from video. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. pp. 8368–8376 (2018) 26. Shi, Y., Jain, A.K.: Probabilistic face embeddings. In: Proceedings of the IEEE/CVF international conference on computer vision. pp. 6902–6911 (2019) 27. Spurio, F., Bahrami, E., Francesca, G., Gall, J.: Hierarchical vector quantization for unsupervised action segmentation. In: Proceedings of the AAAI Conference on Artificial Intelligence. vol. 39, pp. 6996–7005 (2025) 28. Stein, S., McKenna, S.J.: Combining embedded accelerometers with computer vi-sion for recognizing food preparation activities. In: Proceedings of the 2013 ACM international joint conference on Pervasive and ubiquitous computing. pp. 729–738 (2013) 29. Sun, J.J., Zhao, J., Chen, L.C., Schroff, F., Adam, H., Liu, T.: View-invariant probabilistic embedding for human pose. In: European Conference on Computer Vision. pp. 53–70. Springer (2020) 30. Swetha, S., Kuehne, H., Rawat, Y.S., Shah, M.: Unsupervised discriminative em-bedding for sub-action learning in complex activities. In: 2021 IEEE International Conference on Image Processing (ICIP). pp. 2588–2592. IEEE (2021) 31. Thorpe, M.: Introduction to optimal transport. Notes of Course at University of Cambridge 3 (2018) 32. Tran, Q.H., Mehmood, A., Ahmed, M., Naufil, M., Zafar, A., Konin, A., Zia, Z.: Permutation-aware activity segmentation via unsupervised frame-to-segment alignment. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision. pp. 6426–6436 (2024) 33. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, Ł., Polosukhin, I.: Attention is all you need. Advances in neural information pro-cessing systems 30 (2017) 34. VidalMata, R.G., Scheirer, W.J., Kukleva, A., Cox, D., Kuehne, H.: Joint visual-temporal embedding for unsupervised learning of actions in untrimmed sequences. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision. pp. 1238–1247 (2021) 35. Vilnis, L., McCallum, A.: Word representations via gaussian embedding. arXiv preprint arXiv:1412.6623 (2014) 18 S. Li et al. 36. Wang, H., Schmid, C.: Action recognition with improved trajectories. In: Pro-ceedings of the IEEE international conference on computer vision. pp. 3551–3558 (2013) 37. Wang, X., Gupta, A.: Videos as space-time region graphs. In: Proceedings of the European conference on computer vision (ECCV). pp. 399–417 (2018) 38. Xu, M., Gould, S.: Temporally consistent unbalanced optimal transport for un-supervised action segmentation. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 14618–14627 (2024) 39. Yang, Y., Li, Y., Fermuller, C., Aloimonos, Y.: Robot learning manipulation action plans by “watching” unconstrained videos from the world wide web. In: Proceedings of the AAAI conference on artificial intelligence. vol. 29 (2015) 40. Zatsarynna, O., Bahrami, E., Farha, Y.A., Francesca, G., Gall, J.: Gated temporal diffusion for stochastic long-term dense anticipation. In: European Conference on Computer Vision. pp. 454–472. Springer (2024) 41. Zeng, R., Huang, W., Tan, M., Rong, Y., Zhao, P., Huang, J., Gan, C.: Graph convolutional networks for temporal action localization. In: Proceedings of the IEEE/CVF international conference on computer vision. pp. 7094–7103 (2019) Learning Probabilistic Embeddings for Unsupervised Action Segmentation Supplementary Materials 
+
+Shuai Li 1, Duc Manh Vu 1, and Juergen Gall 1,2 
+
+> 1
+
+University of Bonn, Germany  
+
+> 2
+
+Lamarr Institute for Machine Learning and Artificial Intelligence, Germany 
+
+{lishuai,gall}@iai.uni-bonn.de 
+
+## A Analysis of Probabilistic Embeddings 
+
+While the quantitative results in the paper already show the benefit of learning probabilistic embeddings for unsupervised action segmentation, we further ana-lyze its impact on the training. Fig. 1 shows the loss (black curve) for the ASOT baseline with deterministic embeddings and our approach with probabilistic em-beddings. The left figure plots loss, MoF, and F1-score for the Friedegg activity from Breakfast [14]. ASOT achieves a lower loss but both the MoF and F1-score saturate as the training progresses. In contrast, despite the higher loss, the MoF and F1-score of our approach keep increasing throughout the training. Similarly, the right figure shows the plot for the Changing _tire activity from Youtube Instr. [1]. ASOT achieves better MoF and F1 at the beginning of the training but it does not improve much. MoF even decreases after 15 epochs. On the other hand, our approach improves MoF and F1-score as training continues. 2 4 6 8 10 12 14           
+
+> Epochs
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70 BF: Friedegg
+> Loss_ASOT
+> MoF_ASOT
+> F1_ASOT
+> Loss_PEOT
+> MoF_PEOT
+> F1_PEOT
+> 36912 15 18 21 24 27 30
+> Epochs
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> YTI: Changing_tire
+> Loss_ASOT
+> MoF_ASOT
+> F1_ASOT
+> Loss_PEOT
+> MoF_PEOT
+> F1_PEOT
+
+Fig. 1: Comparing for ASOT [38] (dashed) and our approach PEOT (solid) the loss curves (black) and evaluation metrics MoF (red) and F1 (blue) for videos of the friedegg and changing_tire activity from the Breakfast [14] and Youtube Instr. [1] dataset, respectively. We scale the loss for better visualization. 
+
+## B Sensitivity Analysis 
+
+For the parameters of the fused Gromov-Wasserstein optimal transport, we fol-low ASOT, using αtrain = 0 .4, r = 0 .04 , ρ = 0 .2, and λtrain = 0 .1 for Breakfast, 20 S. Li et al. 
+
+αtrain = 0 .3, r = 0 .02 , ρ = 0 .2, and λtrain = 0 .12 for Youtube Instr., αtrain = 0 .3,
+
+r = 0 .02 , ρ = 0 .05 , and λtrain = 0 .1 for 50Salads (Eval), and αtrain = 0 .3,
+
+r = 0 .02 , ρ = 0 .25 , and λtrain = 0 .16 for Desktop Assembly. In Fig. 2, we report the sensitivity of these parameters on Breakfast. MoF and F1 benefit from an increased αtrain as more temporal consistency is enforced, but this leads to a slightly decrease in mIoU. We thus use αtrain = 0 .4 during the experi-ments. The highest performance is achieved when r = 0 .04 as larger r leads to over-smoothing. Increasing ρ would result in a decrease of MoF and F1 since the performance on activities involving repetitive actions would drop, therefore 
+
+ρ = 0 .2 is used. We also observe a notable performance drop with increased unbalanced weight λtrain although mIoU becomes better. For a tradeoff, we set 
+
+λtrain = 0 .1.0.2 0.4 0.6 0.8          
+
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> MoF
+> F1
+> mIoU
+> 0.02 0.04 0.06 0.08
+> r
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> MoF
+> F1
+> mIoU
+> 0.15 0.20 0.25 0.30
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> MoF
+> F1
+> mIoU
+> 0.08 0.10 0.12 0.14
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> MoF
+> F1
+> mIoU
+> Sensitivity Analysis of FGWOT on Breakfast
+
+Fig. 2: Sensitivity analysis of OT hyper-parameters. 
+
+## C Training Time 
+
+We use the same OT formulation as ASOT [38] and conducted all experiments on a single NVIDIA GeForce RTX 3090 GPU (24GB) with CUDA 11.8. Compared to ASOT, our method PEOT only contains one additional GCN layer followed by a sampling procedure during training. The results in Table 1 show that our Learning Probabilistic Embeddings for Unsupervised Action Segmentation 21 
+
+method increases the training time per epoch by 2 seconds, which is a moderate increase. Compared to our approach PEOT, VASOT [2] consumes twice of the time per training epoch due to the use of video-to-video alignment.      
+
+> Table 1: Average per-epoch training time on Breakfast [14]. Methods Time (s) ASOT [38] 4.494
+> VASOT [2] 13.410 PEOT (Ours) 6.578
+
+## D Segmentation Performance over Multiple Runs 
+
+We study the segmentation performance over multiple runs. To do so, we run our method as well as ASOT [38] and VASOT [2] for 3 different random seeds. On Breakfast, the standard deviation for F1 is 0.7, 1.4, and 2.1 for Ours, ASOT [38], and VASOT [2], respectively. For mIoU, it is 0.4, 0.6, and 0.9, respectively.
