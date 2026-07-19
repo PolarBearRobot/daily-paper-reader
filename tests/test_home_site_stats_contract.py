@@ -92,7 +92,8 @@ def test_home_panels_share_a_quiet_visual_language():
 
     shared_rule = css.split(shared_selector, 1)[1].split("}", 1)[0]
     assert "background: #fbfcfb" in shared_rule
-    assert "border-left: 3px solid #48a878" in shared_rule
+    assert "border: 1px solid #dfe7e2" in shared_rule
+    assert "border-left" not in shared_rule
     assert "border-radius: 6px" in shared_rule
     assert "box-shadow: none" in shared_rule
     assert "gradient" not in shared_rule
