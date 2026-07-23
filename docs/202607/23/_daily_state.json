@@ -1,0 +1,377 @@
+{
+  "date": "20260723",
+  "date_label": "",
+  "generated_at": "2026-07-23 01:40:06 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2607.15330v1",
+      "route": "202607/23/2607.15330v1-xiaomi-robotics-1-scaling-vision-language-action-models-with-over-100k-hours-of-real-world-trajectories",
+      "title": "Xiaomi-Robotics-1: Scaling Vision-Language-Action Models with over 100K Hours of Real-World Trajectories",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "在超过10万小时真实操作轨迹上训练的可扩展VLA模型，配备自动标注管道",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15746v1",
+      "route": "202607/23/2607.15746v1-towards-artificial-nerves-biomimetic-optical-fiber-tactile-sensing-for-robots",
+      "title": "Towards Artificial Nerves: Biomimetic Optical-Fiber Tactile Sensing for Robots",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "仿生触觉传感器用于灵巧操作",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15982v1",
+      "route": "202607/23/2607.15982v1-data-and-learning-where-it-matters-for-contact-rich-manipulation",
+      "title": "Data and Learning Where it Matters for Contact-Rich Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "接触丰富操作的自动化数据收集",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.16506v1",
+      "route": "202607/23/2607.16506v1-foresight-residual-rl-for-long-horizon-robot-manipulation-with-vision-language-action-models",
+      "title": "Foresight Residual RL for Long-Horizon Robot Manipulation with Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在冻结VLA基策略上应用残差强化学习以改进长时域操作",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.17977v1",
+      "route": "202607/23/2607.17977v1-rynnbrain-11-towards-more-capable-and-generalizable-embodied-foundation-model",
+      "title": "RynnBrain 1.1: Towards More Capable and Generalizable Embodied Foundation Model",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "具有统一跨形态动作空间的具身基础模型系列",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.18016v1",
+      "route": "202607/23/2607.18016v1-closing-the-loop-in-humanoid-vla-persistent-3d-object-tokens-for-verifiable-loco-manipulation",
+      "title": "Closing the Loop in Humanoid VLA: Persistent 3D Object Tokens for Verifiable Loco-Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于持久3D对象标记的VLA人形机器人全身操作",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.18709v1",
+      "route": "202607/23/2607.18709v1-robointer15-a-holistic-intermediate-representation-suite-for-embodied-world-modeling-and-robotic-manipulation",
+      "title": "RoboInter1.5: A Holistic Intermediate Representation Suite for Embodied World Modeling and Robotic Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "带有密集中间表示的大规模操作数据集",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.18950v1",
+      "route": "202607/23/2607.18950v1-design-and-stability-analysis-of-an-underactuated-hand-with-passively-rotating-fingers",
+      "title": "Design and stability analysis of an underactuated hand with passively rotating fingers",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "灵巧欠驱动手设计",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15163v1",
+      "route": "202607/23/2607.15163v1-scaling-behavior-foundation-model-for-humanoid-robots",
+      "title": "Scaling Behavior Foundation Model for Humanoid Robots",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "研究人形机器人行为基础模型的扩展规律",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15880v1",
+      "route": "202607/23/2607.15880v1-dynamics-aware-meta-imitation-for-generalization-to-unseen-robotic-manipulation",
+      "title": "Dynamics-Aware Meta-Imitation for Generalization to Unseen Robotic Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "元模仿学习实现小样本泛化",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15890v1",
+      "route": "202607/23/2607.15890v1-exo2egopose-leveraging-exocentric-demonstrations-for-vision-language-guided-egocentric-3d-hand-pose-forecasting",
+      "title": "Exo2EgoPose: Leveraging Exocentric Demonstrations for Vision-Language guided Egocentric 3D Hand Pose Forecasting",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用外中心演示进行自我中心3D手部姿态预测以桥接人-机器人动作",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.16123v1",
+      "route": "202607/23/2607.16123v1-bayescontact-uncertain-pose-estimation-via-visuo-tactile-proposals-and-simulation-based-inference",
+      "title": "BayesContact: Uncertain Pose Estimation via Visuo-Tactile Proposals and Simulation-based Inference",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于仿真推理的视觉-触觉位姿估计用于操作",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.16187v1",
+      "route": "202607/23/2607.16187v1-handroid-bridging-dexterous-hand-and-humanoid",
+      "title": "Handroid: Bridging Dexterous Hand and Humanoid",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "可重新配置的双形态机器人，结合灵巧手和人形",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.18580v1",
+      "route": "202607/23/2607.18580v1-step-signal-temporal-logic-for-precise-specifications-for-action-generation-with-vision-language-models",
+      "title": "STeP: Signal Temporal Logic for Precise Specifications for Action Generation with Vision Language Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "信号时态逻辑作为VLM动作生成的精确规约共享表示",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.12892v1",
+      "route": "202607/23/2607.12892v1-ur-vc-unsupervised-robotic-value-correction-for-time-derived-progress-proxies",
+      "title": "UR-VC: Unsupervised Robotic Value Correction for Time-Derived Progress Proxies",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "机器人操作中时间派生进度代理的无监督修正",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.13033v1",
+      "route": "202607/23/2607.13033v1-densereward-dense-reward-learning-via-failure-synthesis-for-robotic-manipulation",
+      "title": "DenseReward: Dense Reward Learning via Failure Synthesis for Robotic Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "合成多样化失败数据用于机器人操作的密集奖励学习",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.13498v1",
+      "route": "202607/23/2607.13498v1-factorized-spectral-representations-for-reinforcement-learning",
+      "title": "Factorized Spectral Representations for Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过张量分解进行连续控制的谱表示学习",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.14578v1",
+      "route": "202607/23/2607.14578v1-beyond-implicit-force-evaluating-explicit-force-torque-proxies-in-action-chunking-with-transformers",
+      "title": "Beyond Implicit Force: Evaluating Explicit Force-Torque Proxies in Action Chunking with Transformers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "研究了动作分块Transformer（ACT）中的力-力矩代理，以学习更好的机器人动作表示",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.14698v1",
+      "route": "202607/23/2607.14698v1-lights-camera-malfunction-when-illumination-robustness-leaves-vla-models-blind-to-color",
+      "title": "Lights, Camera, Malfunction: When Illumination Robustness Leaves VLA Models Blind to Color",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "VLA模型脆弱性分析",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.14439v1",
+      "route": "202607/23/2607.14439v1-active-real-world-factor-based-evaluation-for-generalist-robot-policies",
+      "title": "Active Real-World Factor-Based Evaluation for Generalist Robot Policies",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "考虑任务因素的通用机器人策略主动评估框架",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15641v1",
+      "route": "202607/23/2607.15641v1-imbench-a-benchmark-for-intuitive-robotic-manipulation",
+      "title": "IMBench: A Benchmark for Intuitive Robotic Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "灵巧操作评估基准",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.15794v1",
+      "route": "202607/23/2607.15794v1-on-the-geometry-of-learned-representations-in-event-based-multi-modal-egomotion-estimation",
+      "title": "On the Geometry of Learned Representations in Event-Based Multi-Modal Egomotion Estimation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多模态自运动网络中潜在空间几何的分析",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    },
+    {
+      "paper_id": "2607.17257v1",
+      "route": "202607/23/2607.17257v1-asynchronous-multimodal-diffusion-policy-composition-via-latency-aware-guidance-fusion",
+      "title": "Asynchronous Multimodal Diffusion Policy Composition via Latency-Aware Guidance Fusion",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "异步多模态扩散策略用于机器人模仿学习",
+      "first_seen_at": "2026-07-23 01:40:06 UTC",
+      "updated_at": "2026-07-23 01:40:06 UTC"
+    }
+  ]
+}

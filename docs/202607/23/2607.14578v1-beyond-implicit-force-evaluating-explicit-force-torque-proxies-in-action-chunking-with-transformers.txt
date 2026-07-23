@@ -1,0 +1,220 @@
+Title: Beyond Implicit Force: Evaluating Explicit Force-Torque Proxies in Action Chunking with Transformers
+
+URL Source: https://arxiv.org/pdf/2607.14578v1
+
+Published Time: Fri, 17 Jul 2026 01:23:54 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Beyond Implicit Force: Evaluating Explicit Force-Torque Proxies in Action Chunking with Transformers 
+
+King Hang Wong, Lingqiao Liu, Feras Dayoub 
+
+Abstract — Contact-rich manipulation requires policies to infer interaction state from signals that are often weakly observable through vision and kinematics alone. Action Chunk-ing with Transformers (ACT) has shown strong performance in fine-grained manipulation, but many deployments collect demonstrations through leader–follower teleoperation, where tracking error between commanded leader motion and exe-cuted follower motion implicitly encodes contact, resistance, and constraint violation. This paper examines whether ACT’s apparent force-awareness depends on this hidden interaction cue. We introduce an observation-centric ACT variant that predicts future follower joint states instead of leader commands, thereby removing the teleoperation-induced discrepancy signal while preserving the rest of the learning pipeline. We then evaluate whether simple joint-torque proxies, derived from onboard motor current or joint effort, can recover contact-aware behavior without external force/torque sensors. Across four real-world tasks spanning surface following, insertion, stiffness discrimination, and force-based stopping, removing the implicit cue leads to severe failures in force-critical phases. In contrast, torque-augmented policies recover robust contact behavior and improve the base ACT policy. These results demonstrate that, on real hardware, the implicit teleoperation cue is a recoverable source of force-awareness — where torque signals are available, a simple proxy matches, surpasses, or further enhances it. 
+
+I. I NTRODUCTION 
+
+Robust contact-rich manipulation is challenging because crucial interaction forces, compliance, and friction are only partially observable from vision and kinematics. Recent progress in end-to-end imitation learning has produced in-creasingly capable manipulation policies, ranging from large Vision–Language–Action (VLA) models to smaller Vision– Action (VA) policies. Action Chunking with Transformers (ACT) [1] is a widely adopted VA model due to its fast single-pass inference, small weight, smooth chunked tra-jectories, and strong performance with as few as 20–30 demonstrations on simple tasks. Notably, ACT’s real-world success is intertwined with how demonstrations are collected and executed. In the common leader–follower teleoperation setting used in ALOHA-style systems, the low-level controller tracks leader commands using position control; the resulting tracking discrepancies provide an implicit interaction cue that correlates with con-tact onset, constraint violation, and external resistance. This cue is not an explicit force model, but acts as a latent                 
+
+> The authors are with the Australian Institute for Ma-chine Learning (AIML), Adelaide University, Adelaide, SA 5005, Australia.
+
+{kinghang.wong, lingqiao.liu, feras.dayoub }@adelaide.edu.au Removing implicit interaction cues collapses ACT performance on contact-rich tasks, while simple torque proxies restore force-aware behavior 
+
+> Compliant Surface Following Stiffness Aware Policy Expressivity Force Precision Base ACT ACT + Torque ACT-o ACT-o + Torque
+
+Fig. 1: Summary of model capabilities across contact-sensitive behaviors By eliminating implicit force modeling by predicting future follower joints instead of leader joints, we collapse performance across contact-dependent behaviors 
+
+(ACT-o) . Injecting simple force proxies ( +Torque models) restores force-aware manipulation and enhances policy mod-eling. signal that helps policies disambiguate free-space motion from high-load contact. Crucially, this teleoperation-induced interaction cue is absent in several practical and common workflows. In kines-thetic teaching, the robot is physically guided and no separate leader arm exists; similarly, when demonstrations are col-lected through alternative interfaces or higher-transparency controllers that minimize tracking error, the discrepancy signal is reduced and interaction events become less visible in the recorded kinematics. This raises a key question: To what extent does ACT rely on this implicit teleoperation cue, and can onboard torque signals replace it on platforms lacking external force/torque sensors? 
+
+At the same time, many research and industrial platforms lack six-axis force/torque (F/T) sensors due to cost, hardware mismatch, and integration complexity. Instead, they expose internal measurements such as motor currents or joint effort estimates, from which torque- or wrench-like proxies can be computed with varying fidelity (e.g., through filtering, compensation, or Jacobian-based mappings). Despite grow-ing interest in multimodal sensing, there remains limited arXiv:2607.14578v1 [cs.RO] 16 Jul 2026 systematic evidence on how such explicit torque proxies 
+
+compare to teleoperation-induced implicit cues within ACT-style policies, and which proxy representations are most effective under realistic data scales and contact conditions. In this paper, we present a controlled real-world study of implicit versus explicit interaction signals in ACT for contact-rich manipulation. We introduce an observation-centric ACT formulation that predicts future follower robot states rather than leader commands, thereby removing the teleoperation-induced discrepancy cue. We then inject ex-plicit torque-based proxies derived from onboard measure-ments and evaluate whether they can restore contact-aware behavior. Across multiple real-robot contact-sensitive tasks spanning impact-like contacts, sustained frictional interac-tion, and state-dependent force transitions, we show that removing the implicit cue can cause catastrophic failure in force-critical phases, and that appropriately processed torque proxies can recover and enhance performance. Our contributions are:  
+
+> •
+
+Isolation of implicit interaction cues in ACT: We for-malize and ablate the teleoperation-induced discrepancy signal by introducing an observation-centric ACT target, and show that removing this cue can collapse contact-rich task performance.  
+
+> •
+
+Explicit torque proxy evaluation: Along with Base ACT, we evaluate three proposed model variants and demonstrate that explicit proxies can recover contact-aware behavior in the absence of external F/T sensors.  
+
+> •
+
+Task-level analysis under contact: We provide quan-titative results and diagnostic analyses that characterize reactivity and stability under contact across diverse contact regimes, and we report practical guidelines for integrating torque proxies into ACT-style policies. II. R ELATED WORK 
+
+Recent end-to-end imitation learning for manipulation spans large Vision–Language–Action (VLA) models and high-frequency Vision–Action (VA) policies. VLAs have demonstrated impressive generality through large-scale pre-training and broad task coverage [2], [3], [4], but their deployment can involve higher inference overhead and lower-rate action abstractions that may be less suitable for contact-critical phases requiring rapid feedback and precise reg-ulation. In contrast, VA policies trained on task-specific demonstrations remain a standard choice for real-robot pre-cision control, including ACT [1] and Diffusion Policy [5]. These approaches leverage temporal structure (e.g., action chunking [1] or diffusion over action sequences [5]) to improve stability and mitigate compounding errors, and they provide strong baselines for controlled studies in contact-rich manipulation. A long-standing line of work has shown that force/torque (F/T) feedback improves robustness in contact-rich tasks by providing direct evidence of interaction state when vision and kinematics are ambiguous. Recent few-shot imitation-learning methods combine force feedback with learned rep-resentations to enable adaptive contact-rich behaviors under limited data [6]. In parallel, emerging work on torque-aware and force-aware large models studies how to repre-sent and fuse interaction signals within VLA-style policies [7], [8]. While these results highlight the value of explicit interaction sensing, they typically assume either dedicated sensing hardware or large-scale model/data regimes that differ substantially from low-data ACT-style deployments on widely used research platforms. Bilateral control and haptic teleoperation provide a prac-tical pathway for collecting demonstrations and regulating contact by coupling human intent with robot interaction dy-namics. Recent extensions incorporate bilateral control into ACT-style learning for contact-rich manipulation [9], [10], and related work studies variable compliance control using haptic feedback teleoperation [11]. These systems underscore that contact performance can be influenced not only by the policy architecture but also by the data-collection and control interface, motivating further studies for careful isolation of interaction-related signals when comparing learning-based methods. Unlike these works, our work studies contact cue implicitly created by leader–follower tracking error and tests whether onboard torque proxies can replace or enhance it in non-bilateral demonstration settings. Despite growing interest in multimodal sensing, many platforms lack dedicated six-axis F/T sensors due to cost and integration complexity. New sensor designs aim to reduce this barrier (e.g., compact 6-axis F/T sensors) [12], [13], but a substantial fraction of platforms still rely on onboard measurements such as motor currents or joint effort esti-mates. This motivates using torque- and wrench-like proxies derived from internal dynamics as a lightweight alternative for contact awareness. Our work targets this practical setting and focuses on ACT-style policies trained from limited demonstrations. The prior work establishes strong VA baselines for precise manipulation, demonstrates the utility of explicit interac-tion sensing for contact-rich behaviors, and explores torque, force, and tactile representations in larger model families. However, there remains limited systematic evidence in ACT-style pipelines on (i) how performance depends on interac-tion cues tied to teleoperation and control interfaces, and (ii) whether explicit torque proxies derived from onboard measurements can reliably substitute for such cues when external F/T sensing is unavailable. This paper addresses these questions through controlled ablations and a task-level empirical study on contact-sensitive manipulation. III. P RELIMINARIES 
+
+A. Teleoperation Data and the Interaction Signal Gap 
+
+Imitation learning performance is bounded by demonstra-tion fidelity, where control discrepancies heavily impact how models like ACT learn contact dynamics. 
+
+Leader–Follower Teleoperation: Popularized by plat-forms like ALOHA [1], [15], [16], this involves using kine-matically identical ”leader” arms to drive follower arms (Fig. 2). While this joint-space mapping provides high-bandwidth coordination, it importantly introduces a latent ”interaction Fig. 2: The ALOHA Solo teleoperating system [1][14] uses a kinematically identical Leader-Follower arm pair, enabling one-to-one direct joint state mapping. cue”: the positional discrepancy between the leader and the stalled follower during contact. Our study investigates an observation-centric ACT variant that predicts future follower states directly, thereby removing this implicit signal and exposing the model’s reliance on these artifacts. 
+
+Kinesthetic Teaching and High-Transparency Inter-faces: These respectively involve physically guiding the robot and using high accuracy controllers that either directly execute action commands or minimize tracking error. Con-sequently, the teleoperation-induced discrepancy signal is reduced or eliminated, making interaction events less visible in recorded kinematics. 
+
+Impact on Policy Learning: This hardware dependent signal gap raises a fundamental question: to what extent does ACT’s contact performance rely on the implicit interaction cue present in leader–follower teleoperation, and can it be replaced by signals available on platforms without external force/torque sensors? Our results demonstrate that by remov-ing implicit force modeling, the explicit re-integration of F/T data or proxies not only restores but enhances the ability to complete contact-rich tasks. They suggest explicit force modeling is not just beneficial for general policy modeling, but important for robust force-aware tasks. 
+
+B. Action Chunking with Transformers (ACT) 
+
+The ACT framework addresses the challenges of high-precision imitation learning by formulating robot control as a generative modeling task. Unlike traditional step-by-step behavior cloning, which is prone to compounding errors and drifts, ACT predicts a sequence (or ”chunk”) of k future actions simultaneously given the current observations. The model effectively handles multi-modal action distributions while ensuring smooth, coherent trajectories even in complex tasks. The architecture is built upon a Conditional Variational Autoencoder (CVAE). During training, an encoder Eφ maps the current state and the target action sequence to a latent variable z, which represents the ”style” or ”intent” of the motion. A Transformer-based decoder Dθ then reconstructs the action chunk conditioned on this latent z and the current proprioceptive state. The training objective is to minimize a loss function consisting of a reconstruction term and a KL-divergence regularization term: 
+
+LACT = Ez∼Q[∥at:t+n − ˆat:t+n∥22]+β DKL (Q(z|st , at:t+n)∥P(z|st )) (1) where at:t+n is the target action sequence from the sampled training data, ˆat:t+ is the predicted chunk, and β is ahyperparameter balancing the two terms. 
+
+Implicit Force via Joint Discrepancy In standard ACT implementations, the policy π typically maps obser-vations O to a sequence of leader joint positions A =
+
+{qleader ,t , . . . , qleader ,t+n}. This conventional setup relies on the inherent discrepancy δ = qleader − qfollower , which cap-tures both the intended motion and a latent, implicit force-awareness generated by the operator’s physical response to resistance. 
+
+C. The ALOHA Platform and ViperX Dynamics 
+
+Our experimental setup utilizes the ALOHA Solo plat-form, specifically configured with a Trossen Robotics WidowX-250s and ViperX-300s Leader-Follower arm pair [14]. Each arm features 6 Degrees of Freedom (DoF), and the paired-arms are kinematically identical. The ViperX Fol-lower actuators provide real-time feedback for joint position, velocity, and effort (current), which we leverage as torque proxies. In contact-rich manipulation, the relationship between the joint torques τ and the external wrench Fext applied at the end-effector is governed by the manipulator Jacobian J(q):
+
+τ = J(q)T Fext + τdyn (q, ˙q, . . . ) (2) where τdyn accounts for the internal dynamics of the arm, including gravity, Coriolis forces, and friction. Classical contact-rich control relies on the manipulator Jacobian to map joint torques to task-space wrenches, requiring an explicit analytical dynamics model ( τdyn ) to isolate exter-nal forces from gravity and inertia. Our empirical results demonstrate that raw, joint-level effort signals provide a highly robust alternative foundation for ACT. Furthermore, our results demonstrate that calculating the full residual dynamics term τdyn is unnecessary for an effective torque-augmented policy. IV. M ETHODOLOGY 
+
+A. Observation-Centric Prediction and Force Decoupling 
+
+By substituting observation joint states for leader-arm states as the prediction target, we decouple the ACT archi-tecture from implicit teleoperation dynamics. This shift more strictly constrains actions to valid state spaces, and better supports wider teleoperation setups discussed in Section III. 
+
+Joint Target Reformulation We redefine the decoder prediction target as the follower’s future proprioceptive states 
+
+Q ≜ Qt:t+n = {qfollower ,t+1, . . . , qfollower ,t+n}. This reformula-tion allows us to isolate the policy from the leader arm’s mechanical artifacts and digitally configured compliance, and experimentally evaluate the performance impact when the model is deprived of these latent force cues. The recon-struction loss Lrec is thus reformulated to minimize the error between the predicted and actually achieved robot configurations: 
+
+Lrec = Ez,O,Q
+
+∥Q − ˆQ(z, O)∥22
+
+ (3) where z is the latent variable sampled from the CVAE encoder. 
+
+B. Explicit Force Proxies via Servo Current 
+
+The removal of leader actions eliminates the implicit force modeling naturally embedded in the leader-follower lag. To recover this information, we propose ablative variants to introduce explicit force proxies using screw-axis torque signals τ. The integration of τ allows the transformer to learn a mapping between torque transients and physical resistance. This enables task completion without the need for an analytical gravity or friction compensation model G(q).The dynamics are governed by: 
+
+τtotal = M(q) ¨q +C(q, ˙q) ˙q + G(q) + τext (4) where in quasi-static states, as | ¨q|, | ˙q| → 0 (i.e., pushing against a fixed object), only G(q), τext remain. By providing τtotal as a direct input, a torque-aware policy learns to compensate for τext (external contact forces) and 
+
+G(q) implicitly via its learned modes. Experimental results in Section VI demonstrate that this approach is robust in various contact-rich tasks, where effort change patterns serve as an informative proxy. 
+
+Injection Method To integrate this additional modal-ity into the ACT architecture, we treat torque proxies as ”first-class” inputs alongside proprioceptive joint states. We found that directly concatenating raw effort values with their corresponding joint states—prior to hidden-dimension projection—allows the model to utilize a shared joint-state embedding that projects the 14 (joints + effort)-dimensional input into the hidden-layer dimension: R14 → Rdhidden . Empir-ical results indicate the embedding’s strong efficacy in both the CVAE encoder and the transformer encoder. TABLE I: Comparison of Prediction Targets, Input Modali-ties, and Dynamics Modeling          
+
+> Feature Standard ACT Proposed (Ours)
+> Prediction Target Action Joints ( at)Observation Joints ( qt)Force Modeling Implicit (lag-based) Explicit (screw-axis τ)
+
+C. CVAE Role and Input Reformulation 
+
+To accommodate this shift, the CVAE encoder is repur-posed to capture physically aware robot trajectory modes rather than human control artifacts. While the original ACT encoder ingests positionally-encoded leader-arm ac-tions At:t+n, our modified encoder processes the future fol-lower states Qt:t+n. To evaluate the impact of explicit haptic 
+
+Fig. 3: Overview of the torque-augmented ACT archi-tecture and task performance. Standard leader-follower teleoperation embeds implicit interaction cues that Base ACT relies upon for contact tasks. Isolating the policy from these latent signals ( ACT-o ) results in a systemic performance collapse. Then, treating screw-axis torque τ as a first-class input alongside joint states qt , our modified CVAE (top) and Transformer architecture (bottom) restores force-aware behavior and improves stability across contact-rich manipu-lation tasks. feedback, we introduce an ablative variant where the encoder also ingests screw-axis torque proxies τ.In the augmented variant, the encoder produces the latent 
+
+z = E(qt , Qt:t+n, τt ) (Fig. 3, top). This allows us to com-pare a model that purely reconstructs state-space trajectories against one where z explicitly characterizes environmental interactions and loading conditions. The latent distribution is optimized via the variational objective: 
+
+LCVAE = Lrec + β DKL [q(z|Q, [τ]) ∥p(z)] (5) where [τ] denotes the optional inclusion of torque data depending on the model variant being evaluated. V. E XPERIMENTS 
+
+A. Hardware Setup 
+
+We conduct all experiments on a physical ALOHA Solo teleoperation system to ensure the fidelity of contact dynam-ics, which are notoriously difficult to bridge from simulation to reality. The hardware stack consists of an Interbotix ViperX-300s Follower arm and a WidowX-250s Leader arm, where the Follower is solely responsible for any object interaction. For visual input, the system utilizes one high-angle BEV camera, one low-profile side camera, and one wrist-mounted camera on the Follower end-effector. Data collection and policy inference are synchronized at 50 Hz across all modalities to capture varied torque behaviors without the overhead of high-precision servoing. Demonstrations and Inference control is performed entirely in joint space. We estimate joint torque τ via the linear relationship between motor current I and the manufacturer-defined torque constant kt , such that τ = kt I.Model training is distributed across NVIDIA RTX 4090, A6000, and A5000 GPUs. Real-time inference is standard-ized on a local RTX 4090 to maintain a consistent control loop. 
+
+B. Model Architecture 
+
+To evaluate the impact of different sensory and control modalities on contact-rich manipulation, we compare four variations of the Action Chunking Transformer (ACT) ar-chitecture as summarized in Table II below. TABLE II: ACT Model Variants and Force-Awareness                      
+
+> Variant Target Force Mechanism
+> Base ACT Leader ( A)Implicit (via discrepancy δ)ACT-o Follower ( Q)None (Implicit δremoved) ACT + τLeader ( A)Hybrid (Implicit δ+ Explicit τ)ACT-o + τFollower ( Q)Explicit (Effort τonly)
+
+C. Contact-Dynamic Task Design 
+
+The following contact dynamics -focused task design principles categorize our experimental evaluation: 
+
+Surface Following and Normal Force We examine the model’s ability to maintain a consistent normal force dur-ing dynamic lateral movement. We test whether the torque proxy can stabilize the (joint-space) policy against varying resistance levels encountered when moving across a surface, preventing the ”hovering” failure mode common in purely kinematic policies. 
+
+Multi-mode, Precision, and Long Horizon This testing regime focuses on whether a model can model multi-mode, distinct task phases while injecting torque as a primary driving signal. We investigate if increased expressiveness provided by the torque signal enables robust policy learning without introducing drift or instability. 
+
+Stiffness & Reactivity We test each model’s response to varying material stiffness. This tests whether the policy modulates its behavior based on instantaneous mechanical feedback rather than relying on visual deformation. Given visually identical objects, we evaluate if the model can recognize a rapid torque spike patterns to create distinct observation state mappings. 
+
+D. Task Metrics 
+
+Task Success: Following prior work [11], [9], [10] we use task success as the primary evaluator. This is defined as the binary completion of a task within a predefined time horizon, verified through visual alignment with a goal state. 
+
+Latent Observations: For assessing visually indistin-guishable states (Fig. 8), we leverage an end-effector (EEF) wrench Fext proxy via torque values. This is derived using the analytic Jacobian J(θ ) and measured joint torques τ
+
+through Eq. 2, 4 under the quasi-static condition assumption. TABLE III: Hyperparameter Configuration for Model Train-ing              
+
+> Hyperparameter Value
+> Training Epochs 8,000 Chunk Size 100 Batch Size 16 Learning Rate 2×10 −5
+> Feedforward Dimension ( df f )3,200 Hidden Dimension ( dhidden )512 KL Weight ( β)10
+
+E. Task Setup 
+
+We design a suite of common manipulation tasks to evalu-ate force-torque signal behaviors. To enhance data efficiency and policy robustness, we implement SE (2) object start pose randomization within a constrained interaction region. These are tracked via overhead overlay to ensure comprehensive sampling and in-distribution evaluation. We validated our hyperparameter configurations (Table III) by confirming that at least one model variant consistently generates visually successful rollouts for each task. 
+
+1) Board Wipe- Surface Following & Normal Force :
+
+Board Wipe (Fig. 5) shifts the focus to surface-following behavior, where the agent must generate a downward force 
+
+Fx while executing lateral wiping. A successful trial is defined by the complete removal of the target marking or the presence of visible streaking along the tool path, indicating consistent surface contact. 
+
+2) Plug Insert- Multi-Mode, Precision : Plug Insert (Fig. 7) is a high-precision, multi-mode manipulation challenge requiring both alignment and force control. The robot first corrects a tilted plug resting on a powerboard before execut-ing a vertical press to complete the insertion. We test whether torque proxies enable successful insertion and whether they introduce adverse policy drift. 
+
+3) Soft Bottle Press- Stiffness Sensitivity : In Soft Bottle Press (Fig. 6) we vertically squash a collapsible bottle with two mechanical states: High-Stiffness (Locked) and Low-Stiffness (Vented). The high-stiffness state produces a resis-tive torque spike upon compression. A force-aware model must recognize these as a visually similar but mechanically distinct state, triggering the exit action if High-Stiffness. 
+
+4) Foam Stop- Force-Equilibrium Behavior : In Foam Stop (Fig. 8) the end-effector is sent towards a textureless block of compliant foam with an unclear geometric outline, and is demonstrated to stop after we observe light resistance while maintaining EEF verticality. We vary the height of the textureless foam to test the model’s ability to learn stopping modes based on force feedback. Although an uncalibrated side-view camera provides some visual context, the lack of distinct surface features and varying heights limits its informativeness. VI. R ESULTS 
+
+A. Results Overview 
+
+We summarize critical findings based on design principles in V-C. While our methodology encompasses four distinct Configuration Soft Bottle Press ( nsti f f mode = 10 ) Plug Insertion ( n = 10 ) Board Wipe ( n = 20 )                             
+
+> Overall Low-Stiffness High-Stiffness 1-Step 1 OR 2-Steps Overall Base ACT 50% 100% 0% 20% 30% 60% ACT + Torque 70% 60% 80% 40% 70% 90% ACT-o 25% 50% 0% 0% 0% 15% ACT-o + Torque 75% 80% 70% 10% 50% 95%
+
+TABLE IV: Performance success rates across robotic tasks and model configurations. Results show success percentages for Soft Bottle Press (ntotal = 80), Plug Insertion (ntotal = 40), and Board Wiping (ntotal = 80). For Plug Insertion , a ”rollout” is defined as either a single successful insertion or a pair of consecutive attempts; if the first attempt contacts the plug but fails to insert, a second attempt is permitted and the two are counted as a single rollout unit. 
+
+Fig. 4: Foam Stop Equilibrium Convergence End-effector Fx (in units of effort) values averaged over all Foam Stop (Fig. 8) episodes, grouped by the model variant at n(con f ig ,mode ) = 10 rollouts, with ntotal = 120 rollouts. This figure illustrates how closely different ACT-variants mimic the demonstration as the end-effector approaches an equilibrium towards the end of an episode. The demonstration, generated from averaged human demonstrations, settles into a steady, non-zero value. tasks, only three are represented in Table IV; the Foam Stop task is evaluated separately via a force-profile plot in Fig. 4 to capture its latent dynamic response.  
+
+> •
+
+Impact of Removing Leader Joint Targets: Removing leader-joint supervision causes substantial degradation in contact-dependent behavior. In the absence of explicit torque proxies, ACT-o often produces hesitant, stalled, or incomplete trajectories and fails entirely in several task conditions.  
+
+> •
+
+Force as a Geometric Anchor: In Board Wipe and 
+
+Foam Stop , torque proxies mitigated “height-stopping” issues, enhancing both Base ACT and ACT-o . 
+
+> •
+
+Disambiguating Latent States: Torque feedback al-lows the Soft Bottle Press policy to distinguish between visually identical but mechanically distinct states (e.g., Low vs. High Stiffness).  
+
+> •
+
+Precision and General Behavior Learning: In Plug Insert , torque-aware configurations exhibit more fre-quent, gentler “tap-like” adjustments, resulting in su-perior positional accuracy. 
+
+B. Empirical and Qualitative Evaluation 1) Board Wipe: From Table IV, ACT-o ’s 15% success rate is reflected by its inability to maintain downward normal force Fx (forward in EEF frame), leading to ”hovering” behavior. While Base ACT achieves 60% success by implic-itly capturing force signals, the transition to explicit screw torque grounding enables 90–95% success rates. This success demonstrates that using effort as a torque proxy provides the necessary grounding to modulate vertical motion, ensuring the agent prioritizes surface pressure even during high-velocity lateral wiping. 
+
+2) Soft Bottle Press: ACT-o exhibits underwhelming abil-ity in generating coherent trajectories. We hypothesize this stems from a common phenomenon in ACT – that states within vertical downward and exit trajectories are propri-oceptively and visually similar; without Leader-Follower or explicit force feedback, the policy cannot differentiate between these states. While Base ACT ’s inability to model stiffness modes results in overfitting to the low-stiffness policy mode. Conversely, incorporating screw-torque proxies to either model produce successful trajectories for either stiffness, showing that torque provides a critical auxiliary grounding necessary to resolve state ambiguity across dif-ferent stiffness regimes. 
+
+3) Plug Insert: The addition of torque-proxies signifi-cantly enhances both the overall success and the corrective capabilities. Both ACT+ τ and ACT-o+ τ demonstrate suc-cessful rollouts characterized by a series of ”adjustment-taps” that often span two episodes to reach full fruition, quali-tatively learning the gentle, reactive motions necessary for alignment. In contrast, Base ACT exhibits stiff adjustment behaviors and a problematic failure mode; despite aligning the plug pose, it either fails to apply sufficient downward (a) Approach Eraser (b) Grasp Eraser and Lift (c) Apply Downward Force (d) Perpendicular Motion 
+
+Fig. 5: Board Wipe This task involves (a) initial approach, (b) establishing a stable grasp, then lifting and repositioning the eraser in free space, (c) applying downward force, and (d) performing a clear, strong wiping motion with appropriate vertical force while moving orthogonally across the board.    
+
+> (a) Approach Bottle (b) Initial Contact (c) High Stiffness (d) Low Stiffness
+
+Fig. 6: Soft Bottle Press The robot performs a controlled indentation or recovery task on a deformable, watermelon-shaped soft collapsible water bottle. The gripper first approaches the bottle then presses against the bottle, allowing it to process the resistance via torque signals. Depending on the inferred stiffness mode, the robot either retreats as in Fig. 6(c), or it continues pushing to collapse the bottle as in Fig. 6(d).    
+
+> (a) Identify Tilt (b) Adjustment Motion (c) Align with Upward Plug (d) Apply Downward Force
+
+Fig. 7: Plug Insertion The robot needs to perform a precise tilt-adjustment and plugging operation into a power strip. The process begins with the initial approach and alignment over the target socket. The end-effector is demonstrated to lightly push the plug to adjust the tilt until it correctly faces vertically. Finally, the system executes the insertion by applying controlled downward force to overcome friction, ensuring a secure mechanical connection.    
+
+> (a) Approach Foam (b) Base Height (c) Raised Height (d) Max height
+
+Fig. 8: Foam Stop The end-effector approaches a black block of foam with little textural cue to provide distance. When the End Effector creates a small amount of contact with the foam, the demonstrator stops the gripper. We create three different foam height modes, and we investigate if leveraging torque signals could help guide the robot in learning modal behavior that elicits similar equilibrium tendencies to the demonstrations (Fig. 4). force or completely freezes upon contact. Furthermore, ACT-o sometimes produces invalid trajectories marked by ”hes-itant” behavior, wherein the policy remains stationary and fails to initiate the required task dynamics. 
+
+4) Foam Stop: From Fig. 4, All models were able to stop at approximately the required foam heights without pushing through or ”floating”. However, 4, ACT+ τ and 
+
+ACT-o+ τ demonstrate superior convergence toward the mean demonstration Fx equilibrium value, closely matching its effort profile. These results indicate that while kinematic imitation alone is competitive, integrating a screw-torque proxy provides computationally inexpensive yet powerful physical grounding for torque-aware object interaction. VII. C ONCLUSION 
+
+Our investigation reveals that the efficacy of ACT is deeply tethered to implicit interaction cues generated by tracking discrepancies in leader-follower teleoperation. By introduc-ing the observation-centric ACT-o variant to isolate these cues, we demonstrate that removing the implicit signal gap causes a catastrophic collapse in performance for contact-rich tasks, and reduced general policy learning. This failure manifests as ”hesitant” or ”stale” behaviors where the model, deprived of the latent force-awareness typically provided by the leader arm, fails to initiate task dynamics or differentiate between visually similar states— reaching 0% success in some task settings. To bridge this gap, we showed that integrating explicit screw-torque proxies derived from motor current serves as a powerful and computationally inexpensive substitute for teleoperation-induced cues. These torque-aware configura-tions effectively restore contact-aware behavior, allowing the model to trend toward a stable dynamical equilibrium that closely matches human demonstrations in force-sensitive tasks. Beyond mere recovery, the addition of explicit torque proxies enhances fine-grained actions on top of the base policy, enabling emergent ”adjustment-taps” and consistent normal force maintenance that kinematic imitation alone can-not achieve. Our findings establish a practical methodology for enabling robust, force-aware manipulation on platforms lacking specialized hardware or external force/torque sen-sors. VIII. L IMITATIONS AND FUTURE WORK 
+
+Our study primarily utilizes joint-side torque estimates and motor current proxies. While effective for macroscopic tasks like soft bottle pressing, these signals lack the high-frequency tactile resolution provided by dedicated six-axis F/T sensors or optical tactile arrays. Furthermore, our study prioritizes demonstrating force-aware behaviors that emerge within affordable, low-data regimes, leaving the impact of large-scale data scaling on the utility and stability of these proxies as a subject for future investigation. We intend to further our investigation in cross-platform proxy transfer, exploring if normalized torque proxies can act as a universal language for contact dynamics across heterogeneous hardware. We also intend to investigate force-aware distillation, utilizing a VLM to generate high-level task plans while a force-integrated ACT head executes the final, contact-rich centimeter of the trajectory. Lastly, we aim to move beyond reactive policies toward active sensing, where the policy explicitly chooses to probe or tap an object to disambiguate visual uncertainty through haptic confirmation before proceeding with a manipulation sequence. REFERENCES [1] T. Zhao, V. Kumar, S. Levine, and C. Finn, “Learning fine-grained bimanual manipulation with low-cost hardware,” Robotics: Science and Systems XIX , 2023. [2] R. S.-h. Kim, K. Gu, K. Pertsch, A. Nasiriany, M. Shah, Y. Chen, A. Kumar, C. Finn, S. Levine, J. Fu, and D. Sadigh, “OpenVLA: An open-source vision-language-action model,” in Proceedings of the 8th Annual Conference on Robot Learning (CoRL) , 2024. [3] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter et al. , “ π0: A vision-language-action flow model for general robot control,” arXiv preprint arXiv:2410.24164 , 2024. [4] NVIDIA-team, “GR00T N1: An open foundation model for generalist humanoid robots,” in ArXiv Preprint , March 2025. [5] C. Chi, S. Feng, Y. Du, Z. Xu, E. Cousineau, B. Burchfiel, and S. Song, “Diffusion policy: Visuomotor policy learning via action diffusion,” in 
+
+Proceedings of Robotics: Science and Systems (RSS) , 2023. [6] C. Tsuji, E. Coronado, P. Osorio, and G. Venture, “Adaptive contact-rich manipulation through few-shot imitation learning with force-torque feedback and pre-trained object representations,” IEEE Robotics and Automation Letters , vol. 10, no. 1, pp. 240–247, 2025. [7] Z. Zhang, H. Xu, Z. Yang, C. Yue, Z. Lin, H.-a. Gao, Z. Wang, and H. Zhao, “Elucidating the design space of torque-aware vision-language-action models,” in Proceedings of the 9th Annual Conference on Robot Learning (CoRL) , 2025. [8] J. Yu, H. Liu, Q. Yu, J. Ren, C. Hao, H. Ding, G. Huang, G. Huang, Y. Song, P. Cai et al. , “Forcevla: Enhancing vla models with a force-aware moe for contact-rich manipulation,” in The Thirty-ninth Annual Conference on Neural Information Processing Systems .[9] T. Buamanee, M. Kobayashi, Y. Uranishi, and H. Takemura, “Bi-act: Bilateral control-based imitation learning via action chunking with transformer,” in 2024 IEEE International Conference on Advanced Intelligent Mechatronics (AIM) , 2024, pp. 410–415. [10] T. Kobayashi, M. Kobayashi, T. Buamanee, and Y. Uranishi, “Bi-LAT: Bilateral control-based imitation learning via natural language and action chunking with transformers,” in Proceedings of the 34th IEEE International Conference on Robot and Human Interactive Communication (RO-MAN) , 2025. [11] T. Kamijo, C. C. Beltran-Hernandez, and M. Hamaya, “Learning variable compliance control from a few demonstrations for bimanual robot with haptic feedback teleoperation system,” in Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2024, pp. 12 663–12 670. [12] H. Choi, J. E. Low, T. M. Huh, G. A. Uribe, S. Hong, K. A. W. Hoffman, J. Di, T. G. Chen, A. A. Stanley, and M. R. Cutkosky, “Coinft: A coin-sized, capacitive 6-axis force torque sensor for robotic applications,” 2025. [Online]. Available: https://arxiv.org/abs/2503.19225 [13] H. Choi, Y. Hou, C. Pan, S. Hong, A. Patel, X. Xu, M. R. Cutkosky, and S. Song, “In-the-wild compliant manipulation with UMI-FT,” in 
+
+Proceedings of the IEEE International Conference on Robotics and Automation (ICRA) , 2026. [14] Trossen Robotics, “Interbotix ViperX 300 Robot Arm Series,” https: //www.trossenrobotics.com/, 2024, accessed: 2026-03-05. [15] Z. Fu, T. Z. Zhao, and C. Finn, “Mobile aloha: Learning bimanual mobile manipulation with low-cost whole-body teleoperation,” in 
+
+Conference on Robot Learning (CoRL) , 2024. [16] T. Z. Zhao, J. Tompson, D. Driess, P. Florence, S. K. S. Ghasemipour, C. Finn, and A. Wahid, “Aloha unleashed: A simple recipe for robot dexterity,” in Conference on Robot Learning . PMLR, 2025, pp. 1910– 1924.

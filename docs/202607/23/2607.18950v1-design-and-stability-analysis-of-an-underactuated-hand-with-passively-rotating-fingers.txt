@@ -1,0 +1,353 @@
+Title: Design and stability analysis of an underactuated hand with passively rotating fingers
+
+URL Source: https://arxiv.org/pdf/2607.18950v1
+
+Published Time: Wed, 22 Jul 2026 01:02:20 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+,
+
+DESIGN AND STABILITY ANALYSIS OF AN UNDERACTUATED HAND WITH PASSIVELY ROTATING FINGERS 
+
+Léonie Plancoulaine 1, Sylvain Guegan 2, Franck Plestan 1, Damien Chablat 1,∗
+
+> 1
+
+Nantes Université, École Centrale Nantes, CNRS, LS2N, UMR 6004, 44300 Nantes, France 
+
+> 2
+
+Université Rennes, INSA Rennes, LGCGM, F-35000 Rennes, France 
+
+ABSTRACT 
+
+This paper presents an innovative design and stability anal-ysis of an underactuated robotic finger with spatial mobility, designed to enhance gripping dexterity in robotic hands. The finger architecture incorporates a revolute joint at its base, en-abling passive spatial rotation that facilitates both cylindrical and spherical grasping. With only two phalanges per finger, the design simplifies kinematic complexity while supporting pre-cision and enveloping grasps. Stability criteria, based on the moment at the finger base joint induced by contact forces, are introduced to ensure reliable object gripping and prevent ejec-tion during manipulation. The study also examines a differential mechanism that distributes a single actuation torque across mul-tiple fingers, allowing adaptive and coordinated motion. This mechanism enhances the hand’s ability to grasp diverse object shapes with minimal pre-grasp adjustments, leveraging passivity for autonomous adaptation. Theoretical findings are experimen-tally validated using a fully mechanical prototype, demonstrating versatility in performing cylindrical, spherical, parallel, and en-veloping grasps. The integration of underactuation—both within individual fingers and among multiple fingers—reduces mechani-cal complexity, cost, and control demands while preserving func-tional adaptability. This work advances the development of com-pliant robotic hands suitable for applications requiring dexterity and robustness, such as agricultural robotics, logistics, assis-tive technologies, and waste sorting. Future research will focus on automating actuation and refining control strategies to fur-ther improve grasp stability and precision, paving the way for autonomous manipulation in unstructured environments. 
+
+NOTATION 
+
+In the following, the sine and cosine functions are abbreviated as 𝑠 · = sin · and 𝑐 · = cos ·. For instance, 𝑐𝜓 = cos 𝜓 and 
+
+𝑠𝜓 = sin 𝜓 .
+
+1. INTRODUCTION 
+
+The human hand is a remarkably complex and dexterous tool, capable of executing a wide variety of grasping strategies. According to Feix’s taxonomy [1], humans can perform up to 
+
+> ∗Corresponding author: damien.chablat@cnrs.fr
+
+34 distinct types of grasps, depending not only on the shape of the object but also on the intended task. While robotic grippers are commonly used for repetitive tasks in industrial settings, they fall short of replicating the agility and adaptability of the human hand. The study of compliant robotic hands is particularly relevant for applications such as bulk separation, harvesting, packaging, waste sorting, and warehouse logistics [2]. Dexterity, as defined by Seguin [3], refers to the ability to maintain a stable object configuration while moving it in-hand from an initial position to a final one. Dexterity can be divided into two key compo-nents: grasping and in-hand manipulation. This work focuses specifically on grasping. Although two fingers are sufficient for basic grasping tasks, this configuration limits both dexterity and stability [4]. A three-fingered design offers improved grasping capabilities while main-taining mechanical simplicity. Various types of robotic hands have been developed [2, 5, 6], including soft grippers, fully actu-ated hands, and underactuated hands. Soft grippers [7, 8], made from compliant materials, offer excellent adaptability for handling delicate objects, but suffer from limitations in force control, precision, and durability. Fully actuated hands [9, 10], which include one actuator per degree of freedom, provide high precision but are costly and complex to control. In [11], the robotic hand features one actuated prismatic joint and one passive rotational joint per finger, enabling adaptive grasping of diverse object shapes. The hand’s adaptive grasping is limited by the fixed positioning of the passive rotational joint axis, which can result in suboptimal contact and reduced grasp stability for very small or irregularly shaped objects. Underactuated hands [12, 13], by contrast, use fewer actua-tors than degrees of freedom, relying on passive elements such as springs to manage the remaining joints. This approach simplifies the system, reduces cost, and enables shape adaptation, albeit with reduced precision. This paper focuses on underactuated hands to achieve a balance between adaptability, simplicity, and robustness. Underactuation can be implemented either within individual fingers or between multiple fingers [13]. In the case of underactuated fingers, the motion of each phalanx depends on the others, directly influencing the types of 1arXiv:2607.18950v1 [cs.RO] 21 Jul 2026 grasp that can be achieved. Three primary grasping modes are considered in the literature [14]: 
+
+• Coupled grasp : Phalanges are linked by a linear relation-ship between their rotation angles, mimicking the natural pre-shaping of the human hand. 
+
+• Parallel grasp : The distal phalanx remains parallel to its initial orientation, enabling precision grasps. 
+
+• Self-adaptive grasp : The finger remains straight until the proximal phalanx contacts the object. Once contact is made, and the actuation torque exceeds the spring resis-tance, the distal phalanx rotates until it also makes contact. Hybrid grasping strategies are also possible. For instance, a finger may begin in coupled mode and switch to self-adaptive once the proximal phalanx is blocked. Similarly, parallel and self-adaptive modes can be combined to enable both precision and enveloping grasps. Most underactuated fingers operate in a planar configura-tion. However, some designs incorporate additional degrees of freedom, such as abduction/adduction [15], or passive spatial mo-bility [16]. Although these enhancements increase grasp diver-sity, they often come at the cost of added kinematic complexity and reduced precision. In contrast, the proposed finger design integrates a passive revolute joint at its base, enabling spatial mobility while maintaining a simplified kinematic structure. About underactuation among multiple fingers, several types of differential systems can be used [17]. In such a configuration, a single actuator can drive the opening and closing of all fingers while adding adaptability. If one or more fingers are blocked, the others can continue to move and compensate. Once all fingers are in contact, the applied force is distributed among them to achieve a stable grasp. Different differential mechanisms can be implemented to realize this principle, including pulleys, seesaw mechanisms, gear trains, or fluidic systems. In this work, fol-lowing the approach of [18], a spring-loaded slider is adapted. This solution is compact and allows for an arbitrary number of outputs. This paper presents a simplified kinematic design that en-ables passive self-rotation of each finger, allowing the hand to perform a wide range of grasps with a single actuator. The following sections describe the finger and hand architecture, in-troduce a stability analysis for parallel and self-adaptive grasps, examine the force distribution across the three outputs of the differential mechanism, present experimental validation using a physical prototype, and conclude with a discussion and future research directions. 
+
+> 2. HAND ARCHITECTURE
+
+This section presents the hand 1 architecture developed by the authors. Its purpose is to use a single actuator to minimize pre-grasp adjustments while enabling the grasping of objects of various shapes through embodied intelligence, by using the mech-anism’s passivity to autonomously adapt. This passivity is used both at the finger level and in their coordinated motion.       
+
+> 1Animation of the different levels of underactuation: https://youtu.be/29pfHB39d48
+> 2.1. Finger architecture
+
+The kinematic structure of the finger is illustrated in Figure 1, which shows the detailed kinematic configuration of the finger, and Fig. 2, which presents the kinematics model highlighting the dynamic interactions within the system. The parameters intro-duced here are generic for the three fingers, where 𝑖 denotes the 
+
+𝑖 th finger. To enable spatial motion, a revolute joint is introduced at the base of each finger (point 𝑃 1𝑖 ), Fig. 3. This joint allows the finger to operate in a three-dimensional space rather than being limited to planar motions without increasing mechanical complexity. Antagonist springs 𝑆 3𝑖 and 𝑆 4𝑖 ensure the finger returns to its initial position after the grasping process. The finger’s kinematic behavior is best understood by exam-ining its structure, which is composed of two interlinked closed loops. Specifically, the actuation loop ( 𝐴 3𝑖 , 𝐴 4𝑖 , 𝐴 5𝑖 , 𝑂 2𝑖 ) drives the motion, while the parallel grasp loop ( 𝑂 1𝑖 , 𝑂 4𝑖 , 𝑂 3𝑖 , 𝑂 2𝑖 )enables both parallel and enveloping grasp capabilities. For the switching between the two modes, spring 𝑆 2𝑖 plays a key role: its extension drives the movement of the distal phalanx. For sim-plicity, each finger is modeled with two phalanges. The finger     
+
+> FIGURE 1: Two-dimensional kinematic model of a finger with two interlinked closed loops, providing three DOF through a single ac-tuation at A1iand underactuation via S2i.
+
+possesses three degrees of freedom (DOF) (Fig. 1), defined as follows: 
+
+• 𝜃 1𝑖 , angle between axis x0𝑖 and [𝑃 1𝑖 𝑃 4𝑖 ] along z0i ;
+
+• 𝜃 2𝑖 , angle between axis x1𝑖 and the proximal phalanx along 
+
+z1i ;
+
+• 𝜃 3𝑖 , angle between the proximal and distal phalanges along 
+
+z2i .The contact forces 𝑓 1𝑖 and 𝑓 2𝑖 act on the proximal and distal phalanges, respectively. 𝑓 𝑎𝑖 represents the finger actuation effort. 2FIGURE 2: Three-dimensional kinematic model of a finger with a passive rotation at P1i through springs S3i and S4i . 
+
+> FIGURE 3: Top view of the revolute joint at the finger base
+
+P1i for the finger passive rotation. 
+
+The angle 𝜃 4𝑖 defines the angle between axis x0i and [ 𝐴 2𝑖 𝐴 3𝑖 ].Different dimensions define the finger kinematics: 
+
+• 𝑎 , the distance between 𝐴 3𝑖 and 𝐴 4𝑖 ;
+
+• 𝑏 , the distance between 𝐴 5𝑖 and 𝐴 4𝑖 ;
+
+• 𝑐 , the distance between 𝑂 2𝑖 and 𝑂 3𝑖 ;
+
+• 𝑑 , the distance between 𝐴 2𝑖 and 𝐴 3𝑖 ;
+
+• 𝑝 , the distance between 𝐴 1𝑖 and 𝐴 2𝑖 ;
+
+• 𝑙 1, the length of the proximal phalanx; 
+
+• 𝑙 2, the length of the distal phalanx; 
+
+• 𝜓 , constant angle between the distal phalanx and [𝑂 2𝑖 𝑂 3𝑖 ].
+
+2.2. Differential mechanism 
+
+While two fingers suffice for basic grasping tasks in struc-tured environments, they lack the versatility required for diverse object manipulation. Three fingers offer improved dexterity, and four enable in-hand manipulation [4]. This study focuses on grasping with three fingers. To illustrate the grasping configuration, Fig. 4 shows cylin-drical and spherical grasps: cylindrical grasps occur when two fingers oppose a third, while spherical grasps arise when all three fingers converge toward a common point [19]. Intermediate grasps occur when the finger configuration is between cylindrical and spherical patterns. Each finger is positioned 120 ° apart and is capable of rotating 120 ° around its own axis. This design enables any of the three fingers to act as a thumb, significantly enhancing the hand’s versatility. The hand is able to grasp both simple and asymmetrical objects, thanks to this passivity.   
+
+> FIGURE 4: Hand performing a cylindrical and a spherical grasp viewed from above: (a)(c)(e) initial fingers position (b) passive adaptation of the fingers for a cylindrical grasp (d) passive adapta-tion of the fingers for a spherical grasp and (f) passive adaptation for an intermediate grasp.
+
+The differential mechanism proposed in this work, Fig. 5, is composed of three springs. It incorporates a sliding element actuated manually, which can later be driven by an electric mo-tor or a pneumatic actuator. The sliding motion compresses the three springs. If the movement of one finger is blocked, the cor-responding spring compensates by absorbing the displacement, thereby allowing the other two fingers to continue moving. Un-like the slider proposed by Massa [18], the one presented here is 3connected to mechanical linkages, enabling torque transmission. It is composed of two revolute joints that provide a lever-like motion.      
+
+> FIGURE 5: The differential mechanism with a global actuation force
+> faand three output forces fa1,fa2and fa3.
+
+3. STABILITY ANALYSIS 
+
+This section addresses the stability analysis of parallel and enveloping grasps, with particular attention to finger rotation. In both theoretical grasp analyses, the force is considered as a point force. Birglen [20] states that assuming the force is a single point contact is the grasp stability worst-case scenario. In this study, the spring effects of 𝑆 3𝑖 and 𝑆 4𝑖 are neglected to focus on the analysis of contact forces. However, their stiffness directly influences the finger’s rotation, driving it back to its initial position. The finger stability study results are generic and valid for all three fingers. Furthermore, it is essential to examine how the torques are distributed among the three outputs of the differential mechanism. 
+
+3.1. Precision grasp 
+
+To analyze the mechanical behavior of the finger, it is treated as an isolated system. For this study, the finger weight is con-sidered negligible. The joint angle 𝜃 3 is assumed to be equal to 𝜃 2𝑖 − 𝜓 as the distal phalanx remains parallel to its initial orientation during precision grasps. After isolating the finger, a force analysis is performed. Forces and torques (i.e. mechanical actions due to the actua-tion, revolute joint ( 𝑃 1𝑖 ) and contact forces) are expressed in 𝑅 0𝑖 ,(𝑃 1𝑖 ,x0i ,y0i ,z0i ) the base frame of finger i attached to 𝑃 1𝑖 . The actuation force is applied manually and generates a torque around the joint at point 𝑂 1𝑖 . The spring contributes to the orientation of the distal phalanx according to its stiffness, thereby affecting the finger’s passive behavior. For precision grasp, the spring remains nearly unstretched, generating negligible torque. The revolute joint at point 𝑃 1𝑖 introduces reaction forces due to joint constraints. Finally, the contact force from the object is decom-posed into components that depend on the object-phalanx friction coefficients 𝜇 1𝑖 and 𝜂 1𝑖 , as well as on the geometric parameters 
+
+𝑙 1, 𝜓 , the position of the contact point 𝑘 2𝑖 , 𝑚 2𝑖 , and the joint angles 𝜃 1𝑖 and 𝜃 2𝑖 . These expressions are essential for evaluating grasp stability and understanding how each mechanical element contributes to the overall equilibrium of the system. Figure 6 illustrates the relevant geometric and frictional parameters used in the stability analysis. 
+
+> FIGURE 6: Illustration of the contact force and its location used in precision grasp.
+
+The sign of the moment 𝑀 𝑧 about the z0 axis must be eval-uated to determine whether the contact configuration leads to a stable grasp. By applying the fundamental principle of statics, it appears that 𝑀 𝑧 depends only on the contact force, leading to the following result: 
+
+𝑀 𝑧 = 𝑓 2𝑖 (( 𝑘 2𝑖 𝜂 2𝑖 − 𝑚 2𝑖 𝜇 2𝑖 )𝑐𝜓 + 𝑙 1𝜂 2𝑖 𝑐𝜃 2𝑖 + 𝑚 2𝑖 𝑠𝜓 ). (1) In this expression: 
+
+• 𝑚 2𝑖 is the distance along z3𝑖 between the revolute joint at 
+
+𝑂 2𝑖 and the contact point of 𝑓 2𝑖 ,
+
+• 𝑘 2𝑖 is the distance along y3𝑖 between the same joint and the contact point of 𝑓 2𝑖 ,
+
+• 𝜇 2𝑖 and 𝜂 2𝑖 are friction coefficients defined by 𝑓 𝑡 2𝑖 = 𝜇 2𝑖 𝑓 2𝑖 
+
+and 𝜏 2𝑖 = 𝜂 2𝑖 𝑓 2𝑖 , with bounds −𝜇 static ≤ 𝜇 2𝑖 ≤ 𝜇 static and 
+
+−𝜂 static ≤ 𝜂 2𝑖 ≤ 𝜂 static .Additional parameters such as 𝑓 2𝑖 , 𝑙 1, and the angle 𝜓 are defined in Section 2. To ensure stable contact between the object and the phalanx, the contact force must remain within the previously defined phys-ical boundaries of the phalanx, and the finger must rotate toward a stable position along the phalanx to prevent object ejection. If these conditions are not met, the object may be ejected due to improper force orientation or unstable contact geometry. 43.2. Power grasp 
+
+Birglen [21] defines a quasi-static stability condition for an enveloping grasp. This criterion states that a grasp is stable if and only if the finger is in static equilibrium, meaning the contact forces between the object and the phalanges are non-negative. An underactuated finger cannot guarantee that all phalanges remain in contact with the object during an enveloping grasp. Since there are fewer actuators than degrees of freedom, the grasp force distribution and stability depend on the mechanical design of the hand. 
+
+> FIGURE 7: Illustration of the contact forces and their location used in enveloping grasp.
+
+The vector of contact forces f can be expressed as a function of [21]: J, the Jacobian matrix that depends on the position of the contact point on the phalanx, the relative orientation of the phalanges, and the friction coefficients, T, the transmission matrix, determined by the mechanical transmission of the actuator torque, and t, the vector of input torques generated by the actuator and springs. The contact forces are given by: 
+
+f = J−𝑡 T−𝑡 t. (2) The mechanism consists of a serial chain with three revolute joints. Unlike Birglen’s design [21], this mechanism allows for spatial movement. The initial rotation, and thus 𝜃 1, does not affect the force distribution among the phalanges, as it does not change the kinematic configuration of the enveloping grasp. Birglen’s result in the plane can then be used for the stability study: 
+
+fi =
+
+⎡⎢⎢⎢⎢⎢⎣
+
+−𝑇 2𝑖 (ℎ𝑖 + 𝑙 1) 𝐴 (𝐵 + 𝐶 ) + 𝑇 𝑎𝑖 (ℎ𝑖 𝐴 (𝐵 + 𝐶 ) − ( ℎ𝑖 + 𝑙 1)𝐷 )(ℎ𝑖 + 𝑙 1) 𝐴𝐷 𝑇 2𝑖 (ℎ𝑖 + 𝑙 1) + 𝑇 𝑎𝑖 ℎ𝑖 
+
+(ℎ𝑖 + 𝑙 1)𝐵 
+
+⎤⎥⎥⎥⎥⎥⎦
+
+(3) where: 
+
+𝐴 = 𝑘 1𝑖 − 𝜂 1𝑖 
+
+𝐵 = 𝑘 2𝑖 − 𝜂 2𝑖 
+
+𝐶 = 𝑙 1 (𝑐𝜃 3𝑖 + 𝜇 2𝑖 𝑠𝜃 3𝑖 )
+
+𝐷 = (𝜂 1𝑖 − 𝑘 1𝑖 )( 𝜂 2𝑖 − 𝑘 2𝑖 )
+
+𝑇 𝑎𝑖 is the actuation torque at point 𝑂 1𝑖 and 𝑇 2𝑖 is the torque at 𝑂 2𝑖 . 𝑚 1𝑖 and 𝑘 1𝑖 are, respectively, the distance along z2i and 
+
+y2i between the revolute joint at 𝑂 1𝑖 and the contact point of 𝑓 1𝑖 .
+
+ℎ𝑖 is the signed distance between 𝑂 2𝑖 and the intersection of lines 
+
+(𝑂 1𝑖 𝑂 2𝑖 ) and ( 𝐴 4𝑖 𝐴 5𝑖 ).Thanks to the force distribution, one can study the moment around z0i to ensure that the finger rotates in the right direction and to study the friction influence. By applying the fundamental principle of statics: 
+
+𝑀 𝑧 = 𝑓 2𝑖 (︂ (𝑘 2𝑖 𝜂 2𝑖 − 𝑚 2𝑖 𝜇 2𝑖 )𝑐 (𝜃 2𝑖 + 𝜃 3𝑖 )+ 𝑙 1𝜂 2𝑖 𝑐𝜃 2𝑖 − 𝑚 2𝑖 𝑠 (𝜃 2𝑖 + 𝜃 3𝑖 ))︂ 
+
++ 𝑓 1𝑖 (︂ (𝑘 1𝑖 𝜂 1𝑖 − 𝑚 1𝑖 𝜇 1𝑖 )𝑐𝜃 2𝑖 + 𝑚 1𝑖 𝑠𝜃 2𝑖 )︂ . (4) 
+
+3.3. Distribution of the actuation torque 
+
+Due to the differential mechanism, the actuation torque of each finger is not identical. It is therefore important to understand the factors influencing it. Considering the slider in isolation, the forces acting on it can be expressed as: 𝑓 𝑎 , the input actuation force, and 𝑓 𝑎 1, 𝑓 𝑎 2, and 
+
+𝑓 𝑎 3, the output forces of the differential mechanism. 
+
+⎡⎢⎢⎢⎢⎣
+
+𝑓 𝑎 1
+
+𝑓 𝑎 2
+
+𝑓 𝑎 3
+
+⎤⎥⎥⎥⎥⎦
+
+=
+
+⎡⎢⎢⎢⎢⎣
+
+1 0 −1 −11 −1 0 −11 −1 −1 0
+
+⎤⎥⎥⎥⎥⎦⎡⎢⎢⎢⎢⎢⎢⎣
+
+𝑓 𝑎 
+
+𝑓 𝑠 1
+
+𝑓 𝑠 2
+
+𝑓 𝑠 3
+
+⎤⎥⎥⎥⎥⎥⎥⎦
+
+. (5) where 𝑓 𝑠𝑖 = 𝐾 (𝑥 𝑠𝑖 − 𝑥 0) with 𝑥 0 the spring free length and 
+
+𝑥 𝑠𝑖 the 𝑖 th finger spring length at the final position. The actuation torque of each finger is generated by the ac-tuation force transmitted through the mechanism. To determine the torque of the 𝑖 th finger, 𝑇 𝑎𝑖 , we compute the moment at point 
+
+𝐴 3𝑖 . Since the actuation force F𝐴𝑖 applied at 𝐴 1𝑖 is collinear with 
+
+A1i A3i , it does not contribute directly to the torque. Instead, the reaction force at the revolute joint 𝐴 2𝑖 , denoted R𝐴 2𝑖 , generates the actuation torque at 𝐴 3𝑖 .Assuming quasi-static motion and applying the principle of static equilibrium: 
+
+MA3i = A3i A2i × R𝐴 2𝑖 = ⎛⎜⎜⎝
+
+0
+
+𝑓 𝑎𝑖 𝑑 𝑐𝜃 4𝑖 
+
+0
+
+⎞⎟⎟⎠
+
+. (6) Hence, the actuation torque is given by: 
+
+𝑇 𝑎𝑖 = 𝑓 𝑎𝑖 𝑑𝑐𝜃 4𝑖 (7) 5with: 
+
+𝜃 4𝑖 = − 𝜋 
+
+2 + arccos (︄ 𝑝 2 + 𝑑 2 − ( 𝑥 𝑔 + 𝑥 𝑠𝑖 )2
+
+2𝑝𝑑 )︄ (8) where 𝑥 𝑔 is the distance between the top of the slider and 𝐴 3𝑖 on 
+
+z0i .
+
+4. RESULTS 
+
+The geometric parameters listed in Table 1 are used through-out the different studies, with the angles 𝜃 1𝑖 , 𝜃 2𝑖 , and 𝜃 3𝑖 varying within the ranges −60 ◦ < 𝜃 1𝑖 < 60 ◦, −140 ◦ < 𝜃 2𝑖 < −52 ◦, and 
+
+−65 ◦ < 𝜃 3𝑖 < 45 ◦, respectively. Geometric parameter values are optimized using Birglen’s study [22]. 
+
+> TABLE 1: Geometric parameters of the fingers
+
+𝑙 1(mm) 𝑙 2(mm) 𝑛 1,2(mm) 𝜓 (°) 𝑎 (mm) 𝑏 (mm) 𝑐 (mm) 
+
+50.7 38 31.9 97 33.48 54 15 
+
+4.1. Precision grasp 
+
+To study the stability of the grasp during a precision grip, the sign of 𝑀 𝑧 is analyzed to ensure that the finger rotates in the correct direction, thereby preventing the object from being ejected. According to Eq. (1), the friction coefficient 𝜇 2𝑖 has a negligible impact on the results, as the angle 𝜓 approaches 90 °.Consequently, 𝜇 2𝑖 is set to zero for this analysis. In contrast, the friction parameter 𝜂 2𝑖 plays a more significant role. The equilibrium limit is defined by a cone, such that equilibrium occurs for values within the range −𝜂 static < 𝜂 2𝑖 < 𝜂 static . The fingers are currently made of PLA, although the surface properties can be adjusted, while the objects to be grasped may consist of various materials (such as metal, fabric, or plastic). Therefore, an average value is adopted to ensure reasonably representative results with a static friction coefficient set to 𝜂 static = 0.3. Figure 8 shows the rotation direction as a function of 𝑘 2𝑖 and 𝑚 2𝑖 for different values of 𝜃 1𝑖 , with the direction indicated by color. The stability condition requires that, for any 𝜃 2𝑖 , 𝑘 2𝑖 , and 
+
+𝑚 2𝑖 , a stable contact position is maintained within the phalanx. This ensures that the grasp remains secure and the object is not at risk of being ejected due to contact forces acting outside the effective area of the phalanx. The finger tends to rotate to reach a stable position, 𝑀 𝑧 = 0N.m, along the phalanx. A condition on the distal phalanx width, 𝑛 2, can then be derived from Eq. (1), to ensure that the stable position always remains within the phalanx throughout the finger’s range of motion: 
+
+𝑛 2 ≥ 1
+
+𝑠𝜓 − 𝜇 𝑠𝑡 𝑎𝑡𝑖𝑐 𝑐𝜓 (𝑙 2𝜂 𝑠𝑡 𝑎𝑡𝑖𝑐 𝑐𝜓 + 𝑙 1𝜂 𝑠𝑡 𝑎𝑡𝑖𝑐 𝑐𝜃 2𝑖𝑚𝑖𝑛 ). (9) 
+
+4.2. Power grasp 
+
+For an enveloping grasp, it is essential to analyze the force distribution among the fingers to assess grasp stability as a func-tion of the finger rotation. According to Eq. (3), the contact forces depend on five pa-rameters, which make the grasp-state space difficult to visualize. It can be observed that the contact forces are independent of 𝜃 1𝑖 10 0 10  
+
+> m2i(mm)
+> 0
+> 10
+> 20
+> 30
+> k2i(mm)
+> 2i
+
+= -52°    
+
+> 10 010
+> m2i(mm)
+> 2i
+
+= -90°    
+
+> 10 010
+> m2i(mm)
+> 2i
+
+= -140°      
+
+> Mz> 0N.m
+> Mz< 0N.m
+> Sign change as 2ivaries
+> FIGURE 8: Sign of the moment around
+
+z0 as a function of the con-tact force location on the distal phalange 
+
+and 𝜃 2𝑖 , since these rotational parameters do not alter the kine-matic configuration of the enveloping grasp. Consequently, the force distribution along the finger remains unaffected by varia-tions in these two angles. According to Birglen [21], 𝑘 1𝑖 , 𝜇 1𝑖 and 
+
+𝜇 2𝑖 have little influence, and are therefore omitted. We consider the case 𝑘 1𝑖 = 𝑙 1/2 and 𝑘 2𝑖 = 𝑙 2/2 as their influence is less significant than that of 𝑚 1𝑖 and 𝑚 2𝑖 .As explained in Section 3.2, a grasp is stable if and only if the contact forces between the object and the phalanges are positive. Figure 9 illustrates these contact forces as a function of 𝜃 3𝑖 , considering a worst-case no-friction scenario for stability, as described in [21]. It can be observed that both contact forces are positive when 𝜃 3𝑖 is less than −56 ◦. Therefore, only values of 𝜃 3𝑖 below this boundary are considered as they correspond to the only configurations that ensure a stable distribution of contact forces.  
+
+> FIGURE 9: Contact forces as a function of
+
+θ3i
+
+Figure 10 illustrates the influence of 𝑚 1𝑖 and 𝑚 2𝑖 as functions of 𝜃 2𝑖 and 𝜃 3𝑖 . For different values of 𝑚 1𝑖 , the sign of the moment may vary with 𝜃 2𝑖 and 𝜃 3𝑖 for a fixed value of 𝑚 2𝑖 . When 𝑚 1𝑖 =
+
+15 .95 mm, the curve 𝑀 𝑧 = 0N·m is symmetric with respect to the case 𝑚 1𝑖 = −15 .95 mm, since the finger rotates in the same 6FIGURE 10: Sign of the moment around z0i as a function of the contact forces locations on x1i and angles θ2, θ3
+
+way for the pairs (𝑚 1𝑖 , 𝑚 2𝑖 ) and (− 𝑚 1𝑖 , −𝑚 2𝑖 ). It can be observed that when 𝜃 3𝑖 = −56 ◦, the value of 𝑚 1𝑖 does not influence the sign of the moment. This can be explained by the fact that, at 
+
+𝜃 3𝑖 = −56 ◦, 𝑓 1𝑖 = 0N. In contrast, for 𝜃 3𝑖 = −65 ◦, 𝑚 1𝑖 has a more pronounced effect on the moment as 𝑓 1𝑖 increases. It can be observed that the grasp may become unstable for certain values of 
+
+𝑚 1𝑖 and 𝑚 2𝑖 , depending on 𝜃 2𝑖 . Indeed, variations in 𝜂 1𝑖 and 𝜂 2𝑖 
+
+can affect the sign of 𝑀 𝑧 , causing the location of the stable contact point to move outside the finger, which compromises the grasp stability. For values greater than −100 ◦, a stable contact position can be achieved along the phalanx. However, for smaller values, ejection may occur. This behavior can be explained by the fact that the distal phalanx moves closer to a horizontal orientation, reducing the ability to sustain a stable contact. These results could play a significant role in the design of the hand, particularly in determining its dimensions based on the minimum size of objects that must be grasped. 
+
+> 4.3. Distribution of the actuation torque
+
+The differential mechanism distributes the actuation torque for the three fingers. Its parameters influence the hand’s adapt-ability. If the springs have infinite stiffness, it is as if there were no springs at all. In this case, the mechanism loses dexterity: if one finger is blocked, the others will be blocked as well. Furthermore, it can be seen that the distance ( 𝐴 2𝑖 𝐴 3𝑖 ) has a significant impact on the finger’s actuation torque: the larger the distance, the greater the actuation torque. Furthermore, force control is limited in this type of spring-differential mechanism. Indeed, it is not possible to specify an exact force for each output, since the output forces are coupled. If one finger is blocked, the resulting redistribution of forces affects the other outputs, which are directly related to the actuation torques of the fingers. 
+
+> 4.4. Experimental result
+
+A physical prototype was designed to satisfy the phalanx width stability condition defined in Eq. (9). A fully mechanical hand prototype was fabricated using 3D printing. Its operation relies on the translation of the lower part, actuated manually by the user through a pulling motion (Fig. 11). 
+
+> FIGURE 11: Hand Prototype manually actuated thanks to a slider: the fingers close when the slider is pulled.
+
+To test different grasping modes and their stability, several objects were selected: a pencil holder, a wallet, a small box, and a bottle. These object shapes enable four classic grasp-ing types: precision-spherical grasp, precision-cylindrical grasp, enveloping-spherical grasp, and enveloping-cylindrical grasp. Table 2 illustrates these grasping modes successfully executed with the prototype. These experiments demonstrate promising preliminary results. An actuated prototype is currently under development to enable a deeper comparative analysis with state-of-the-art robotic hands. 
+
+> 5. DISCUSSION
+
+These initial results are encouraging, as the prototype meets the requirements regarding grasp diversity and stability. However, several simplifications have been made, and some aspects have been neglected, which should be taken into account in future work or at least be the subject of a sensitivity analysis. In the theoretical models, the phalanx thickness was ne-glected. In future work, both the thickness and shape of the phalanx, which was assumed to be flat in this work, will be taken into account. The thickness would have only a limited impact on precision grasp, but for enveloping grasps, it could influence finger rotation. The study of a curved shape, similar to that of a human finger, for example, could be particularly interesting for 7TABLE 2: Types of grasps illustrated for a pencil holder, wallet, small box, and bottle 
+
+Spherical grasp Cylindrical grasp Precision grasp 
+
+Enveloping grasp 
+
+studying the passive rotation of the finger and could also affect its stability. Regarding the influence of the springs, the effect of 𝑆 2𝑖 has not been taken into account in either stability analysis. In the case of parallel grasps, this spring is not expected to affect the results as it remains unstretched. For enveloping grasps, Bir-glen [21] demonstrates that its influence remains limited, slightly improving overall stability. In addition, the springs 𝑆 3𝑖 and 𝑆 4𝑖 
+
+have also been neglected. These elements, however, constrain the finger’s rotation and tend to bring it back to its initial position. Therefore, determining an appropriate trade-off in their stiffness is essential to ensure a proper return to the initial configuration while minimizing their impact on finger rotation. Regarding the modeling of contact conditions during en-veloping grasp, another limitation lies in the assumption that the initial position of the contact forces is fixed at the middle length of each phalanx. Furthermore, the movements and changes in orientation that occur during grasping have not been taken into account. Although this approach provides a first approximation, further developments are needed to achieve a more accurate rep-resentation of hand behavior during grasping. Finally, from an experimental point of view, the 3D-printed hand prototype has provided initial results regarding the grasp-ing of objects of various shapes. Future work will focus on developing a specific experimental protocol and designing a new instrumented robotic hand. The aim is to conduct a more compre-hensive study of the hand and the grasp stability, using extensive experimental studies to rigorously evaluate theoretical models. 
+
+> 6. CONCLUSIONS
+
+This work presents a simplified and innovative approach to designing robotic fingers that can perform multiple grasp types with both stability and adaptability. The proposed architecture al-lows for transitions between configurations by integrating parallel and self-adaptive grasping modes, enabling the hand to adapt to a variety of object shapes. Theoretical analysis has demonstrated the conditions under which stable contact is maintained, particularly in precision and enveloping grasps. The relevance of the kinematic model has been validated using an initial 3D-printed prototype showing the adaptability of the fingers and the stability of the grasp. The use of underactuation, both within and between fingers, has proven to be effective in simplifying mechanical design while preserving functional versatility. This strategy reduces the num-ber of actuators required and enhances passive adaptability, mak-ing the system well-suited for industrial and medical applications where reliability and cost-efficiency are critical. This architecture opens promising avenues for applications where adaptability, simplicity, and robustness are essential. It is particularly well-suited for agricultural robotics, where delicate and irregular objects such as fruits must be grasped reliably. In logistics and warehouse automation, the ability to handle diverse object shapes with minimal control effort offers clear advan-tages. The design also holds potential for assistive technologies and prosthetics, providing lightweight and compliant grasping mechanisms for daily use. Additionally, its adaptability makes it relevant for waste sorting and recycling tasks, where unpre-dictable object geometries demand flexible and resilient handling strategies. However, the current prototype relies on manual actuation, which limits repeatability and control precision. Future work will focus on integrating an electric motor to automate the hand mo-tion and enable controlled approach strategies to improve grasp stability and precision. Ultimately, this study lays the groundwork for the develop-ment of compliant robotic hands that combine mechanical sim-plicity with functional richness, opening new possibilities for autonomous manipulation in unstructured environments. 
+
+> ACKNOWLEDGMENT
+
+This work was supported by funding from the French gov-ernment, managed by the National Research Agency under the France 2030 program, reference ANR-22-EXOD-0003, within the PEPR Organic Robotics. 
+
+> REFERENCES
+
+[1] Feix, Thomas, Romero, Javier, Schmiedmayer, Heinz-Bodo, Dollar, Aaron M. and Kragic, Danica. “The GRASP Taxonomy of Human Grasp Types.” IEEE Transactions on Human-Machine Systems Vol. 46 No. 1 (2016): pp. 66–77. DOI 10.1109/THMS.2015.2470657. Accessed 2024-10-23, URL http://ieeexplore.ieee.org/document/7243327/. [2] Piazza, C., Grioli, G., Catalano, M. G. and Bic-chi, A. “A Century of Robotic Hands.” Annual Review of Control, Robotics, and Autonomous Sys-tems Vol. 2 No. Volume 2, 2019 (2019): pp. 1–32. 8DOI 10.1146/annurev-control-060117-105003. Accessed 2024-10-24, URL https://www.annualreviews.org/content/ journals/10.1146/annurev-control-060117-105003. Pub-lisher: Annual Reviews. [3] Seguin, P., Preault, C., Vulliez, P. and Gazeau, J. P. “Ap-proach for Real In-Hand Dexterity Evaluation: Appli-cation to the RoBioSS Hand.” Journal of Mechanisms and Robotics Vol. 15 No. 6 (2023): p. 065001. DOI 10.1115/1.4056404. Accessed 2024-12-03, URL https: //doi.org/10.1115/1.4056404. [4] Pons, J. L., Ceres, R. and Pfeiffer, F. “Multifingered dextrous robotics hand design and control: a review.” 
+
+Robotica Vol. 17 No. 6 (1999): pp. 661–674. DOI 10.1017/S0263574799001836. [5] Kadalagere Sampath, Suhas, Wang, Ning, Wu, Hao and Yang, Chenguang. “Review on human-like robot ma-nipulation using dexterous hands.” Cognitive Computa-tion and Systems Vol. 5 No. 1 (2023): pp. 14–29. DOI 10.1049/ccs2.12073. Accessed 2024-10-25, URL https: //onlinelibrary.wiley.com/doi/abs/10.1049/ccs2.12073. [6] Ramírez Rebollo, Daniel R., Ponce, Pedro and Molina, Ar-turo. “From 3 fingers to 5 fingers dexterous hands.” Ad-vanced Robotics Vol. 31 No. 19-20 (2017): pp. 1051–1070. DOI 10.1080/01691864.2017.1393349. Accessed 2024-12-23, URL https://doi.org/10.1080/01691864.2017.1393349. [7] Lee, Chiwon, Kim, Myungjoon, Kim, Yoon Jae, Hong, Nhayoung, Ryu, Seungwan, Kim, H. Jin and Kim, Sungwan. “Soft robot review.” International Journal of Control, Au-tomation and Systems Vol. 15 No. 1 (2017): pp. 3–15. DOI 10.1007/s12555-016-0462-3. Accessed 2024-12-05, URL http://link.springer.com/10.1007/s12555-016-0462-3. [8] Shintake, Jun, Cacucciolo, Vito, Floreano, Dario and Shea, Herbert. “Soft Robotic Grippers.” Ad-vanced Materials Vol. 30 No. 29 (2018): p. 1707035. DOI 10.1002/adma.201707035. Accessed 2024-12-05, URL https://onlinelibrary.wiley.com/doi/abs/10.1002/ adma.201707035. [9] Butterfass, J., Grebenstein, M., Liu, H. and Hirzinger, G. “DLR-Hand II: next generation of a dextrous robot hand.” 
+
+Proceedings 2001 ICRA. IEEE International Conference on Robotics and Automation (Cat. No.01CH37164) , Vol. 1: pp. 109–114 vol.1. 2001. DOI 10.1109/ROBOT.2001.932538. Accessed 2024-10-25, URL https://ieeexplore.ieee.org/ document/932538. ISSN: 1050-4729. [10] Jacobsen, S., Iversen, E., Knutti, D., Johnson, R. and Big-gers, K. “Design of the Utah/M.I.T. Dextrous Hand.” 1986 IEEE International Conference on Robotics and Automa-tion Proceedings , Vol. 3: pp. 1520–1532. 1986. DOI 10.1109/ROBOT.1986.1087395. Accessed 2025-08-21, URL https://ieeexplore.ieee.org/document/1087395. [11] Backus, Spencer B. and Dollar, Aaron M. “An Adaptive Three-Fingered Prismatic Gripper With Passive Rotational Joints.” IEEE Robotics and Automation Letters Vol. 1 No. 2 (2016): pp. 668–675. DOI 10.1109/LRA.2016.2516506. [12] Gosselin, Clément. “Underactuation with Link Mecha-nisms.” Humanoid Robotics: A Reference . Springer, Dor-drecht (2017): pp. 1–11. DOI 10.1007/978-94-007-7194-9_86-1. Accessed 2025-08-01, URL https://link.springer. com/rwe/10.1007/978-94-007-7194-9_86-1. [13] Birglen, Lionel, Laliberté, Thierry and Gosselin, Clé-ment. Underactuated Robotic Hands . Vol. 40 of Springer Tracts in Advanced Robotics . Springer, Berlin, Hei-delberg (2008). DOI 10.1007/978-3-540-77459-4. Ac-cessed 2024-10-24, URL http://link.springer.com/10.1007/ 978-3-540-77459-4. [14] Dang, Linan, Song, Jiuya, Wei, Yuangen and Zhang, Wen-zeng. “COSA-LET finger: A novel coupled and self-adaptive robot finger with a linear empty-trip transmis-sion.” 2017 2nd International Conference on Advanced Robotics and Mechatronics (ICARM) : pp. 334–338. 2017. DOI 10.1109/ICARM.2017.8273184. Accessed 2025-02-11, URL https://ieeexplore.ieee.org/document/8273184. [15] Laliberté, Thierry and Gosselin, Clément M. “Underactu-ation in space robotic hands.” Proceeding of the Sixth In-ternational Symposium on Artificial Intelligence, Robotics and Automation in Space ISAIRAS: A New Space Odyssey :pp. 1–8. 2001. Springer. [16] Hamon, Pol, Michel, Loïc, Plestan, Franck and Chablat, Damien. “Model-free based control of a gripper actuated by pneumatic muscles.” Mechatronics Vol. 95 (2023): p. 103053. [17] Birglen, Lionel, Laliberté, Thierry and Gosselin, Clément. “Underactuation between the Fingers.” Birglen, Lionel, Laliberté, Thierry and Gosselin, Clément (eds.). Under-actuated Robotic Hands . Springer, Berlin, Heidelberg (2008): pp. 139–169. DOI 10.1007/978-3-540-77459-4_6. Accessed 2025-02-12, URL https://doi.org/10.1007/ 978-3-540-77459-4_6. [18] Massa, B., Roccella, S., Carrozza, M.C. and Dario, P. “Design and development of an underactuated prosthetic hand.” Proceedings 2002 IEEE Interna-tional Conference on Robotics and Automation (Cat. No.02CH37292) , Vol. 4: pp. 3374–3379 vol.4. 2002. DOI 10.1109/ROBOT.2002.1014232. Accessed 2025-05-13, URL https://ieeexplore.ieee.org/document/1014232. [19] Miller, A.T., Knoop, S., Christensen, H.I. and Allen, P.K. “Automatic grasp planning using shape primitives.” 2003 IEEE International Conference on Robotics and Automation (Cat. No.03CH37422) , Vol. 2: pp. 1824–1829 vol.2. 2003. DOI 10.1109/ROBOT.2003.1241860. Accessed 2026-01-26, URL https://ieeexplore.ieee.org/abstract/document/ 1241860. ISSN: 1050-4729. [20] Birglen, Lionel and Gosselin, Clément M. “Grasp-state plane analysis of two-phalanx underactuated fingers.” 
+
+Mechanism and Machine Theory Vol. 41 No. 7 (2006): pp. 807–822. DOI 10.1016/j.mechmachtheory.2005.10.004. Accessed 2024-11-25, URL https://www.sciencedirect. com/science/article/pii/S0094114X05001667. [21] Birglen, Lionel, Laliberté, Thierry and Gosselin, Clé-ment. “Design and Control of the Laval Underactu-ated Hands.” Underactuated Robotic Hands . Vol. 40. Springer Berlin Heidelberg, Berlin, Heidelberg (2008): pp. 171–207. DOI 10.1007/978-3-540-77459-4_7. Ac-cessed 2025-08-01, URL http://link.springer.com/10.1007/ 9978-3-540-77459-4_7. Series Title: Springer Tracts in Ad-vanced Robotics. [22] Birglen, Lionel and Gosselin, Clément. “Optimal design of 2-phalanx underactuated fingers.” Proc. of IMG2004: IEEE international conference on Intelligent Manipulation and Grasping : pp. 110–116. 2004. 10

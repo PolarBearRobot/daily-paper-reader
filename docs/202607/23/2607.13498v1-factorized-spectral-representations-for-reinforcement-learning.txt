@@ -1,0 +1,2833 @@
+Title: Factorized Spectral Representations for Reinforcement Learning
+
+URL Source: https://arxiv.org/pdf/2607.13498v1
+
+Published Time: Thu, 16 Jul 2026 00:38:09 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Factorized Spectral Representations for Reinforcement Learning 
+
+Junyi Wu 
+
+Department of Industrial and Systems Engineering University of Washington Seattle, WA, USA 
+
+junyiwu@uw.edu 
+
+Dan Li 
+
+Department of Industrial and Systems Engineering University of Washington Seattle, WA, USA 
+
+dli27@uw.edu 
+
+## Abstract 
+
+Learning a compact model of the world from interaction data is central to sample-efficient deep reinforcement learning. Spectral representation methods have be-come the leading paradigm for representation learning in continuous control by taking a matrix view of the transition kernel, with state-action pairs on one side and next states on the other, and learning a low-rank factorization through self-supervised contrastive objectives. We take this view one step further. The transition kernel is naturally a three-mode tensor over states, actions, and next states, and a CP decomposition gives one feature map per mode. We propose FaStR, which fits this decomposition with a noise contrastive objective, producing separate state, action, and next-state encoders that together form a single spectral representation. The factored form yields a smaller hypothesis class, and the sample size needed for representation learning shrinks by a factor that scales with the smaller of the state and action dimensions. Empirically, FaStR delivers its largest gains on high-dimensional locomotion tasks whose dynamics align with the factored structure, and the learned state encoder transfers intact across actuator shift while only the action encoder is retrained. 
+
+## 1 Introduction 
+
+Sample efficiency is a central concern in continuous-control RL. As state and action dimensions grow, the number of environment interactions required by model-free methods rises sharply, limiting real-world deployment [Fujimoto et al., 2018, Haarnoja et al., 2018]. One productive route is the framework of low-rank MDPs [Jin et al., 2020, Yang and Wang, 2020, Agarwal et al., 2020], which assumes the transition kernel admits a finite-rank factorization. The representation-learning problem then becomes one of finding a feature space in which the dynamics are lix—near. Spectral representation methods bring this low-rank view closer to practical deep RL [Gao et al., 2025]. They use transition samples from online interaction to learn transition-aware features, often without reward labels, and feed these features to policy and value learning. When such features are estimated more accurately from the same interaction budget, the critic receives a representation closer to the Bellman-linear structure earlier in training. The contrastive objective used to extract these features has been refined steadily across this line of work, and the resulting agents are now competitive on standard benchmarks. 
+
+> Preprint. arXiv:2607.13498v1 [cs.LG] 15 Jul 2026
+
+In many control systems, states and actions play different roles. The state describes the current configuration of the system, while the action describes the input driving the system. Existing spectral RL methods [Ren et al., 2023, Zhang et al., 2022, Gao et al., 2025, Shribak et al., 2024, Nabati et al., 2026] implement low-rank structure by treating the state-action pair as a joint argument to the transition kernel. Separately, factored value-function methods separate state and action structures within the critic. This work identifies a gap between these two approaches: the lack of a factored low-rank representation for the transition dynamics themselves. The motivation for this connection stems from the observation that distinct actions often drive identical state-dependent motion patterns. 𝑠 , 𝑎  
+
+> Action dimension  𝑎 !
+> State dimension 𝑠 !
+
+𝑠 
+
+𝑎 
+
+𝜙 !
+
+𝜙 " 
+
+> Action dimension  𝑎 !
+> State dimension 𝑠 !
+> (a) Joint Representation
+
+𝑠 , 𝑎  
+
+> Action dimension  𝑎 !
+> State dimension 𝑠 !
+
+𝑠 
+
+𝑎 
+
+𝜙 !
+
+𝜙 " 
+
+> Action dimension  𝑎 !
+> State dimension 𝑠 !
+> (b) Factorized Representation
+
+Figure 1: Comparison of representation structures. Factorization constrains the joint score landscape to the intersection of independent state and action profiles. In such cases, a joint representation must re-learn shared state-side structure across actions, whereas a factored representation can reuse the same state-side modes while learning how ac-tions modulate them. To this end, we introduce Factored Spectral Rep-resentations (FaStR), which treats the transition kernel as a three-way tensor and learns one en-coder per mode (state, action, next-state). Fig-ure 1 illustrates the key difference. A joint en-coder maps the concatenated pair (s, a ) directly into a state-action representation, so the learned score can vary freely over the full joint plane (Figure 1a). In this view, local peaks in the score landscape may be tied to specific state-action regions. FaStR instead learns separate state and action profiles, and combines them through a Hadamard product (Figure 1b). Thus, peaks and variations in the joint score must arise from the interaction of reusable state-side and action-side factors, encouraging sharing across rows and columns of the state-action plane. This struc-tured sharing acts as an implicit regularizer and shifts the statistical burden from covering iso-lated state-action regions to estimating reusable factors, allowing the frozen feature to become useful for Bellman backups with fewer transitions when the dynamics match the factorization. Specifically, our contributions are as follows: 1. A factored view of spectral RL representations. We formulate the transition kernel as a three-mode object over state, action, and next state, and instantiate this view as a representation with a separate encoder for each of these three modes. The factored representation keeps these modes explicit while remaining compatible with contrastive training. 2. A representation-complexity separation under CP structure. We prove that the factored hypothesis class has a covering number that decomposes additively over the state, action, and next-state factors. Under CP realizability, this gives a sample-size gap implied by the bound; in the approximate case, the guarantee becomes a bias-estimation tradeoff. 3. Empirical evaluation and modular transfer. On DM Control Suite [Tassa et al., 2018] tasks across morphologies and action dimensions, we test when the factored representation outperforms a joint state-action encoder. Gains grow with action dimension, but only when the factorization matches the dynamics. The same factorization also supports modular adaptation: under actuator shift, the state factor transfers intact and only the action factor is retrained. 
+
+## 2 Preliminaries 
+
+We consider a discounted MDP M = ( S, A, P, r, γ ) with continuous state space S, continuous action space A, transition kernel P : S × A → ∆( S), reward function r : S × A → R, and discount factor γ ∈ [0 , 1) . The Q-function Qπ (s, a ) = Eπ [P∞ 
+
+> t=0
+
+γtr(st, a t) | s0 = s, a 0 = a] satisfies the Bellman equation 
+
+Qπ (s, a ) = r(s, a ) + γ
+
+Z
+
+> S
+
+P (s′|s, a ) V π (s′) ds ′, (1) 2where V π (s) = Ea∼π(·| s)[Qπ (s, a )] .
+
+Linear MDPs and the linear-feature view. A common simplification is to assume the transition kernel admits a finite-rank factorization. The linear MDP assumption [Jin et al., 2020] states that there exist a feature map φ : S × A → Rd, a kernel map μ : S → Rd, and a reward parameter 
+
+θr ∈ Rd such that 
+
+P (s′|s, a ) = φ(s, a )⊤μ(s′), r(s, a ) = φ(s, a )⊤θr . (2) Under this assumption, the value function is linear in φ: for any policy π, Qπ (s, a ) = φ(s, a )⊤wπ
+
+for some wπ ∈ Rd that absorbs the integral against V π . The complexity of value learning then depends on the feature dimension d rather than the size of the state-action space, which enables provably efficient algorithms [Jin et al., 2020, Uehara et al., 2022]. In practice φ is unknown and must be learned from interaction data. 
+
+Spectral RL: learning transition-ratio scores. Spectral representation methods learn φ and μ
+
+from transition samples using self-supervised contrastive objectives [Gutmann and Hyvärinen, 2010, van den Oord et al., 2018, Zhang et al., 2022, Gao et al., 2025]. A scoring function h(s, a, s ′) = 
+
+φ(s, a )⊤μ(s′) is trained to assign high values to true next-state samples s′ ∼ P (·| s, a ) and low values to negatives drawn from a reference distribution. At the population level, such objectives fit a transition-ratio score: the logit measures how plausible a candidate next state is under the transition kernel relative to the negative distribution. Existing deep spectral methods parameterize this score bilinearly, using a fused state-action feature on one side and a next-state feature on the other. The trained φ can then be used as the linear-MDP feature for downstream value learning. The contrastive template that FaStR will instantiate is the ranking-based perturbed noise contrastive estimation (RP-NCE) objective [Zhang et al., 2022, Gao et al., 2025], in which negatives are obtained by perturbing true next states across a sequence of noise levels and the model is trained to rank a true (perturbed) positive above K − 1 corrupted alternatives: 
+
+ℓNCE = − 1
+
+M N 
+
+> M
+
+X
+
+> m=1
+> N
+
+X
+
+> i=1
+
+log exp  φ⊤ 
+
+> i
+
+μ(˜ s′
+
+> i, 0
+
+; βm)PK−1 
+
+> j=0
+
+exp  φ⊤ 
+
+> i
+
+μ(˜ s′ 
+
+> i,j
+
+; βm) , (3) where φi = φ(si, a i), {βm}Mm=1 are noise levels along a variance-preserving (VP) schedule [Song et al., 2021], which keeps the marginal variance fixed across levels, and ˜s′ 
+
+> i,j
+
+denotes the j-th candidate next state corrupted at level βm, with j = 0 the true target and j ≥ 1 negatives drawn from other transitions in the mini-batch (in-batch negatives). At the population level this ranking objective is consistent with maximum likelihood estimation as the number of negatives grows [Ma and Collins, 2018]. Thus RP-NCE is best viewed as an estimator for a chosen transition-ratio score class; FaStR keeps this estimator but changes the score class from a fused bilinear to a mode-wise trilinear form. 
+
+The full spectral RL pipeline. The contrastive loss is one component of the system. After training, the encoder φ is used as a frozen representation: a critic Qθ takes φ(s, a ) as input and is trained by standard temporal-difference (TD) losses without back-propagating through φ, and a policy network 
+
+π is trained on top of this frozen representation. This separation between representation learning (the contrastive loss) and value learning (TD on the frozen feature) is what makes the learned φ usable as the linear-MDP feature in Jin et al. [2020]. We work within this two-stage setup and locate our contribution in the structural form of the encoder φ.
+
+## 3 Method 
+
+3.1 The FaStR Framework A tensor view of the transition kernel. The standard linear MDP merges s and a into a single index and factorizes the resulting matrix P ∈ R|S×A|×|S| via an SVD-like decomposition. This treats the two arguments uniformly, although the state specifies the configuration of the system while the action specifies the input applied to it. We separate the two arguments by viewing the transition kernel as a third-way tensor T ∈ R|S|×|A|×|S| indexed by s, a, and s′.1   
+
+> 1The tensor view is stated in the finite case for intuition; Assumption 1 below is stated directly through feature maps on general Sand A.
+
+3A standard general decomposition of such a tensor is the Tucker form [Tucker, 1966, Kolda and Bader, 2009] P (s′|s, a ) = P 
+
+> i,j,k
+
+Gijk ϕs,i (s) ϕa,j (a) mk(s′) with a core G ∈ Rds×da×dm . The CP (CANDECOMP/PARAFAC) decomposition [Carroll and Chang, 1970, Harshman, 1970, Kolda and Bader, 2009] is the special case where G is superdiagonal, Gkkk = 1 , eliminating the core entirely; lower-rank or block-diagonal cores interpolate between CP and dense Tucker. Among these, FaStR uses the CP form; the case for this choice is made below in the context of contrastive training. 
+
+Assumption 1 (CP-Factored MDP) . There exist feature maps ϕs : S → Rd, ϕa : A → Rd, a kernel map m : S → Rd, and a reward parameter θr ∈ Rd such that for all (s, a, s ′):
+
+P (s′|s, a ) =  ϕs(s) ⊙ ϕa(a)⊤m(s′) = 
+
+> d
+
+X
+
+> k=1
+
+ϕs,k (s) ϕa,k (a) mk(s′), (4) 
+
+r(s, a ) =  ϕs(s) ⊙ ϕa(a)⊤θr . (5) 
+
+We write ψ(s, a ) := ϕs(s) ⊙ ϕa(a) ∈ Rd for the factored feature. 
+
+Each component k in Equation ref{eq:cp} is a rank-one term combining a state factor ϕs,k (s), an action factor ϕa,k (a), and a next-state factor mk (s′), with the action factor scaling the coupling between the other two. CP fits well when actions scale shared state-dependent modes of motion, such as posture or balance in locomotion; it underfits when strong contact or limb-coupling effects entangle modes across actions. The CP form has scale invariances between ϕs, ϕa, and m, which are fixed by uniform norm bounds Bϕ and Bm, ∞ throughout the analysis (Appendix C.1); the implementation uses LayerNorm to stabilize the scales. 
+
+Factored representation and Q-linearity. FaStR learns a feature that is useful for control, not only for predicting the next state. Let ψ(s, a ) := ϕs(s) ⊙ ϕa(a). Under the CP-factored model, the transition and reward share this same feature: P (s′|s, a ) = ψ(s, a )⊤m(s′) and r(s, a ) = ψ(s, a )⊤θr .Therefore, a Bellman backup does not leave the span of ψ: for any policy π, Qπ (s, a ) is derived as: 
+
+r(s, a ) + γ
+
+Z
+
+> S
+
+P (s′|s, a )V π (s′)ds ′ = ψ(s, a )⊤
+
+
+
+θr + γ
+
+Z
+
+> S
+
+m(s′)V π (s′)ds ′
+
+
+
+=: ψ(s, a )⊤wπ . (6) Thus the downstream linear critic is not an additional assumption: once the transition and reward admit the CP form, the corresponding Q-function is linear in the learned factored feature. A derivation with norm bounds is given in Appendix C.2. 
+
+Learning a trilinear transition-ratio score. We learn the factors by viewing contrastive spectral learning as conditional ratio estimation. For an anchor (si, a i), the observed next state is the positive candidate and perturbed in-batch next states are negatives. InfoNCE [van den Oord et al., 2018] turns this into a classification problem: among one true next state and several distractors, the model is trained to assign the highest energy to the true candidate. At the population optimum, differences between these energies estimate the log ratio between the transition law at the anchor and the negative candidate distribution. RP-NCE repeats this classification across noise levels β, giving a multi-scale ratio target for the next-state side. In standard spectral RL, this energy is bilinear: a fused state-action feature is matched with a β-conditioned next-state feature. FaStR instead chooses the CP trilinear energy 
+
+fΘ(s, a, s ′; β) = 
+
+> d
+
+X
+
+> k=1
+
+ϕs, Θ,k (s) ϕa, Θ,k (a) mΘ,k (s′; β) =  ϕs, Θ(s) ⊙ ϕa, Θ(a)⊤mΘ(s′; β).
+
+Each coordinate is a ratio channel: the state factor selects a state-dependent mode, the action factor gates it, and the next-state factor scores the candidate at noise level β. Substituting this energy into the RP-NCE template (3) gives 
+
+ℓFaStR = − 1
+
+M N 
+
+> M
+
+X
+
+> b=1
+> N
+
+X
+
+> i=1
+
+log exp  fΘ(si, a i, ˜s′
+
+> i, 0
+
+; βb)PK−1 
+
+> j=0
+
+exp  fΘ(si, a i, ˜s′ 
+
+> i,j
+
+; βb) . (7) The learned state-action feature is the anchor side of this energy, ψΘ(s, a ) = ϕs, Θ(s) ⊙ ϕa, Θ(a).The downstream RFF critic then kernelizes the frozen ψΘ for value learning, while the mode-wise 4geometry of ψΘ is fixed by the transition-ratio energy. Together, the preceding pieces define the full FaStR pipeline: the CP factored MDP specifies the trilinear score class, Q-linearity explains why the anchor feature can support value learning, and RP-NCE provides the self-supervised signal that learns the factors from transitions. After this representation stage, we freeze ψΘ, train the actor and critic on top of it, and use the same downstream control pipeline as prior spectral RL; the structural change is in how transition data shape the state-action feature. Algorithm 1 gives the per-step update. 
+
+CP vs. Tucker cores. The CP form is the diagonal member of a broader trilinear transition-ratio score class, written as h(s, a, s ′) = ϕs(s)⊤M (s′)ϕa(a), with M (s′) generated by the next-state mode and restricted to be diagonal under CP. Other parameterizations correspond to less constrained interaction matrices: a dense ds × da matrix gives full Tucker, and intermediate cases (low-rank 
+
+M (s′) = U (s′)V (s′)⊤, block-diagonal cores) interpolate between CP and dense Tucker. Such factorizations have been used in prior bilinear MDP methods trained with regression or maximum-likelihood objectives [Yang and Wang, 2020, Du et al., 2021, Lin et al., 2024], where the gradient on 
+
+M (s′) is full-rank per anchor and large interaction matrices can be trained with enough data. Under contrastive training the gradient structure is different. The chain rule on hij =
+
+ϕs(si)⊤M (s′ 
+
+> j
+
+)ϕa(ai) gives 
+
+∇vec( M (s′  
+
+> j))
+
+ℓNCE ∈ span ϕa(ai) ⊗ ϕs(si) , (8) a one-dimensional subspace per anchor. A mini-batch of N anchors therefore covers at most 
+
+min( N, dim( M )) directions in the parameter space of M (s′) in a single update. This rank-one structure follows from the conditional bilinear form of the trilinear score and is the same for any parameterization of M : low-rank or block-diagonal cores reduce the parameter count below dsda, but each anchor still contributes a rank-one direction projected onto the corresponding submanifold. For dense Tucker, dim( M ) = dsda, so per-batch coverage requires N ≥ dsda, which scales quadratically in the per-mode dimension and exceeds typical batch sizes. The CP form has dim( M ) = d, so the linear requirement N ≥ d is met by standard mini-batch sizes. Whether structured cores can accumulate the full parameter space across many SGD updates at realistic compute is an empirical question. The underlying issue is that any structured-core fix faces a three-way constraint: encoder capacity, NCE validity (the negative count must reach the effective NCE dimension, here N ≥ dsda, for the contrastive logit to be non-degenerate), and per-batch gradient coverage cannot be satisfied simultaneously at standard batch sizes. Reducing ds, d a to satisfy validity makes encoder capacity the binding constraint and removes the representational benefit. Appendix D.1 reports a controlled three-way encoder ablation (monolithic, concat-of-separate, Tucker) and a separate capacity test, showing that no choice of Tucker rank within this constraint matches CP under matched compute. 
+
+3.2 Provable Representation Efficiency 
+
+Section 3.1 chose CP among bilinear parameterizations on training-dynamics grounds. The matching statistical question is whether CP also makes the representation class easier to learn from a finite sample. We answer it in three steps. We first bound the size of the factored class relative to the joint class (Theorem 3.1). We then convert this bound into a finite-sample bound on representation error (Proposition 3.2). Finally, we invert the bound to compare the sample sizes that suffice for each class to reach a target error (Proposition 3.3). The dimension dependence of the final result matches the empirical pattern in Section 4. We work with two scoring classes. The factored class Gfac contains g(s, a, s ′) = (ϕs(s) ⊙
+
+ϕa(a)) ⊤m(s′) with (ϕs, ϕ a, m ) ∈ F s × F a × F m; the joint class Gjoint contains g(s, a, s ′) = 
+
+φ(s, a )⊤μ(s′) with φ ∈ F sa , μ ∈ F m. Norm bounds and the convention for sup-ℓ2 covering numbers are in Appendix C.1. 
+
+Step 1: bounding the size of the factored class. A monolithic encoder takes each (s, a ) pair as a single input, and the size of its hypothesis class scales with the combined state-action dimension. The CP parameterization splits the score into three networks: a state factor, an action factor, and a kernel encoder, coupled through a diagonal trilinear interaction (the Hadamard form of Eq. 4). The size of the resulting class is then controlled by the three component networks separately rather than by their product. Covering numbers, a standard measure of the size of a function class, make this precise. 5Theorem 3.1 (Covering-number decomposition) . For every ϵ > 0,
+
+log N (Gfac , ϵ ) ≤ log N
+
+
+
+Fs, ϵ
+
+> 3Bm, ∞Bϕ
+
+
+
++ log N
+
+
+
+Fa, ϵ
+
+> 3Bm, ∞Bϕ
+
+
+
++ log N
+
+
+
+Fm, ϵ
+
+> 3B2
+> ϕ
+
+
+
+.
+
+If Fsa contains every Hadamard product ϕs ⊙ ϕa with (ϕs, ϕ a) ∈ F s × F a, then Gfac ⊆ G joint , and the inclusion holds for both covering numbers and Rademacher complexities at every sample size. Proof. See Appendix C.3. For Lipschitz encoders on compact domains, this gives an exponent Dmax = max( ds, d a) for the factored class versus Dsum = ds + da for the joint class, leaving a gap of min( ds, d a) in the rate exponent that is formalized as a sample-size separation in Proposition 3.3. 
+
+What the bound says in operational terms. In sample-size terms, the covering number is the number of transitions needed for the contrastive loss to separate two encoder triples within a target tolerance. A smaller covering number means the empirical loss is close to its population value at smaller n, so the resulting ψ = ϕs ⊙ ϕa is available as a TD feature at smaller n. Take humanoid as a concrete case. The state has ds = 67 proprioceptive coordinates, the action has da = 21 actuator commands, and the standard approach fits the transition density on the joint 88 -dimensional input. The CP form fits two smaller pieces instead: a 67 -dimensional state feature, and 21 per-actuator gains that say how each actuator scales that feature. Theorem 3.1 states this same split at the level of the covering number. Proposition 3.2 turns the smaller class size into a smaller representation error at fixed n. Proposition 3.3 inverts the bound and gives the smaller sample size needed for a target error. Once ψ is frozen, TD on ψ satisfies the linear-MDP sample-complexity guarantees of Jin et al. [2020], so a smaller representation error at a given n becomes a smaller return gap in policy learning. 
+
+Step 2: from class size to representation error. A smaller class size matters only if it leads to a smaller generalization gap. The target we analyze is the L2 representation objective of Ren et al. [2023], the squared L2(ν) distance from the true transition density, 
+
+L(g) := Eρ
+
+Z 
+
+> S
+
+ P (s′ | s, a ) − g(s, a, s ′)2dν (s′)
+
+
+
+.
+
+We analyze this objective rather than NCE itself because finite-sample guarantees are tractable for the 
+
+L2 surrogate at the population level, while the contrastive loss serves as its practical proxy at training time [Ren et al., 2023]. 
+
+Proposition 3.2 (Finite-sample generalization) . Let G ∈ {G fac , Gjoint } with |g| ≤ Bg , and let ˆgn be an empirical minimizer of the centered objective on n i.i.d. transitions. With probability at least 1 − δ,
+
+L(ˆ gn) ≤ L(g∗G )
+
+| {z } 
+
+> approximation
+
++ 8 Rn(G) + 4 Rn(HG )
+
+| {z }
+
+> estimation
+
++ O
+
+
+
+(Bg + B2 
+
+> g
+
+)
+
+q log(1 /δ )
+
+> n
+
+
+
+,
+
+where HG := {(s, a ) 7 → R g2(s, a, u ) dν (u) : g ∈ G} is the integrated quadratic class arising from expanding the squared loss. The quadratic class satisfies N (HG , ϵ ) ≤ N (G, ϵ/ (2 Bg )) , so its Rademacher complexity inherits the rate of G itself. Proof. See Appendix C.6. The bound has two terms with opposite scaling. The approximation term L(g∗G ) measures whether the class contains the true dynamics; under exact CP realizability and the inclusion of Theorem 3.1, both classes contain the truth and this term is zero for both. Under approximate CP, the factored class has an irreducible bias ϵ2CP := inf g∈G fac L(g) that the joint class does not have. The estimation term is smaller for the factored class: both Rademacher terms inherit the smaller exponent Dmax from Theorem 3.1, so the factored class converges faster in n.
+
+Step 3: from representation error to sample size. The previous two steps bound representation error at a fixed sample size. The inverse question is how many samples each class needs to reach the same target error. 6Proposition 3.3 (Sufficient-sample-size separation) . Assume exact CP realizability, the inclusion condition of Theorem 3.1, and L-Lipschitz encoder classes on compact domains with Dmax ≥ 3.Proposition 3.2 then gives certificates of the form L(ˆ gfac  
+
+> n
+
+) ≤ Cfac (δ) n−1/D max and L(ˆ gjoint  
+
+> n
+
+) ≤
+
+Cjoint (δ) n−1/D sum , with Cfac , C joint depending polynomially on the norm bounds, Lipschitz con-stants, and feature dimension, and logarithmically on 1/δ . Let nsuff fac (ϵ) and nsuff joint (ϵ) be the smallest 
+
+n at which each certificate guarantees error at most ϵ2. Then 
+
+nsuff joint (ϵ)
+
+nsuff fac (ϵ) = Θ 
+
+
+
+ϵ−2 min( ds,d a)
+
+as ϵ → 0.
+
+Proof. See Appendix C.7. The factored class therefore has a smaller certified sample requirement, with the exponent gap equal to 
+
+min( ds, d a). This gap is meaningful when the smaller of the state and action dimensions is nontrivial and the CP bias is small; otherwise the approximate-CP certificate L(ˆ gfac  
+
+> n
+
+) ≲ ϵ2CP +Cfac (δ)n−1/D max 
+
+can be dominated by bias. We test these two conditions in Section 4 and Appendix D.2. Appendix C.8 further gives a conditional LSVI-UCB implication: if the learned feature satisfies approximate Bellman linearity, the factored structure can reduce the representation cost of obtaining features suitable for optimism-driven exploration. 
+
+## 4 Experiments 
+
+The experiments evaluate FaStR on two axes. First, on standard locomotion benchmarks whose morphology is well aligned with a CP-style factorization, we compare FaStR against the monolithic encoder under an otherwise identical pipeline (Section 4.2). Second, in a transfer setting where only the action-to-torque mapping changes between training and adaptation, we test whether the separable state factor enables sample-efficient adaptation that a joint encoder cannot support (Section 4.3). 
+
+4.1 Setup 
+
+We evaluate on DM Control Suite [Tassa et al., 2018] locomotion tasks that vary in action dimen-sionality and morphology, with dim( A) ∈ { 6, 12 , 21 , 38 } and shared proprioceptive observations. To attribute performance differences to the encoder structure alone, we use a controlled protocol: FaStR and the monolithic baseline (CTRL-SR [Gao et al., 2025]) share identical total parameter counts, hidden dimensions, learning rates, noise schedules, and training budgets, with no task-specific tuning for either method. The only varying component is the representation: FaStR’s factored encoders (ϕs, ϕ a, m ) versus CTRL-SR’s joint encoder φ([ s; a]) . Main-text learning curves (Figure 2) compare FaStR against CTRL-SR. Table 1 additionally reports final-return comparisons against Diff-SR [Shribak et al., 2024], a second spectral RL baseline that replaces the contrastive objective with a diffusion next-state model on the same TD3 backbone, and against TD7 [Fujimoto et al., 2023] and SAC [Haarnoja et al., 2018], the current model-free SOTA. SAC and TD7 use the architectures and hyperparameters from the original papers. We report two SAC variants, SAC(3-layer) and SAC(2-layer), both wider per layer than the spectral methods’ actor, so a capacity mismatch is not the source of the gap. We compare only against model-free baselines; model-based methods on this suite were evaluated by Gao et al. [2025] and gave lower returns than the spectral RL baselines. Full hyperparameters are in Appendix B. 
+
+4.2 Sample Efficiency on Locomotion Benchmarks 
+
+On the Humanoid tasks, where torso-limb morphology admits a CP factorization (independent joint groups scaling shared postural modes), FaStR gives higher returns than the controlled baseline by margins above seed-level noise across all three tasks, attributing the difference to the representation. On the Dog environment, the larger action dimension is partly offset by stronger ground-contact dynamics that introduce state-action coupling, giving improvements with wider variance. The same ordering holds against Diff-SR on all five high-action-dim tasks (Table 1), so the gain is not specific to the contrastive objective. On the Quadruped tasks, FaStR converges to CTRL-SR’s terminal performance with higher sample efficiency: on Quadruped-Run, it reaches the baseline’s converged level earlier in training and exceeds it asymptotically; on Quadruped-Walk, the final return is slightly below the baseline, but FaStR reaches near-converged performance earlier than CTRL-SR at any fixed performance threshold. The 70 250k 500k 750k 1M                               
+
+> 0
+> 500
+> Return
+> Cheetah Run
+> 0250k 500k 750k 1M
+> 0
+> 500
+> Humanoid Stand
+> 0250k 500k 750k 1M
+> 0
+> 250
+> 500
+> Humanoid Walk
+> 0250k 500k 750k 1M
+> 0
+> 100
+> Humanoid Run
+> 0250k 500k 750k 1M
+> Training Steps
+> 500
+> 1000
+> Return
+> Quadruped Walk
+> 0250k 500k 750k 1M
+> Training Steps
+> 250
+> 500
+> 750
+> Quadruped Run
+> 0250k 500k 750k 1M
+> Training Steps
+> 0
+> 500
+> 1000 Dog Stand
+> 0250k 500k 750k 1M
+> Training Steps
+> 0
+> 250
+> 500
+> Dog Run
+> CTRL-SR FaStR (Ours)
+
+Figure 2: Learning curves across 8 DM Control Suite tasks spanning four morphologies. FaStR’s gains are largest on tasks whose dynamics admit a CP factorization, consistent with the bias-estimation view. Shaded: ±1 std across 5 seeds. improvement on this family appears as faster convergence rather than a higher asymptote, which is consistent with the bias-estimation interpretation: the estimation advantage appears in the rate at which the representation becomes usable for value learning. On Cheetah-Run, Walker-Walk, and Walker-Run ( dim A≤ 6), FaStR matches the baselines without significant gain, the regime predicted by Proposition 3.3 in which small min( ds, d a) gives a small estimation advantage in the certificate. Table 1: Final-10-evaluation mean return on DM Control Suite tasks with proprioceptive observations, averaged across 5 seeds ( ±1 std). Bold: best result where the gap exceeds one standard deviation.                                                                                                                                                                                                         
+
+> dim A= 6 dim A= 12 dim A= 21 dim A= 38
+> Cheetah Run Walker Walk Walker Run Quad. Walk Quad. Run Hum. Stand Hum. Walk Hum. Run Dog Stand Dog Run
+> SAC(2-layer) 660 ±9880 ±5650 ±19 880 ±6797 ±18 200 ±70 143 ±99 60 ±27 500 ±944 ±48
+> SAC(3-layer) 901 ±5972 ±3802 ±7946 ±13 931 ±9446 ±52 214 ±154 87 ±33 577 ±11 67 ±34
+> TD7 898 ±1979 ±1815 ±18 952 ±3921 ±20 728 ±176 365 ±216 85 ±49 891 ±21 192 ±12
+> Diff-SR 910 ±4978 ±2827 ±10 953 ±5903 ±27 663 ±101 358 ±18 111 ±18 913 ±22 302 ±81
+> CTRL-SR 900 ±15 978 ±1809 ±29 955 ±9900 ±24 607 ±122 399 ±40 120 ±15 870 ±70 499 ±45
+> FaStR (Ours) 903 ±8974 ±3809 ±17 949 ±9936 ±9877 ±28 591 ±15 168 ±7951 ±24 560 ±50
+
+Mechanism check. Appendix D.1 runs a controlled three-way ablation that isolates the CP interac-tion from encoder separation and from generic multiplicative coupling. A concat-of-separate variant, with independent encoders feeding a joint MLP, gives only a small improvement over the monolithic baseline, well below FaStR’s gain. A full Tucker-core variant has the rank-deficient gradient issue of Section 3.1, and a separate capacity test rules out the low-rank workaround. The CP interaction is therefore the source of the gain. The offline CP-misfit diagnostic (Appendix D.2) further shows that gains track structural alignment with the dynamics, not action dimension alone. 
+
+4.3 Modular Reuse of ϕs under Actuator Shift 
+
+We test transfer in a setting where the physical dynamics of the system are unchanged but the action-to-torque interface is rewritten. The CP factorization predicts what each architecture preserves under such a change. Under FaStR, ϕs depends only on the state-side dynamics of the body and should remain valid when only the action-to-torque map shifts; under a joint encoder, state and action are coupled through every parameter, so any change to the interface leaks throughout the encoder and no component is guaranteed to remain valid. The factored representation therefore admits an option a joint encoder does not: keep ϕs, adapt only ϕa.We instantiate two such rewrites. Actuator degradation applies independent per-joint gain scaling and polarity inversion. Action permutation randomly reassigns joint channel indices. Together they capture the basic ways an action interface can drift, independent scaling and reordering, and serve as a basic simulation of the transfer problem without the confounding factors of full domain shift. The transition over true torques and the reward are both unchanged; only the path from policy output to actuation is rewritten. Source and target therefore share the same task, reward, and body, and differ only in the actuator interface, so any retraining cost reflects what the representation failed to preserve. For each architecture we freeze the largest state-dependent component ( ϕs for FaStR, the 80k 100k 200k 300k                                          
+
+> 500
+> 1000
+> Return
+> Walker Stand
+> 0k 100k 200k 300k
+> 0
+> 500
+> 1000
+> Walker Walk
+> 0k 250k 500k 750k 1M
+> 0
+> 500
+> Humanoid Stand
+> 0k 250k 500k 750k 1M
+> 0
+> 200
+> 400
+> Humanoid Walk
+> 0k 250k 500k 750k 1M
+> 0
+> 100
+> 200
+> Humanoid Run
+> 0k 100k 200k 300k
+> Training Steps
+> 500
+> 1000
+> Return
+> Walker Stand
+> 0k 100k 200k 300k
+> Training Steps
+> 0
+> 500
+> 1000
+> Walker Walk
+> 0k 250k 500k 750k 1M
+> Training Steps
+> 0
+> 250
+> 500
+> 750
+> Humanoid Stand
+> 0k 250k 500k 750k 1M
+> Training Steps
+> 0
+> 200
+> 400
+> Humanoid Walk
+> 0k 250k 500k 750k 1M
+> Training Steps
+> 0
+> 50
+> 100
+> 150
+> Humanoid Run
+> Action Permutation
+> Actuator Degradation
+> FaStR freeze s[3.4M trainable] CTRL-SR retrain [5.8M trainable] FaStR retrain CTRL-SR freeze (s,a)
+
+Figure 3: Architectural diagnostic under actuator shift. Top: action permutation; bottom: actuator degradation. Walker ( dim A=6 ) is a pre-shift parity check; Humanoid ( dim A=21 ) gives the diagnostic. What is preserved (red solid vs. blue dashed): under the same freeze-and-adapt protocol, FaStR’s ϕs remains usable across the shift while CTRL-SR’s φ does not. At what cost (red solid vs. blue solid): on Humanoid, FaStR with 18% of its parameters held fixed in ϕs reaches the same final return as CTRL-SR retrained from scratch with all parameters trainable; trainable parameter counts for each condition are reported in the legend. Orange dashed (FaStR retrained from scratch) is a reference upper bound. Shaded: ±1 std across 5 seeds. See Appendix B for parameter setting. joint encoder φ for CTRL-SR) and reinitialize everything downstream. Walker is a parity check on matched pre-shift returns; Humanoid is the diagnostic. 
+
+What is preserved, and at what cost. On a CP-factored MDP, which component to keep across an actuator shift is determined by the representation, not a hyperparameter the practitioner has to choose. A monolithic encoder gives no such handle: the only options are to retrain everything or to freeze arbitrary subsets, neither of which uses structural information about the shift. A second concern is whether the frozen component is a worse starting point than learning from scratch, which would limit FaStR freeze to a lower final return than CTRL-SR scratch. The Humanoid match in Figure 3 excludes this: the parameters that CTRL-SR retrains from scratch are the same ones FaStR keeps unchanged, reusing them matches CTRL-SR-scratch on the target task (Humanoid-Walk: 393.7 vs. 394.1 under permutation, 401.8 vs. 399.2 under degradation). The modularity is therefore useful in practice and not only as a structural property. 
+
+## 5 Related Work 
+
+Modern spectral RL methods learn policy-agnostic features with self-supervised objectives that decompose the transition kernel: SPEDER [Ren et al., 2023] uses orthogonality-regularized spectral contrastive learning, CTRL-SR [Zhang et al., 2022, Gao et al., 2025] uses ranking-based perturbed NCE, Diff-SR [Shribak et al., 2024] handles multimodal next states with a diffusion objective, and the Spectral Bellman Method [Nabati et al., 2026] uses a Bellman-aligned principle. FaStR is orthogonal to this objective-level progress: it retains the NCE pipeline but replaces the fused encoder with a CP-factored one, moving factored structure from the objective into the representation itself. This also separates FaStR from prior uses of multiplicative coupling through FiLM [Perez et al., 2018], hypernetworks [Ha et al., 2017], or temporal InfoNCE (a mutual-information contrastive loss) with split encoders [Zheng et al., 2023], which do not factorize the transition kernel itself. Low-rank MDPs [Jin et al., 2020, Yang and Wang, 2020, Agarwal et al., 2020] and related exploration, representation, and matrix-completion analyses [Modi et al., 2024, Uehara et al., 2022, Du et al., 2019, Stojanovic et al., 2023, Dubail et al., 2025] also impose structure on transitions, but treat the joint state-action feature as a single function. Other tensor or factored RL methods place structure on the Q-table, continuous-action value function, or multi-agent Q-tensor [Rozada et al., 2024, 2025, Lobel et al., 2023, Mahajan et al., 2021]. FaStR sits between these lines by placing factored structure on the transition kernel within a deep spectral representation-learning framework. 96 Discussion and Conclusion 
+
+We introduce FaStR, a spectral representation learning framework that decomposes the transition kernel as a three-way tensor with state, action, and next-state factors, estimated through a trilinear structured contrastive objective. The resulting factored class has a quantifiable statistical advantage: transition samples constrain reusable state and action factors rather than isolated state-action pairs, so the frozen feature can become useful for Bellman backups earlier in training when the CP structure matches the dynamics. The same separation also supports modular adaptation: when the action-to-torque mapping shifts, the state factor transfers intact while only the action factor needs to be retrained. The broader principle is that representations should structurally mirror the physical factorization of future embodied systems into sensors, actuators, and the dynamics connecting them. 10 References 
+
+Alekh Agarwal, Sham Kakade, Akshay Krishnamurthy, and Wen Sun. FLAMBE: Structural complex-ity and representation learning of low rank MDPs. In Advances in Neural Information Processing Systems , 2020. Peter L. Bartlett and Shahar Mendelson. Rademacher and Gaussian complexities: Risk bounds and structural results. Journal of Machine Learning Research , 3:463–482, 2002. J. Douglas Carroll and Jih-Jie Chang. Analysis of individual differences in multidimensional scaling via an N-way generalization of “Eckart-Young” decomposition. Psychometrika , 35(3):283–319, 1970. doi: 10.1007/BF02310791. Simon S. Du, Akshay Krishnamurthy, Nan Jiang, Alekh Agarwal, Miroslav Dudík, and John Langford. Provably efficient RL with rich observations via latent state decoding. In Proceedings of the International Conference on Machine Learning , 2019. Simon S. Du, Sham M. Kakade, Jason D. Lee, Shachar Lovett, Gaurav Mahajan, Wen Sun, and Ruosong Wang. Bilinear classes: A structural framework for provable generalization in RL. In 
+
+Proceedings of the International Conference on Machine Learning , 2021. Bastien Dubail, Stefan Stojanovic, and Alexandre Proutiere. Shift before you learn: Enabling low-rank representations in reinforcement learning. arXiv preprint arXiv:2509.05193 , 2025. R. M. Dudley. The sizes of compact subsets of Hilbert space and continuity of Gaussian processes. 
+
+Journal of Functional Analysis , 1(3):290–330, 1967. doi: 10.1016/0022-1236(67)90017-1. Scott Fujimoto, Herke van Hoof, and David Meger. Addressing function approximation error in actor-critic methods. In Proceedings of the International Conference on Machine Learning , 2018. Scott Fujimoto, Wei-Di Chang, Edward J. Smith, Shixiang Shane Gu, Doina Precup, and David Meger. For SALE: State-action representation learning for deep reinforcement learning. In Advances in Neural Information Processing Systems , 2023. Chenxiao Gao, Haotian Sun, Na Li, Dale Schuurmans, and Bo Dai. Spectral representation-based reinforcement learning. arXiv preprint arXiv:2512.15036 , 2025. Michael Gutmann and Aapo Hyvärinen. Noise-contrastive estimation: A new estimation principle for unnormalized statistical models. In Yee Whye Teh and Mike Titterington, editors, Proceedings of the International Conference on Artificial Intelligence and Statistics , volume 9 of Proceedings of Machine Learning Research , pages 297–304. PMLR, 2010. David Ha, Andrew Dai, and Quoc V. Le. HyperNetworks. In International Conference on Learning Representations , 2017. Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, and Sergey Levine. Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor. In Proceedings of the International Conference on Machine Learning , 2018. Richard A. Harshman. Foundations of the PARAFAC procedure: Models and conditions for an “explanatory” multi-modal factor analysis. UCLA Working Papers in Phonetics 16, University of California, Los Angeles, 1970. Chi Jin, Zhuoran Yang, Zhaoran Wang, and Michael I. Jordan. Provably efficient reinforcement learning with linear function approximation. In Proceedings of the Conference on Learning Theory ,2020. Tamara G. Kolda and Brett W. Bader. Tensor decompositions and applications. SIAM Review , 51(3): 455–500, 2009. doi: 10.1137/07070111X. Haohong Lin, Wenhao Ding, Jian Chen, Laixi Shi, Jiacheng Zhu, Bo Li, and Ding Zhao. BECAUSE: Bilinear causal representation for generalizable offline model-based reinforcement learning. In 
+
+Advances in Neural Information Processing Systems , 2024. 11 Samuel Lobel, Sreehari Rammohan, Bowen He, Shangqun Yu, and George Konidaris. Q-functionals for value-based continuous control. In Proceedings of the AAAI Conference on Artificial Intelli-gence , volume 37, pages 8932–8939, 2023. Zhuang Ma and Michael Collins. Noise contrastive estimation and negative sampling for conditional models: Consistency and statistical efficiency. arXiv preprint arXiv:1809.01812 , 2018. Anuj Mahajan, Mikayel Samvelyan, Lei Mao, Viktor Makoviychuk, Animesh Garg, Jean Kossaifi, Shimon Whiteson, Yuke Zhu, and Animashree Anandkumar. Tesseract: Tensorised actors for multi-agent reinforcement learning. In Proceedings of the International Conference on Machine Learning , volume 139, pages 7301–7312. PMLR, 2021. Colin McDiarmid. On the method of bounded differences. In J. Siemons, editor, Surveys in Combinatorics, 1989 , volume 141 of London Mathematical Society Lecture Note Series , pages 148–188. Cambridge University Press, Cambridge, 1989. Aditya Modi, Jinglin Chen, Akshay Krishnamurthy, Nan Jiang, and Alekh Agarwal. Model-free representation learning and exploration in low-rank MDPs. Journal of Machine Learning Research ,2024. Ofir Nabati, Bo Dai, Shie Mannor, and Guy Tennenholtz. Spectral Bellman method: Unifying representation and exploration in RL. In International Conference on Learning Representations ,2026. Ethan Perez, Florian Strub, Harm De Vries, Vincent Dumoulin, and Aaron Courville. FiLM: Visual reasoning with a general conditioning layer. In Proceedings of the AAAI Conference on Artificial Intelligence , 2018. Ali Rahimi and Benjamin Recht. Random features for large-scale kernel machines. In Advances in Neural Information Processing Systems , 2007. Tongzheng Ren, Tianjun Zhang, Lisa Lee, Joseph E. Gonzalez, Dale Schuurmans, and Bo Dai. Spectral decomposition representation for reinforcement learning. In International Conference on Learning Representations , 2023. Sergio Rozada, Santiago Paternain, and Antonio G. Marques. Tensor and matrix low-rank value-function approximation in reinforcement learning. IEEE Transactions on Signal Processing , 72: 1634–1649, 2024. Sergio Rozada, Hoi-To Wai, and Antonio G. Marques. Multilinear tensor low-rank approximation for policy-gradient methods in reinforcement learning. IEEE Transactions on Signal Processing , 73: 4906–4920, 2025. Dmitry Shribak, Chen-Xiao Gao, Yitong Li, Chenjun Xiao, and Bo Dai. Diffusion spectral rep-resentation for reinforcement learning. In Advances in Neural Information Processing Systems ,2024. Yang Song, Jascha Sohl-Dickstein, Diederik P. Kingma, Abhishek Kumar, Stefano Ermon, and Ben Poole. Score-based generative modeling through stochastic differential equations. In International Conference on Learning Representations , 2021. Stefan Stojanovic, Yassir Jedra, and Alexandre Proutiere. Spectral entry-wise matrix estimation for low-rank reinforcement learning. arXiv preprint arXiv:2310.06793 , 2023. Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego de Las Casas, David Budden, Abbas Abdolmaleki, Josh Merel, Andrew Lefrancq, Timothy Lillicrap, and Martin Riedmiller. DeepMind Control Suite. arXiv preprint arXiv:1801.00690 , 2018. Ledyard R. Tucker. Some mathematical notes on three-mode factor analysis. Psychometrika , 31(3): 279–311, 1966. doi: 10.1007/BF02289464. Masatoshi Uehara, Xuezhou Zhang, and Wen Sun. Representation learning for online and offline RL in low-rank MDPs. In International Conference on Learning Representations , 2022. 12 Aaron van den Oord, Yazhe Li, and Oriol Vinyals. Representation learning with contrastive predictive coding. arXiv preprint arXiv:1807.03748 , 2018. Martin J. Wainwright. High-Dimensional Statistics: A Non-Asymptotic Viewpoint . Cambridge University Press, 2019. Lin Yang and Mengdi Wang. Reinforcement learning in feature space: Matrix bandit, kernels, and regret bound. In Proceedings of the International Conference on Machine Learning , 2020. Tianjun Zhang, Tongzheng Ren, Mengjiao Yang, Joseph E. Gonzalez, Dale Schuurmans, and Bo Dai. Making linear MDPs practical via contrastive representation learning. In Proceedings of the International Conference on Machine Learning , volume 162 of Proceedings of Machine Learning Research , pages 26447–26466. PMLR, 2022. Ruijie Zheng, Xiyao Wang, Yanchao Sun, Shuang Ma, Jieyu Zhao, Huazhe Xu, Hal Daumé III, and Furong Huang. TACO: Temporal latent action-driven contrastive loss for visual reinforcement learning. In Advances in Neural Information Processing Systems , 2023. 13 A Limitations. 
+
+The CP form ϕs(s) ⊙ ϕa(a) treats the state and the action as two atomic axes. Environments with strongly coupled joints and tight state–action interdependence, such as Ant-style locomotion, fall outside the regime this two-way split captures cleanly, since the encoder is forced to absorb all sub-axis interactions internally. A hierarchical factorization over actuator or body-part groups, e.g. 
+
+ϕs(s) = ϕtorso ⊙ ϕlimbs or a tree-shaped CP, fits inside the same framework and is a clean next step.Second, Diagonal M corresponds to CP rank one along the next-state axis. A low-rank Tucker core G ∈ Rd×d recovers more interaction terms but enlarges the effective NCE dimension from d to 
+
+d2, reintroducing the constraint that motivated the diagonal choice. Mapping the rank–capacity trade-off, e.g. via low-rank rather than diagonal M , would close the gap between the CP and Tucker ends of this spectrum. Also, all experiments are conducted in the DMControl proprioceptive locomotion suite. Pixel-input variants and physical-robot deployment are not evaluated; the latter introduces sensor noise, latency, and actuator drift that the actuator-shift experiments only partially approximate. 
+
+## B Implementation Details 
+
+This appendix specifies the full training and evaluation protocol used in Section 4, together with the architectural and optimization hyperparameters of FaStR and the five baselines reported in Table 1: CTRL-SR [Gao et al., 2025], Diff-SR [Shribak et al., 2024], SAC [Haarnoja et al., 2018] in two width-depth variants (3-layer and 2-layer), and TD7 [Fujimoto et al., 2023]. Hyperparameters that are common across methods (environment configuration, replay, evaluation cadence, total interaction budget) are listed once in Section B.1; method-specific settings are listed in Sections B.2–B.6 and summarized side-by-side in Table 2. We follow the convention of reporting every hyperparameter that was set in our runs, including those left at the original authors’ defaults, so that the protocol is self-contained. 
+
+B.1 Shared Training Protocol 
+
+All experiments use the DeepMind Control Suite [Tassa et al., 2018] with proprioceptive observations, action repeat (frame skip) of 2, and episode length 1000 environment steps. We train each agent for 
+
+1×10 6 environment frames (i.e. 5×10 5 agent steps after action repeat) per task. Each agent maintains a single uniform-sampling replay buffer of capacity 1×10 6 transitions, with the first 10 ,000 frames collected by a uniform random policy as a warm start before any gradient update. Evaluation is performed every 10 ,000 environment frames by rolling out the deterministic actor (for TD3-based methods: TD3 mean action; for SAC: tanh-Gaussian mean) for 10 episodes; we report the mean undiscounted return over the last 10 evaluation checkpoints, averaged over 5 random seeds, with shaded bands or ±1 standard deviations across seeds. Observation normalization (running mean and standard deviation) is enabled for the spectral methods (FaStR and CTRL-SR), following Gao et al. [2025], and disabled for the SAC and TD7 baselines, matching their original implementations. All methods use the discount factor γ=0 .99 , the same set of seeds {0, 1, 2, 3, 42 }, and a single update per environment step (update-to-data ratio 1). 
+
+B.2 FaStR (Ours) Architecture. All encoders, the noise schedule, and design defaults that are not explicitly varied below follow Gao et al. [2025]. Encoders are ResidualMLPs with LayerNorm, ELU activations, and Mish activations inside the contrastive head. The state factor ϕs maps dim( S) → 512 → 512 → d;the action factor ϕa maps dim( A) → 512 → 512 → d; the kernel encoder m maps dim( S) + 128 →
+
+512 → 512 → d, where the additional 128 dimensions encode the perturbation level via a sinusoidal time embedding. We set d=512 throughout. The factored feature ψ(s, a ) = ϕs(s) ⊙ ϕa(a) is fed to a twin Q critic consisting of a random Fourier features (RFF) [Rahimi and Recht, 2007] projection of width 1024 followed by a 2-layer MLP head [512] with LayerNorm and ELU; this critic is architecturally identical to the CTRL-SR critic so that the only varying component is the encoder. The actor is a deterministic policy network with hidden sizes [512 , 512 , 512] , ELU activations, and a final tanh that maps to [−1, 1] dim( A).14 Optimization. All four networks (state factor, action factor, kernel encoder, critic) are trained with Adam (default (β1, β 2) = (0 .9, 0.999) , no weight decay). Critic and actor learning rates are 3×10 −4;the representation learning rate (jointly applied to ϕs, ϕ a, m ) is 1×10 −4. Polyak averaging (i.e., 
+
+¯θ ← (1 − τ )¯θ + τ θ ) with τ =0 .005 is used for both the critic and the representation targets; actor and critic updates are performed every environment step ( actor_update_freq =1). The mini-batch size is N =512 , matching the negative-sample count K=N =512 implicit in the in-batch RP-NCE objective. Exploration uses Gaussian action noise N (0 , σ =0 .2) clipped to [−1, 1] dim( A); target action smoothing uses N (0 , ˜σ=0 .2) clipped to [−0.3, 0.3] . Gradients of the critic loss are not back-propagated through the representation ( back_critic_grad =false). One training step is summarized in Algorithm 1. 
+
+Representation objective. We use the ranking-based perturbed NCE loss (7) to train the trilinear transition-ratio score, with M =25 noise levels on a variance-preserving (VP) schedule. The ranking variant is enabled ( ranking =true), and the auxiliary bilinear-MDP regression term of Gao et al. [2025] is kept at its default weight β=1 .0. The combined training loss is ℓFaStR + λr ℓreward + λQ ℓcritic 
+
+with λctrl =λr =λQ=1 .0; the reward head is a 2-layer MLP [512] on top of ψ, identical in structure to the CTRL-SR reward head. 
+
+Algorithm 1 FaStR: one training step. sg( ·): stop-gradient. 
+
+Require: Encoders ϕs, ϕa, m; critic Qθ ; actor πξ ; target copies ¯ϕs, ¯ϕa, ¯m, ¯Q 
+
+> 1:
+
+Sample mini-batch {(si, a i, r i, s ′
+
+> i
+
+)}Ni=1 ; draw K−1 negatives per transition  
+
+> 2:
+
+Representation: ψi ← ϕs(si) ⊙ ϕa(ai) for all i 
+
+> 3:
+
+Update (ϕs, ϕ a, m ) by minimizing ℓFaStR (Eq. 7)  
+
+> 4:
+
+Critic: ¯ψ′ 
+
+> i
+
+← sg( ¯ϕs(s′
+
+> i
+
+)) ⊙ sg( ¯ϕa(πξ (s′
+
+> i
+
+))) ; yi ← ri + γ ¯Q( ¯ψ′
+
+> i
+
+) 
+
+> 5:
+
+Update θ by minimizing 1
+
+> N
+
+P
+
+> i
+
+(Qθ (ψi) − yi)2 
+
+> 6:
+
+Actor: Update ξ by maximizing 1
+
+> N
+
+P 
+
+> i
+
+Qθ
+
+ sg( ϕs(si)) ⊙ sg( ϕa(πξ (si)))  
+
+> 7:
+
+Targets: ( ¯ϕs, ¯ϕa, ¯m, ¯Q) ← τ (ϕs, ϕ a, m, Q θ ) + (1 −τ ) ( ¯ϕs, ¯ϕa, ¯m, ¯Q)
+
+B.3 CTRL-SR 
+
+CTRL-SR [Gao et al., 2025] serves as the most controlled baseline: the only architectural difference from FaStR is that the transition-ratio logit uses a single monolithic encoder φ : S × A → Rd taking the concatenation [s; a] as input, rather than a CP trilinear score built from separate state and action factors. The encoder φ is a 2-layer ResidualMLP [dim( S) + dim( A)] → 512 → 512 → d with 
+
+d=512 , LayerNorm, and ELU activations; the kernel encoder m, RFF-MLP critic, deterministic actor 
+
+[512 , 512 , 512] , reward head, optimizer (Adam), learning rates ( 3×10 −4 for actor/critic and 1×10 −4
+
+for representation), Polyak factor τ =0 .005 , target/exploration action noise, batch size N =512 , RP-NCE noise levels M =25 , ranking objective, and update cadence are all identical to those of FaStR. We use the authors’ open-source implementation without modification. 
+
+B.4 Diff-SR 
+
+Diff-SR [Shribak et al., 2024] is the second spectral RL baseline. It uses the same TD3 actor and critic backbone as CTRL-SR and FaStR, but replaces the ranking-based perturbed NCE objective with a denoising-diffusion next-state model: the joint encoder ϕ : S × A → Rd and the kernel encoder μ : S × [1 , T ] → Rd×dim( S) are trained by score matching against the variance-preserving (VP) noise schedule of Shribak et al. [2024], with the predicted noise factorized as ˆϵ(s, a, s ′
+
+> t
+
+, t ) = 
+
+ϕ(s, a )⊤μ(s′
+
+> t
+
+, t ). The state and action inputs to ϕ are first projected by 2-layer Mish MLPs of widths 
+
+[256 , 128] to a shared embedding dimension of 128 each, concatenated to a 256 -dim vector, and passed to a 3-layer ResidualMLP 256 → 512 → 512 → 512 → d with d=512 . The kernel encoder 
+
+μ takes (s′
+
+> t
+
+, t ) as input, where t is encoded by a sinusoidal positional embedding of width 128 
+
+followed by a 2-layer Mish MLP, and outputs a d × dim( S) matrix via a 3-layer ResidualMLP 
+
+[dim( S) + 128] → 512 → 512 → 512 → d · dim( S). The diffusion uses T =50 sample steps with the noisy state clamped to [−10 , 10] . The critic is the same RFF-MLP twin Q as CTRL-SR (RFF projection of width 1024 followed by a 1-hidden-layer [512] head); the deterministic actor is a [512 , 512 , 512] MLP with LayerNorm and a final tanh ; the reward head is an RFF-MLP with the same shape as the critic head. 15 All four networks are trained with Adam. Critic and actor learning rates are 3×10 −4; the representation learning rate (jointly applied to ϕ, μ , and the reward head) is 1×10 −4. Polyak averaging uses τ =0 .005 , and actor and critic updates are performed every environment step (actor_update_freq =1, feature_update_ratio =1). Mini-batch size is N =512 , matching the spectral baselines. Exploration uses Gaussian noise N (0 , σ =0 .2) clipped to [−1, 1] dim( A);target action smoothing uses N (0 , ˜σ=0 .2) clipped to [−0.3, 0.3] . The combined training loss is 
+
+λdiff ℓdiffusion + λr ℓreward + λQ ℓcritic with λdiff =1 .0, λr =0 .1, and λQ=1 .0; gradients of the critic loss are not back-propagated through the representation ( back_critic_grad =false). Observation normalization is enabled, matching CTRL-SR and FaStR. We use the open-source implementation accompanying Shribak et al. [2024] without modification. 
+
+B.5 SAC 
+
+SAC [Haarnoja et al., 2018] uses a stochastic tanh-Gaussian policy and a twin Q critic with ELU activations and LayerNorm. The critic takes the raw (s, a ) concatenation as input; no representa-tion learning is performed. We report two width-depth variants. SAC(3-layer) uses hidden sizes 
+
+[1024 , 1024 , 1024] for both the actor and the critic, matching the standard SAC configuration on DM Control Suite. SAC(2-layer) uses hidden sizes [1024 , 1024] for both, isolating the effect of removing one hidden layer at the same per-layer width. All other settings are shared between the two variants. Following Haarnoja et al. [2018], the entropy coefficient α is learned online (automatic entropy tuning) toward a target entropy of − dim( A), optimized via Adam and learning rate 3×10 −4 from an initial value α0=0 .2. Actor, critic, and entropy coefficient are all trained with Adam at learning rate 3×10 −4; soft target updates use Polyak factor τ =0 .005 at every environment step, and the actor is updated every step ( actor_update_freq =1). Mini-batch size is 512 for parity with the spectral methods. There is no exploration noise injected on top of the policy stochasticity, no observation normalization, and no gradient clipping. 
+
+B.6 TD7 
+
+TD7 [Fujimoto et al., 2023] extends TD3 with a learned state-action encoder ( zs, zsa ) trained by latent dynamics regression, Loss-Adjusted Prioritized (LAP) replay with per-transition priorities, behavior-cloning regularization at the policy update, and policy checkpointing. We use the official implementation released by the authors with the original DM Control Suite hyperparameters; the only configuration we set is the task identifier and the seed. For completeness: encoder, actor, and critic each use 2-hidden-layer MLPs of width 256 with ELU activations (ReLU for the actor) and the AvgL1Norm normalization of Fujimoto et al. [2023] (per-layer activation rescaling); the encoded state-action dimension is zdim =256 . Optimizer is Adam with learning rate 3×10 −4 for all three networks. Replay uses LAP with α=0 .4, min -priority 1, and Huber critic loss; the discount is γ=0 .99 
+
+and the target network is updated by a hard copy every 250 updates (rather than Polyak averaging). Exploration uses Gaussian noise N (0 , 0.1) clipped to [−1, 1] ; target policy smoothing uses N (0 , 0.2) 
+
+clipped to [−0.5, 0.5] ; the actor is updated every 2 critic updates with behavior-cloning weight 
+
+λBC =0 .1. Policy checkpointing uses up to 20 episodes per checkpoint and starts after 7.5×10 5 agent steps with weight-reset coefficient 0.9. Mini-batch size is 256 (the value used in the original TD7 paper); we did not tune this for parity with the spectral methods. Random exploration runs for the first 25 ,000 agent steps before any training begins. 
+
+B.7 Hyperparameter Summary 
+
+Table 2 consolidates the values reported above. Dashes (—) indicate that a hyperparameter does not apply to a given method (e.g., a representation learning rate for SAC). Where a method has additional method-specific hyperparameters not listed in the table (LAP α for TD7, BC weight, target entropy for SAC, RP-NCE noise schedule for the spectral methods), we have specified them in the corresponding paragraph above and use the original authors’ default values. 16 Table 2: Hyperparameters for FaStR and the five baselines used in Table 1. Values shared across all methods (discount γ=0 .99 , 1×10 6 environment frames, replay capacity 1×10 6, action repeat 2, 5
+
+seeds, 10 evaluation episodes every 10 ,000 frames) are described in Section B.1.                                                                                                                                                               
+
+> Parameter FaStR (Ours) CTRL-SR Diff-SR SAC(3-layer) SAC(2-layer) TD7 Optimizer Adam Adam Adam Adam Adam Adam Actor learning rate 3×10 −43×10 −43×10 −43×10 −43×10 −43×10 −4
+> Critic learning rate 3×10 −43×10 −43×10 −43×10 −43×10 −43×10 −4
+> Representation/encoder LR 1×10 −41×10 −41×10 −4——3×10 −4
+> Mini-batch size 512 512 512 512 512 256 Target update Polyak τ=0 .005 Polyak τ=0 .005 Polyak τ=0 .005 Polyak τ=0 .005 Polyak τ=0 .005 Hard, every 250 updates Actor update frequency 111112Actor hidden sizes [512,512,512] [512,512,512] [512,512,512] [1024,1024,1024] [1024,1024] [256,256] Critic hidden sizes [512] (after RFF 1024) [512] (after RFF 1024) [512] (after RFF 1024) [1024,1024,1024] [1024,1024] [256,256] Activation ELU/Mish + LN ELU/Mish + LN Mish + LN ELU + LN ELU + LN ELU + AvgL1Norm Number of critics 2 (twin Q) 2 (twin Q) 2 (twin Q) 2 (twin Q) 2 (twin Q) 2 (twin Q) Exploration noise σ0.2 0.2 0.2 policy entropy policy entropy 0.1 Target policy noise ˜σ0.2 (clip ±0.3)0.2 (clip ±0.3)0.2 (clip ±0.3)——0.2 (clip ±0.5)Feature dim d512 512 512 ——256 ( zdim )Encoder hidden sizes [512,512] [512,512] [512,512,512] ——[256,256] RFF projection width 1024 1024 1024 ———Representation objective RP-NCE (ranking) RP-NCE (ranking) VP diffusion ( T=50 )——latent dynamics regression RP-NCE noise levels M25 25 ————Negative samples K512 (in-batch) 512 (in-batch) ————Replay sampling uniform uniform uniform uniform uniform LAP ( α=0 .4)Observation normalization running stats running stats running stats none none none Random/warmup frames 10,000 10,000 10,000 10,000 10,000 50,000 (25k agent steps)
+
+## C Proof Details 
+
+C.1 Notation, Conventions, and Standing Assumptions 
+
+We work with a discounted MDP (S, A, P, r, γ, ρ 0) on a continuous state space S and continuous action space A, with γ ∈ [0 , 1) and reward bounded by Rmax . We assume the existence of a fixed reference probability measure ν on S that dominates every transition kernel, so that P (· | s, a ) ≪ ν
+
+and admits a density P (s′ | s, a ) with respect to ν. All integrals over S are then taken with respect to ν, i.e. R
+
+S f (s′) ds ′ ≡ R
+
+S f (s′) dν (s′). This is the standard setting for L2(ν)-based representation-learning analyses and fixes the measure with respect to which all densities and risks are evaluated. 
+
+Symbols. 
+
+• ϕs : S → Rd, ϕa : A → Rd, m : S → Rd: state encoder, action encoder, kernel encoder. • ψ(s, a ) := ϕs(s) ⊙ ϕa(a) ∈ Rd: factored (Hadamard) feature. • φ(s, a ) ∈ Rd, μ : S → Rd: joint (monolithic) encoder and kernel encoder. • Fs, Fa, Fm, Fsa : hypothesis classes for ϕs, ϕ a, m, φ .• Gfac := {(s, a, s ′) 7 → (ϕs(s) ⊙ ϕa(a)) ⊤m(s′) : ϕs ∈ F s, ϕ a ∈ F a, m ∈ F m}.• Gjoint := {(s, a, s ′) 7 → φ(s, a )⊤μ(s′) : φ ∈ F sa , μ ∈ F m}.
+
+Boundedness assumptions. We assume there exist constants Bϕ, B φ, B m, ∞, B m, 1, B g ≥ 1 such that, uniformly over their hypothesis classes, 
+
+sup 
+
+ϕs∈F s
+
+sup 
+
+s∈S 
+
+∥ϕs(s)∥2, sup 
+
+ϕa∈F a
+
+sup 
+
+a∈A 
+
+∥ϕa(a)∥2 ≤ Bϕ, sup 
+
+φ∈F sa 
+
+sup 
+
+(s,a )
+
+∥φ(s, a )∥2 ≤ Bφ,
+
+sup 
+
+h∈F m
+
+sup 
+
+s′∈S 
+
+∥h(s′)∥2 ≤ Bm, ∞, sup 
+
+h∈F m
+
+Z
+
+S
+
+∥h(s′)∥2 dν (s′) ≤ Bm, 1,
+
+and |g(s, a, s ′)| ≤ Bg for every g ∈ G fac ∪ G joint . Thus both the factored kernel encoder m and the joint kernel encoder μ obey the same pointwise and L1(ν) bounds. For a single continuous encoder on compact S these bounds are automatic; for a hypothesis class we impose them uniformly. We separate the pointwise bound Bm, ∞ (used for covering numbers and sup-norm Lipschitz arguments) from the integral bound Bm, 1 (used to verify that integrals against V π are finite); the two regimes appear in different proofs. 17 Rademacher complexity and covering numbers. For a fixed sample S = ( z1, . . . , z n) and a scalar-valued class H, define the empirical absolute Rademacher complexity 
+
+bRS (H) := Eσ
+
+"
+
+sup 
+
+> h∈H
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+σi h(zi)
+
+#
+
+, σi
+
+> iid
+
+∼ Unif {± 1}.
+
+The expected Rademacher complexity is 
+
+Rn(H) := ES
+
+h bRS (H)
+
+i
+
+.
+
+All finite-sample bounds use this expected version. Set-inclusion arguments hold pointwise for bRS
+
+and therefore also after taking expectation over S. For scalar-valued classes, N (H, ϵ ) denotes the covering number under d∞(h, h ′) = sup z |h(z) − h′(z)|. For vector-valued encoder classes such as 
+
+Fs, Fa, Fm, Fsa , the covering metric is 
+
+d∞(f, f ′) = sup 
+
+> x
+
+∥f (x) − f ′(x)∥2.
+
+Best-in-class CP error. For non-realizable settings we write 
+
+ϵ2CP := inf 
+
+> g∈G fac
+
+E(s,a )∼ρ
+
+Z 
+
+> S
+
+ P (s′ | s, a ) − g(s, a, s ′)2 dν (s′)
+
+
+
+.
+
+Under CP realizability (Assumption 1), ϵCP = 0 .
+
+Proof architecture. The results in this appendix support a single claim: the CP factorization of the transition kernel gives a representation whose statistical complexity decomposes additively in 
+
+(ds, d a), whereas the generic uniform-convergence bound for an unrestricted joint encoder scales with the full joint dimension ds + da. Appendix C.2 derives the Q-linearity stated in Section 3.1: under CP factorization, every Qπ is linear in the Hadamard feature, so the factored class is matched to the structure of the transition kernel rather than chosen as an architectural convenience. Appendix C.3 proves Theorem 3.1, the main technical step: the Hadamard product converts the joint covering of 
+
+Gfac into a sum of three independent component coverings, and the same set-inclusion argument gives a Rademacher ordering between the two classes. Appendix C.5 states this Rademacher monotonicity on its own, since it follows from set inclusion without needing the covering bound. Appendix C.6 converts the Rademacher bound into an excess-risk bound for the spectral L2 objective with constants made explicit (Proposition 3.2). Appendix C.7 converts the additive vs. multiplicative entropy gap into the sufficient-sample-size gap implied by these bounds (Proposition 3.3). It ends with a same-n
+
+comparison that holds without any Lipschitz instantiation: under the containment condition, both Rademacher terms in Proposition 3.2 are no larger for the factored class, so the certified upper bound on representation error is no larger at every sample size (Remark C.7). 
+
+C.2 Derivation of the Q-linearity under CP 
+
+The CP transition structure makes every Qπ linear in the Hadamard feature ψ. This appendix gives the linear-MDP derivation specialized to the CP feature, together with norm bounds on the value coefficients used downstream. We spell out the interchange of summation and integration and the norm estimates in detail. 
+
+Setup. Suppose Assumption 1 holds. That is, the reward decomposes as 
+
+r(s, a ) = ψ(s, a )⊤θr ,
+
+where 
+
+ψ(s, a ) = ϕs(s) ⊙ ϕa(a) ∈ Rd, ψk(s, a ) = ϕs,k (s)ϕa,k (a),
+
+and the transition density factorizes as 
+
+P (s′ | s, a ) = 
+
+> d
+
+X
+
+> k=1
+
+ϕs,k (s) ϕa,k (a) mk(s′) = 
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )mk(s′). (9) 18 Here each mk is measurable and belongs to L1(ν). We also use the boundedness conventions of Appendix C.1; in particular, writing 
+
+m(s′) = ( m1(s′), . . . , m d(s′)) ⊤,
+
+we have Z
+
+> S
+
+∥m(s′)∥2 dν (s′) ≤ Bm, 1.
+
+Consequently, for every coordinate k,
+
+Z
+
+> S
+
+|mk(s′)| dν (s′) ≤
+
+Z
+
+> S
+
+∥m(s′)∥2 dν (s′) ≤ Bm, 1.
+
+Claim. For every stationary policy π, there exists wπ ∈ Rd such that 
+
+Qπ (s, a ) = ψ(s, a )⊤wπ ,
+
+where 
+
+wπk = θr,k + γθ πk , θπk := 
+
+Z
+
+> S
+
+mk(s′)V π (s′) dν (s′).
+
+Moreover, 
+
+∥wπ ∥2 ≤ ∥ θr ∥2 + γ Bm, 1Rmax 
+
+1 − γ .
+
+Proof. Fix an arbitrary stationary policy π. We prove the result for this fixed π.First, by the definition of the discounted value function, 
+
+V π (s) = Eπ
+
+" ∞X
+
+> t=0
+
+γtr(st, a t) s0 = s
+
+#
+
+.
+
+Since |r(s, a )| ≤ Rmax for all (s, a ) and 0 ≤ γ < 1, we have, for every s,
+
+|V π (s)| = Eπ
+
+" ∞X
+
+> t=0
+
+γtr(st, a t) s0 = s
+
+#
+
+≤ Eπ
+
+" ∞X
+
+> t=0
+
+γtr(st, a t) s0 = s
+
+#
+
+≤ Eπ
+
+" ∞X
+
+> t=0
+
+γt|r(st, a t)| s0 = s
+
+#
+
+≤ Eπ
+
+" ∞X
+
+> t=0
+
+γtRmax s0 = s
+
+#
+
+= Rmax 
+
+> ∞
+
+X
+
+> t=0
+
+γt = Rmax 
+
+1 − γ .
+
+Therefore, 
+
+∥V π ∥∞ ≤ Rmax 
+
+1 − γ . (10) The Bellman equation for Qπ is 
+
+Qπ (s, a ) = r(s, a ) + γ
+
+Z
+
+> S
+
+P (s′ | s, a )V π (s′) dν (s′). (11) We now expand the transition term in (11). Substituting the CP density representation (9) gives 
+
+Z
+
+> S
+
+P (s′ | s, a )V π (s′) dν (s′) = 
+
+Z
+
+> S
+> d
+
+X
+
+> k=1
+
+ϕs,k (s)ϕa,k (a)mk(s′)
+
+!
+
+V π (s′) dν (s′)=
+
+Z
+
+> S
+> d
+
+X
+
+> k=1
+
+ψk(s, a )mk(s′)
+
+!
+
+V π (s′) dν (s′). (12) 19 Before moving the finite sum outside the integral, we check that each term is integrable. For a fixed coordinate k, using (10), 
+
+Z
+
+> S
+
+|mk(s′)V π (s′)| dν (s′) ≤
+
+Z
+
+> S
+
+|mk(s′)| | V π (s′)| dν (s′)
+
+≤ Rmax 
+
+1 − γ
+
+Z
+
+> S
+
+|mk(s′)| dν (s′)
+
+≤ Rmax 
+
+1 − γ Bm, 1 < ∞.
+
+Thus mkV π is integrable for every k, and the quantity 
+
+θπk := 
+
+Z
+
+> S
+
+mk(s′)V π (s′) dν (s′)
+
+is well-defined. Since the sum over k contains only finitely many terms, exchanging the sum and the integral uses only the elementary linearity of the integral. Therefore, 
+
+Z
+
+> S
+> d
+
+X
+
+> k=1
+
+ψk(s, a )mk(s′)
+
+!
+
+V π (s′) dν (s′) = 
+
+Z
+
+> S
+> d
+
+X
+
+> k=1
+
+ψk(s, a )mk(s′)V π (s′) dν (s′)=
+
+> d
+
+X
+
+> k=1
+
+Z
+
+> S
+
+ψk(s, a )mk(s′)V π (s′) dν (s′)=
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )
+
+Z
+
+> S
+
+mk(s′)V π (s′) dν (s′)=
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )θπk . (13) In the third line above, ψk(s, a ) is taken outside the integral because, for fixed (s, a ), it is a scalar that does not depend on s′.Next, we expand the reward term. Since r(s, a ) = ψ(s, a )⊤θr , we have 
+
+r(s, a ) = 
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )θr,k =
+
+> d
+
+X
+
+> k=1
+
+ϕs,k (s)ϕa,k (a)θr,k . (14) Combining (11), (13), and (14), we obtain 
+
+Qπ (s, a ) = r(s, a ) + γ
+
+Z
+
+> S
+
+P (s′ | s, a )V π (s′) dν (s′)=
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )θr,k + γ
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )θπk
+
+=
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )θr,k +
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )γθ πk
+
+=
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a ) ( θr,k + γθ πk ) .
+
+Define wπ ∈ Rd coordinatewise by 
+
+wπk := θr,k + γθ πk , k = 1 , . . . , d. 
+
+Then the previous display becomes 
+
+Qπ (s, a ) = 
+
+> d
+
+X
+
+> k=1
+
+ψk(s, a )wπk = ψ(s, a )⊤wπ .
+
+20 This proves the claimed linear representation of Qπ .It remains to prove the stated norm bound. By definition, 
+
+θπ =
+
+Z 
+
+> S
+
+m1(s′)V π (s′) dν (s′), . . . , 
+
+Z
+
+> S
+
+md(s′)V π (s′) dν (s′)
+
+⊤
+
+.
+
+Equivalently, in vector notation, 
+
+θπ =
+
+Z
+
+> S
+
+m(s′)V π (s′) dν (s′),
+
+where the vector integral is understood coordinatewise. We show that 
+
+∥θπ ∥2 ≤ Bm, 1Rmax 
+
+1 − γ .
+
+If θπ = 0 , this inequality is immediate. Otherwise, let 
+
+u = θπ
+
+∥θπ ∥2
+
+.
+
+Then ∥u∥2 = 1 , and hence 
+
+∥θπ ∥2 = u⊤θπ
+
+= u⊤
+
+Z
+
+> S
+
+m(s′)V π (s′) dν (s′)=
+
+Z
+
+> S
+
+u⊤m(s′)V π (s′) dν (s′)
+
+≤
+
+Z
+
+> S
+
+u⊤m(s′)V π (s′) dν (s′)=
+
+Z
+
+> S
+
+u⊤m(s′) |V π (s′)| dν (s′)
+
+≤
+
+Z
+
+> S
+
+∥u∥2∥m(s′)∥2 |V π (s′)| dν (s′)=
+
+Z
+
+> S
+
+∥m(s′)∥2 |V π (s′)| dν (s′)
+
+≤ Rmax 
+
+1 − γ
+
+Z
+
+> S
+
+∥m(s′)∥2 dν (s′)
+
+≤ Bm, 1Rmax 
+
+1 − γ .
+
+The inequality 
+
+|u⊤m(s′)| ≤ ∥ u∥2∥m(s′)∥2
+
+is the Cauchy–Schwarz inequality. The key point is that this argument bounds the Euclidean norm of the whole vector θπ directly, and therefore does not introduce an unnecessary √d factor. Finally, since 
+
+wπ = θr + γθ π ,
+
+the triangle inequality gives 
+
+∥wπ ∥2 = ∥θr + γθ π ∥2
+
+≤ ∥ θr ∥2 + ∥γθ π ∥2
+
+= ∥θr ∥2 + γ∥θπ ∥2
+
+≤ ∥ θr ∥2 + γ Bm, 1Rmax 
+
+1 − γ .
+
+This proves the claimed norm bound and completes the proof. 21 Remark (Linear-MDP structure and feature bound) Defining signed measures μk(A) := 
+
+R 
+
+> A
+
+mk(s′) dν (s′), the CP transition density is equivalent to P (· | s, a ) = Pdk=1 ψk(s, a )μk(·).Together with r(s, a ) = ψ(s, a )⊤θr , this matches the linear-MDP definition of Jin et al. [2020, Definition 2] with feature map ψ, used in Appendix C.7. The same swap-of-sum-and-integral argument as the proof of Q-linearity above gives, for any bounded measurable f : S → R, R 
+
+> S
+
+P (s′ |
+
+s, a )f (s′) dν (s′) = ψ(s, a )⊤θf with (θf )k := R 
+
+> S
+
+mk(s′)f (s′) dν (s′) and ∥θf ∥2 ≤ Bm, 1∥f ∥∞.Finally, the Hadamard-product inequality ∥u ⊙ v∥2 ≤ ∥ u∥2∥v∥2 applied to ψ = ϕs ⊙ ϕa gives the uniform feature bound ∥ψ(s, a )∥2 ≤ B2
+
+> ϕ
+
+.
+
+C.3 Proof of Theorem 3.1: Additive Covering Number Decomposition 
+
+This is the main technical step. The Hadamard product structure converts the joint covering of Gfac 
+
+into a product of three independent coverings on the state, action, and next-state components. After taking logarithms, this product becomes an additive decomposition of metric entropies. Without using this decomposition, a generic uniform-convergence treatment of the state-action pair would cover the whole state-action feature class directly and would therefore give the same (ds + da)-dimensional entropy scaling as the joint class. The Hadamard structure reduces the factored upper bound to the largest of the state and action dimensions. Throughout this appendix, covering numbers for the component classes are taken with respect to the uniform sup-ℓ2 metrics 
+
+ds(ϕs, fϕs) := sup 
+
+> s∈S
+
+∥ϕs(s) − fϕs(s)∥2,da(ϕa, fϕa) := sup 
+
+> a∈A
+
+∥ϕa(a) − fϕa(a)∥2,
+
+and 
+
+dm(m, em) := sup 
+
+> s′∈S
+
+∥m(s′) − em(s′)∥2.
+
+For scoring functions g : S × A × S → R, the covering number is taken with respect to the usual uniform norm 
+
+∥g − eg∥∞ := sup 
+
+> (s,a,s ′)∈S×A×S
+
+|g(s, a, s ′) − eg(s, a, s ′)|.
+
+Theorem (Restatement of Theorem 3.1) .
+
+(i) Additive decomposition. For every ϵ > 0,
+
+log N (Gfac , ϵ ) ≤ log N
+
+
+
+Fs, ϵ
+
+> 3Bm, ∞Bϕ
+
+
+
++ log N
+
+
+
+Fa, ϵ
+
+> 3Bm, ∞Bϕ
+
+
+
++ log N
+
+
+
+Fm, ϵ
+
+> 3B2
+> ϕ
+
+
+
+.
+
+(15) (ii) Containment. If 
+
+Fsa ⊇ { ϕs ⊙ ϕa : ϕs ∈ F s, ϕ a ∈ F a},
+
+then Gfac ⊆ G joint , hence 
+
+N (Gfac , ϵ ) ≤ N (Gjoint , ϵ )
+
+for every ϵ > 0.
+
+Lemma C.1 (Perturbation bound for factored CP scores) . Let 
+
+g(s, a, s ′) = ( ϕs(s) ⊙ ϕa(a)) ⊤m(s′)
+
+and 
+
+eg(s, a, s ′) = ( fϕs(s) ⊙ fϕa(a)) ⊤ em(s′).
+
+Assume 
+
+sup 
+
+> s
+
+∥ϕs(s)∥2, sup 
+
+> s
+
+∥fϕs(s)∥2 ≤ Bϕ, sup 
+
+> a
+
+∥ϕa(a)∥2, sup 
+
+> a
+
+∥fϕa(a)∥2 ≤ Bϕ,
+
+and 
+
+sup 
+
+> s′
+
+∥ em(s′)∥2 ≤ Bm, ∞.
+
+Define 
+
+∆s := sup 
+
+> s
+
+∥ϕs(s) − fϕs(s)∥2, ∆a := sup 
+
+> a
+
+∥ϕa(a) − fϕa(a)∥2,
+
+22 and 
+
+∆m := sup 
+
+> s′
+
+∥m(s′) − em(s′)∥2.
+
+Then 
+
+∥g − eg∥∞ ≤ B2
+
+> ϕ
+
+∆m + Bm, ∞Bϕ∆s + Bm, ∞Bϕ∆a. (16) 
+
+Proof. Write 
+
+x(s, a ) := ϕs(s) ⊙ ϕa(a), ex(s, a ) := fϕs(s) ⊙ fϕa(a).
+
+For fixed (s, a, s ′),
+
+g(s, a, s ′) − eg(s, a, s ′) = x(s, a )⊤ m(s′) − em(s′) +  x(s, a ) − ex(s, a )⊤ em(s′).
+
+By Cauchy–Schwarz, 
+
+|g(s, a, s ′) − eg(s, a, s ′)| ≤ ∥ x(s, a )∥2∥m(s′) − em(s′)∥2 + ∥x(s, a ) − ex(s, a )∥2∥ em(s′)∥2.
+
+The Hadamard product bound gives 
+
+∥x(s, a )∥2 = ∥ϕs(s) ⊙ ϕa(a)∥2 ≤ ∥ ϕs(s)∥2∥ϕa(a)∥2 ≤ B2
+
+> ϕ
+
+.
+
+Moreover, 
+
+x(s, a ) − ex(s, a ) = ( ϕs(s) − fϕs(s)) ⊙ ϕa(a) + fϕs(s) ⊙ (ϕa(a) − fϕa(a)) .
+
+Using 
+
+∥u ⊙ v∥2 ≤ ∥ v∥∞∥u∥2 ≤ ∥ v∥2∥u∥2,
+
+we obtain 
+
+∥x(s, a ) − ex(s, a )∥2 ≤ Bϕ∥ϕs(s) − fϕs(s)∥2 + Bϕ∥ϕa(a) − fϕa(a)∥2.
+
+Taking the supremum over (s, a, s ′) proves (16). 
+
+Proof. We prove the two statements separately. 
+
+Part (i): additive decomposition. Choose component covers bFs, bFa, bFm of Fs, Fa, Fm at radii 
+
+ϵs := ϵ
+
+3Bm, ∞Bϕ
+
+, ϵa := ϵ
+
+3Bm, ∞Bϕ
+
+, ϵm := ϵ
+
+3B2
+
+> ϕ
+
+,
+
+respectively, under the corresponding uniform sup-ℓ2 metrics. Take any 
+
+g(s, a, s ′) = ( ϕs(s) ⊙ ϕa(a)) ⊤m(s′) ∈ G fac .
+
+By the definitions of the three covers, choose 
+
+cϕs ∈ bFs, cϕa ∈ bFa, bm ∈ bFm
+
+such that 
+
+sup 
+
+> s
+
+∥ϕs(s) − cϕs(s)∥2 ≤ ϵs, sup 
+
+> a
+
+∥ϕa(a) − cϕa(a)∥2 ≤ ϵa, sup 
+
+> s′
+
+∥m(s′) − bm(s′)∥2 ≤ ϵm.
+
+Define 
+
+bg(s, a, s ′) = ( cϕs(s) ⊙ cϕa(a)) ⊤ bm(s′).
+
+Applying Lemma C.1 gives 
+
+∥g − bg∥∞ ≤ B2
+
+> ϕ
+
+ϵm + Bm, ∞Bϕϵs + Bm, ∞Bϕϵa
+
+= ϵ
+
+3 + ϵ
+
+3 + ϵ
+
+3 = ϵ. 
+
+Thus the product class 
+
+bGfac := 
+
+n
+
+(s, a, s ′) 7 → (cϕs(s) ⊙ cϕa(a)) ⊤ bm(s′) : cϕs ∈ bFs, cϕa ∈ bFa, bm ∈ bFm
+
+o
+
+is an ϵ-cover of Gfac . Each element of bGfac is determined by a triple from the three component covers, so 
+
+| bGfac | ≤ | bFs| | bFa| | bFm|.
+
+Taking the smallest possible component covers, or equivalently taking the infimum over such covers, yields 
+
+N (Gfac , ϵ ) ≤ N (Fs, ϵ s)N (Fa, ϵ a)N (Fm, ϵ m).
+
+Taking logarithms and substituting the definitions of ϵs, ϵ a, ϵ m gives (15). 23 Part (ii): containment. Take any g ∈ G fac . Then, for some ϕs ∈ F s, ϕa ∈ F a, and m ∈ F m,
+
+g(s, a, s ′) = ( ϕs(s) ⊙ ϕa(a)) ⊤m(s′).
+
+By the assumption on Fsa ,
+
+φ(s, a ) := ϕs(s) ⊙ ϕa(a)
+
+belongs to Fsa . Taking μ := m, we get 
+
+g(s, a, s ′) = φ(s, a )⊤μ(s′),
+
+so g ∈ G joint . Hence 
+
+Gfac ⊆ G joint .
+
+The covering-number inequality follows because any ϵ-cover of a set also covers all of its subsets. 
+
+C.4 Lipschitz Instantiation: an Upper-Bound vs. Upper-Bound Comparison 
+
+We now explain how the additive decomposition in (15) translates into the stated entropy scaling under standard Lipschitz covering bounds. Assume that 
+
+S ⊆ Rds , A ⊆ Rda
+
+are compact, and that Fs, Fa, Fm are uniformly bounded Lipschitz classes. For L-Lipschitz maps from a compact set X ⊆ Rp into a bounded subset of Rd, the standard entropy bound gives 
+
+log N (F, ϵ ) ≤ c d  L diam( X)/ϵ p
+
+for the relevant range of ϵ; see Wainwright [2019, Theorem 5.7]. The important point is that the exponent is the dimension p of the input domain. Applying this bound to the three terms in (15) yields finite constants As, A a, A m such that 
+
+log N (Gfac , ϵ ) ≤ Asϵ−ds + Aaϵ−da + Amϵ−ds .
+
+Therefore, for 
+
+Dmax := max( ds, d a)
+
+and 0 < ϵ ≤ 1,
+
+log N (Gfac , ϵ ) ≤ Afac ϵ−Dmax , (17) where Afac < ∞ depends on the Lipschitz constants, diameters, output dimension, and uniform radius bounds, but not on ϵ. For the joint class, the unrestricted state-action encoder is a Lipschitz class on the product domain 
+
+S × A ⊆ Rds+da .
+
+The same two-term covering argument for 
+
+g(s, a, s ′) = φ(s, a )⊤μ(s′)
+
+gives 
+
+log N (Gjoint , ϵ ) ≤ log N
+
+
+
+Fsa , ϵ
+
+> 2Bm, ∞
+
+
+
++ log N
+
+
+
+Fm, ϵ
+
+> 2Bsa
+
+
+
+,
+
+where Bsa is a uniform bound on ∥φ(s, a )∥2. Applying the Lipschitz entropy bound to Fsa on the product domain and to Fm on S yields finite constants Asa , A ′ 
+
+> m
+
+such that 
+
+log N (Gjoint , ϵ ) ≤ Asa ϵ−(ds+da) + A′
+
+> m
+
+ϵ−ds .
+
+Since ds ≤ ds + da, for 0 < ϵ ≤ 1 this implies 
+
+log N (Gjoint , ϵ ) ≤ Ajoint ϵ−(ds+da) (18) for a finite constant Ajoint independent of ϵ. Combining (17) and (18) , the factored and joint upper bounds scale as 
+
+log N (Gfac , ϵ ) ≲ ϵ− max( ds,d a), log N (Gjoint , ϵ ) ≲ ϵ−(ds+da).
+
+This is an upper-bound comparison: under the same covering template, the factored entropy certificate depends on max( ds, d a) while the joint certificate depends on ds + da. We discuss the absence of a matching lower bound in Remark C.7. 24 C.5 Rademacher Monotonicity Component of Theorem 3.1(ii) 
+
+Theorem 3.1(ii) states that the inclusion Gfac ⊆ G joint propagates to both covering numbers and Rademacher complexities at every sample size. The covering-number half follows from monotonicity of N (·, ϵ ) under set inclusion (Appendix C.3, Part (ii)). The Rademacher half follows from a simpler argument than the covering bound: it requires only set inclusion, not entropy. 
+
+Proposition (Rademacher inequality from Theorem 3.1(ii)) . Under the containment hypothesis of Theorem 3.1(ii), for every n and every i.i.d. sample z1, . . . , z n,
+
+Rn(Gfac ) ≤ R n(Gjoint ).
+
+Proof. The inclusion Gfac ⊆ G joint was established in Theorem 3.1(ii). For every fixed sample S and every sign realization σ,
+
+sup 
+
+> g∈G fac
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+σi g(zi) ≤ sup 
+
+> g∈G joint
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+σi g(zi) ,
+
+because the supremum over a subset is no larger than the supremum over the superset. Taking expectation over σ gives bRS (Gfac ) ≤ bRS (Gjoint ); taking expectation over S gives the stated Rn
+
+inequality. 
+
+Remark (Why not via Dudley?) An alternative would be to bound both Rademacher complexities via Dudley’s entropy integral and observe that N (Gfac , ϵ ) ≤ N (Gjoint , ϵ ) propagates through the integral. This argument only bounds the upper bounds on the two complexities and does not establish the ordering of the complexities themselves: the joint Rademacher complexity could in principle be much smaller than its Dudley upper bound. Set inclusion gives the stronger statement. 
+
+C.6 Proof of Proposition 3.2: Excess Risk for the Spectral L2 Objective 
+
+We now address estimation. The objective trained in practice is the noise-contrastive estimator (NCE) [Gutmann and Hyvärinen, 2010, Ma and Collins, 2018, Zhang et al., 2022, Gao et al., 2025] for the transition-ratio score, but the theoretical guarantees that bound representation error are derived in the spectral L2 framework of Ren et al. [2023]; we follow the same convention and analyze the L2
+
+ERM here. The relationship between NCE optimization and L2 population structure is discussed in Remark C.6 and is not part of the formal claim of this proposition. Let 
+
+z = ( s, a, s ′)
+
+denote one observation, where 
+
+(s, a ) ∼ ρ, s′ ∼ P (· | s, a ).
+
+For an i.i.d. sample 
+
+zi = ( si, a i, s ′
+
+> i
+
+), i = 1 , . . . , n, 
+
+define the population L2 risk 
+
+L(g) := Eρ
+
+Z 
+
+> S
+
+ P (s′ | s, a ) − g(s, a, s ′)2 dν (s′)
+
+
+
+. (19) Also define 
+
+CP := Eρ
+
+Z 
+
+> S
+
+P (s′ | s, a )2 dν (s′)
+
+
+
+, (20) and the centered population risk ¯L(g) := L(g) − CP . (21) The empirical objective is 
+
+ˆLn(g) := 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+ℓ(g; zi), (22) 25 where the per-sample loss is 
+
+ℓ(g; z) := −2g(s, a, s ′) + 
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u). (23) We assume CP < ∞ throughout. This holds, for example, whenever P (· | s, a ) ∈ L2(ν) uni-formly on the support of ρ. In particular, under CP realizability with a uniformly bounded density representation |P (s′ | s, a )| ≤ Bg and with ν(S) = 1 , we have 
+
+CP = Eρ
+
+Z 
+
+> S
+
+P (s′ | s, a )2 dν (s′)
+
+
+
+≤ Eρ
+
+Z 
+
+> S
+
+B2 
+
+> g
+
+dν (s′)
+
+
+
+= B2 
+
+> g
+
+.
+
+We use the Rademacher-complexity convention fixed in Appendix C.1. For the quadratic class below, the sample is the projected sample (si, a i)ni=1 .
+
+Lemma C.2 (Covering transfer to the integrated quadratic class) . Assume ν(S) = 1 and 
+
+|g(s, a, s ′)| ≤ Bg for all g ∈ G and all (s, a, s ′). Define 
+
+hg (s, a ) := 
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u), HG := {hg : g ∈ G} .
+
+Then, for every ϵ > 0,
+
+N (HG , ϵ ) ≤ N 
+
+
+
+G, ϵ
+
+2Bg
+
+
+
+. (24) 
+
+Proof. If ∥g − g′∥∞ ≤ η, then for every (s, a ),
+
+|hg (s, a ) − hg′ (s, a )| =
+
+Z
+
+> S
+
+ g2(s, a, u ) − g′2(s, a, u ) dν (u)
+
+≤
+
+Z
+
+> S
+
+|g(s, a, u ) − g′(s, a, u )| | g(s, a, u ) + g′(s, a, u )| dν (u)
+
+≤
+
+Z
+
+> S
+
+η · 2Bg dν (u) = 2 Bg η. 
+
+Thus any η-cover of G in sup norm induces a 2Bg η-cover of HG . Setting η = ϵ/ (2 Bg ) proves (24). 
+
+Proposition (Restatement of Proposition 3.2) . Let G be either Gfac or Gjoint , and assume 
+
+sup 
+
+> s,a,s ′
+
+|g(s, a, s ′)| ≤ Bg for all g ∈ G .
+
+Assume also that CP < ∞. Let 
+
+ˆgn ∈ arg min 
+
+> g∈G
+
+ˆLn(g)
+
+and 
+
+g∗G ∈ arg min  
+
+> g∈G
+
+L(g),
+
+both assumed to exist. If the empirical minimizer exists only approximately, namely if 
+
+ˆLn(ˆ gn) ≤ inf 
+
+> g∈G
+
+ˆLn(g) + η, 
+
+then the same bound below holds with an additional +η term on the right-hand side. Define the induced quadratic class 
+
+HG := 
+
+
+
+hg : S × A → R : hg (s, a ) = 
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u), g ∈ G 
+
+
+
+.
+
+Then, with probability at least 1 − δ,
+
+L(ˆ gn) ≤ L(g∗G ) + 8 Rn(G) + 4 Rn(HG ) + 2(2 Bg + B2 
+
+> g
+
+)
+
+r 2 log(1 /δ )
+
+n . (25) 26 Here Rn(HG ) is computed on the projected sample (si, a i)ni=1 .Moreover, both Rademacher-complexity terms admit Dudley upper bounds in terms of the covering number of G. In particular, 
+
+N (HG , ϵ ) ≤ N 
+
+
+
+G, ϵ
+
+2Bg
+
+
+
+. (26) 
+
+Thus the bound (25) can be expressed entirely in terms of the metric entropy of G.Proof. First, expanding the square in L(g) gives 
+
+L(g) = Eρ
+
+Z
+
+> S
+
+ P (s′ | s, a ) − g(s, a, s ′)2 dν (s′)= CP − 2Eρ
+
+Z
+
+> S
+
+P (s′ | s, a )g(s, a, s ′) dν (s′) + Eρ
+
+Z
+
+> S
+
+g2(s, a, s ′) dν (s′).
+
+Since s′ ∼ P (· | s, a ) conditional on (s, a ),
+
+E[g(s, a, s ′)] = Eρ
+
+Z
+
+> S
+
+P (s′ | s, a )g(s, a, s ′) dν (s′).
+
+Therefore ¯L(g) = L(g) − CP = E[ℓ(g; z)] . (27) In particular, ˆLn(g) is an unbiased empirical estimate of the centered risk ¯L(g), and L and ¯L have the same minimizers because they differ only by the constant CP . Using empirical optimality of ˆgn,
+
+L(ˆ gn) − L(g∗G ) = ¯L(ˆ gn) − ¯L(g∗G )= [ ¯L(ˆ gn) − ˆLn(ˆ gn)] + [ ˆLn(ˆ gn) − ˆLn(g∗G )] + [ ˆLn(g∗G ) − ¯L(g∗G )] 
+
+≤ 2 sup 
+
+> g∈G
+
+| ¯L(g) − ˆLn(g)|. (28) If ˆgn is only an η-approximate empirical minimizer, the same argument adds an extra +η term. Let 
+
+LG := {ℓg : z 7 → ℓ(g; z) : g ∈ G} .
+
+By the standard symmetrization inequality for the centered empirical process [Bartlett and Mendelson, 2002, Wainwright, 2019], 
+
+E sup 
+
+> g∈G
+
+| ¯L(g) − ˆLn(g)| ≤ 2Rn(LG ). (29) Now write 
+
+ℓ(g; z) = −2g(s, a, s ′) + hg (s, a ), hg (s, a ) := 
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u).
+
+By subadditivity and homogeneity of Rademacher complexity, 
+
+Rn(LG ) ≤ 2Rn(G) + Rn(HG ). (30) Combining (29) and (30) gives 
+
+E sup 
+
+> g∈G
+
+| ¯L(g) − ˆLn(g)| ≤ 4Rn(G) + 2 Rn(HG ). (31) The quadratic term is not controlled by the usual pointwise contraction principle, since 
+
+hg (s, a ) = 
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u)
+
+integrates over all possible next states u rather than applying a scalar function to the observed value 
+
+g(si, a i, s ′
+
+> i
+
+). Instead, Lemma C.2 gives 
+
+N (HG , ϵ ) ≤ N 
+
+
+
+G, ϵ
+
+2Bg
+
+
+
+,
+
+which is the entropy estimate (26) stated in the proposition. Dudley’s entropy integral [Dudley, 1967, Wainwright, 2019] therefore bounds both Rn(G) and Rn(HG ) in terms of the covering number of G,27 with the second bound using only the radius rescaling above. It remains to pass from expectation to high probability. Define 
+
+F (z1, . . . , z n) := sup 
+
+> g∈G
+
+| ¯L(g) − ˆLn(g)|.
+
+Since |g| ≤ Bg and ν(S) = 1 ,
+
+|ℓ(g; z)| ≤ 2|g(s, a, s ′)| +
+
+Z
+
+> S
+
+g2(s, a, u ) dν (u) ≤ 2Bg + B2 
+
+> g
+
+=: Mg .
+
+Changing one sample point changes ˆLn(g) by at most 2Mg /n uniformly over g, and therefore changes F by at most 2Mg /n . McDiarmid’s inequality [McDiarmid, 1989] yields, with probability at least 1 − δ,
+
+F ≤ EF + Mg
+
+r 2 log(1 /δ )
+
+n .
+
+Combining this display with (31) and then using (28), we obtain 
+
+L(ˆ gn) − L(g∗G ) ≤ 2F
+
+≤ 8Rn(G) + 4 Rn(HG ) + 2 Mg
+
+r 2 log(1 /δ )
+
+n .
+
+Substituting Mg = 2 Bg + B2 
+
+> g
+
+proves (25). 
+
+Remark (On the constants) The prefactors in (25) come directly from the proof. The factor 2 in the excess-risk decomposition (28), the factor 2 from symmetrization (29), and the decomposition 
+
+Rn(LG ) ≤ 2 Rn(G) + Rn(HG )
+
+together give the coefficients 8 and 4 in front of Rn(G) and Rn(HG ), respectively. The tail coefficient comes from the uniform bound 
+
+|ℓ(g; z)| ≤ 2Bg + B2
+
+> g
+
+and the bounded-differences constant 
+
+2(2 Bg + B2 
+
+> g
+
+)
+
+n .
+
+Thus these constants are explicit and problem-dependent. We avoid the phrase “universal constant” here because the dependence on Bg is essential: it enters both through the per-sample loss bound and through the covering-number rescaling 
+
+N (HG , ϵ ) ≤ N 
+
+
+
+G, ϵ
+
+2Bg
+
+
+
+.
+
+Remark (Relationship to the NCE estimator) The ranking-based NCE objective of Ma and Collins [2018] used by FaStR is consistent with maximum likelihood in the limit of infinitely many negative samples, but is not identical to the L2 spectral ERM analyzed here. Establishing a sharp finite-sample equivalence between the two estimators is separate from the claim proved above. 
+
+C.7 Proof of Proposition 3.3: Bound-Implied Sufficient Sample Size 
+
+We combine the additive covering bound from Theorem 3.1 with the excess-risk template from Proposition 3.2. The goal is to compare the sample sizes that this particular uniform-convergence analysis certifies as sufficient for the factored class and for the joint class. Throughout this section, the word “certificate” means an upper bound produced by the displayed finite-sample theorem. Thus the comparison below is a comparison between two sufficient sample sizes obtained by inverting two upper bounds. It is not a comparison between the true minimax sample complexities of the two statistical problems. In particular, the joint-class bound below is the standard uniform-convergence certificate for an unrestricted Lipschitz state-action encoder. It is not a lower bound and may be loose for structured subclasses. 28 Lemma C.3 (Polynomial entropy implies a Rademacher rate) . Let F be a uniformly bounded real-valued function class with 
+
+diam ∞(F) := sup  
+
+> f,f ′∈F
+
+∥f − f ′∥∞ ≤ 2R. 
+
+Assume that, for some A < ∞ and D > 2,
+
+log N (F, τ ) ≤ Aτ −D , 0 < τ ≤ R. 
+
+Then there exists a constant K(A, D, R ) < ∞, independent of n, such that 
+
+Rn(F) ≤ K(A, D, R )n−1/D . (32) 
+
+Proof. Dudley’s entropy integral, together with the fact that a sup-norm cover is also an empirical-L2
+
+cover, gives for any α ∈ (0 , R ],
+
+Rn(F) ≤ 4α + 12 
+
+√n
+
+Z Rα
+
+plog N (F, τ ) dτ. 
+
+Using the polynomial entropy bound, 
+
+Rn(F) ≤ 4α + 12 √A
+
+√n
+
+Z Rα
+
+τ −D/ 2 dτ. 
+
+Since D > 2, Z Rα
+
+τ −D/ 2 dτ ≤ 2
+
+D − 2 α1−D/ 2.
+
+Choose α = Rn −1/D , which lies in (0 , R ] for n ≥ 1. Then 
+
+4α = 4 Rn −1/D ,
+
+and 1
+
+√n α1−D/ 2 = 1
+
+√n (Rn −1/D )1−D/ 2 = R1−D/ 2n−1/D .
+
+Therefore 
+
+Rn(F) ≤ 4R + 24 √AD − 2 R1−D/ 2
+
+!
+
+n−1/D .
+
+The coefficient is finite and independent of n, proving the claim. 
+
+Proposition (Restatement of Proposition 3.3) . Assume CP realizability, that is, ϵCP = 0 . Also assume the containment condition of Theorem 3.1(ii), so that the true CP transition model lies in both Gfac and Gjoint .Fix δ ∈ (0 , 1) . Let 
+
+Fs, Fa, Fm, Fsa 
+
+be L-Lipschitz classes on compact domains. Let 
+
+Dmax := max( ds, d a), Dsum := ds + da,
+
+and assume 
+
+Dmax ≥ 3.
+
+Let 
+
+ˆg fac  
+
+> n
+
+∈ arg min 
+
+> g∈G fac
+
+ˆLn(g), ˆg joint  
+
+> n
+
+∈ arg min 
+
+> g∈G joint
+
+ˆLn(g)
+
+be empirical minimizers for the two classes. Then, with probability at least 1 − δ, the high-probability bound of Proposition 3.2 yields the certificates 
+
+L(ˆ g fac  
+
+> n
+
+) ≤ Cfac (δ) n−1/D max , L(ˆ g joint  
+
+> n
+
+) ≤ Cjoint (δ) n−1/D sum , (33) 
+
+where the constants 
+
+Cfac (δ), Cjoint (δ)
+
+29 are finite, positive, independent of n and of the target accuracy ϵ, and depend polynomially on the problem parameters 
+
+Bg , Bϕ, Bm, ∞, L, diam( S), diam( A), d, 
+
+and logarithmically on 1/δ , with fixed dependence on the dimensions ds, d a.Define the bound-implied sufficient sample sizes 
+
+nsuff fac (ϵ) := inf 
+
+n
+
+n ∈ N : Cfac (δ) n−1/D max ≤ ϵ2o
+
+,
+
+and 
+
+nsuff joint (ϵ) := inf 
+
+n
+
+n ∈ N : Cjoint (δ) n−1/D sum ≤ ϵ2o
+
+.
+
+These are the smallest sample sizes at which the certificates in (33) guarantee representation error at most ϵ2. Then 
+
+nsuff joint (ϵ)
+
+nsuff fac (ϵ) = Θ 
+
+
+
+ϵ−2 min( ds,d a)
+
+as ϵ → 0. (34) 
+
+Proof. Under CP realizability, there exists 
+
+gCP ∈ G fac 
+
+such that 
+
+gCP (s, a, s ′) = P (s′ | s, a ).
+
+Hence 
+
+L(gCP ) = Eρ
+
+Z
+
+> S
+
+ P (s′ | s, a ) − gCP (s, a, s ′)2 dν (s′) = 0 .
+
+Since L(g) ≥ 0 for all g, we have 
+
+L(g∗Gfac ) = 0 .
+
+The containment condition gives 
+
+Gfac ⊆ G joint ,
+
+so the same gCP also belongs to Gjoint . Thus 
+
+L(g∗Gjoint ) = 0 .
+
+Therefore the finite-sample certificates contain only estimation and concentration terms. By Theo-rem 3.1 and the Lipschitz entropy bound, there is a constant Afac < ∞ such that 
+
+log N (Gfac , τ ) ≤ Afac τ −Dmax , Dmax := max( ds, d a).
+
+For the unrestricted joint Lipschitz class, the standard product-domain entropy bound gives 
+
+log N (Gjoint , τ ) ≤ Ajoint τ −Dsum , Dsum := ds + da.
+
+Moreover, by Lemma C.2, the associated quadratic classes have the same entropy exponents up to constants: 
+
+log N (HGfac , τ ) ≤ Afac ,H τ −Dmax ,
+
+and 
+
+log N (HGjoint , τ ) ≤ Ajoint ,H τ −Dsum ,
+
+for suitable finite constants Afac ,H and Ajoint ,H . Since Dmax ≥ 3 and 
+
+Dsum = ds + da ≥ Dmax ,
+
+both entropy exponents are larger than 2. Applying Lemma C.3 gives constants Kfac , K joint < ∞,independent of n and ϵ, such that 
+
+Rn(Gfac ) + Rn(HGfac ) ≤ Kfac n−1/D max ,
+
+and 
+
+Rn(Gjoint ) + Rn(HGjoint ) ≤ Kjoint n−1/D sum .
+
+30 Apply Proposition 3.2 to the two classes with confidence levels δ/ 2 and take a union bound. With probability at least 1 − δ, both bounds hold simultaneously. Using the zero oracle risks above, 
+
+L(ˆ g fac  
+
+> n
+
+) ≤ K′
+
+> fac
+
+n−1/D max + 2(2 Bg + B2 
+
+> g
+
+)
+
+r 2 log(2 /δ )
+
+n ,
+
+and 
+
+L(ˆ g joint  
+
+> n
+
+) ≤ K′
+
+> joint
+
+n−1/D sum + 2(2 Bg + B2 
+
+> g
+
+)
+
+r 2 log(2 /δ )
+
+n ,
+
+for finite constants K′ 
+
+> fac
+
+and K′
+
+> joint
+
+. Because Dmax ≥ 3 and Dsum ≥ Dmax ,
+
+n−1/2 ≤ n−1/D max , n−1/2 ≤ n−1/D sum , n ≥ 1.
+
+Absorbing the concentration terms into the constants yields 
+
+L(ˆ g fac  
+
+> n
+
+) ≤ Cfac (δ)n−1/D max , L(ˆ g joint  
+
+> n
+
+) ≤ Cjoint (δ)n−1/D sum , (35) which proves the certificates in (33) . The constants are finite, positive, independent of n and ϵ, and have the parameter dependence stated in the proposition. It remains to invert the certificates. The factored certificate guarantees 
+
+L(ˆ g fac  
+
+> n
+
+) ≤ ϵ2
+
+whenever 
+
+Cfac (δ)n−1/D max ≤ ϵ2.
+
+This is equivalent to 
+
+n ≥ Cfac (δ)Dmax ϵ−2Dmax .
+
+Similarly, the joint certificate guarantees 
+
+L(ˆ g joint  
+
+> n
+
+) ≤ ϵ2
+
+whenever 
+
+n ≥ Cjoint (δ)Dsum ϵ−2Dsum .
+
+If sample sizes are required to be integers, ceilings change these thresholds by a multiplicative 
+
+1 + o(1) factor as ϵ → 0. Hence 
+
+nsuff joint (ϵ)
+
+nsuff fac (ϵ) = Cjoint (δ)Dsum 
+
+Cfac (δ)Dmax ϵ−2( Dsum −Dmax )(1 + o(1)) .
+
+Finally, 
+
+Dsum − Dmax = ds + da − max( ds, d a) = min( ds, d a).
+
+Therefore nsuff joint (ϵ)
+
+nsuff fac (ϵ) = Θ 
+
+
+
+ϵ−2 min( ds,d a)
+
+,
+
+as claimed. Since the thresholds were obtained by inverting upper-bound certificates, this is an algebraic comparison of certified sufficient sample sizes, not a minimax lower bound. 
+
+Remark (Scope and interpretation of the sample-size comparison) Equation (34) compares the sample sizes that the same uniform-convergence template certifies as sufficient for the two function classes. The comparison is therefore between 
+
+Cfac (δ)n−1/D max 
+
+and 
+
+Cjoint (δ)n−1/D sum ,
+
+not between the true optimal risks achievable by all possible algorithms. In particular, (34) does not prove that learning the joint class has minimax sample complexity 
+
+Ω( ϵ−2Dsum ).
+
+Such a statement would require a matching lower bound. A matching lower bound would in turn require a packing construction showing that Gjoint contains many well-separated functions at scale ϵ.31 That kind of packing argument generally requires an additional richness assumption on Fsa , ensuring that the joint state-action encoder can realize a sufficiently large family of distinct functions over the full ds + da dimensional product domain. We do not impose such a richness assumption here. Therefore, the conservative interpretation is the following: under the same generic uniform-convergence analysis, the factored class receives a certificate with exponent Dmax = max( ds, d a), whereas the unrestricted joint Lipschitz class receives the standard certificate with exponent Dsum = ds + da. Inverting these two certificates yields a polynomially smaller bound-implied sufficient sample size for the factored class. Whether a more refined, algorithm-specific analysis of the joint class can beat the generic uniform-convergence certificate is a separate question. The empirical results in the main paper are consistent with this conservative reading. 
+
+Remark (Non-realizable case) When ϵCP > 0, the true transition model is not represented exactly by the CP-factored class. In that case, the factored class has an irreducible approximation term. If 
+
+inf 
+
+> g∈G fac
+
+L(g) ≤ ϵ2CP ,
+
+then the same finite-sample argument gives the factored certificate 
+
+L(ˆ g fac  
+
+> n
+
+) ≤ ϵ2CP + Cfac (δ)n−1/D max .
+
+If the joint class still contains the true transition model, then its oracle risk remains zero, and its certificate is 
+
+L(ˆ g joint  
+
+> n
+
+) ≤ Cjoint (δ)n−1/D sum .
+
+Thus the non-realizable setting involves a bias–variance tradeoff. The factored class has the smaller entropy exponent and hence the faster estimation term, but it may plateau at the approximation level 
+
+ϵ2CP . For moderate sample sizes and small CP approximation error, the factored certificate can still be sharper; for sufficiently large sample sizes, if the joint class is well-specified and the factored class is not, the irreducible bias term may dominate the factored bound. This is why the exact-realizability result above is stated separately. 
+
+Remark (Same-n comparison without Lipschitz instantiation) The sample-ratio in (34) relies on the Lipschitz covering bounds, which give the explicit dimensional exponents Dmax and Dsum .A weaker but more robust statement is available without any Lipschitz instantiation: under CP realizability and the containment condition of Theorem 3.1(ii), at every fixed n, the certified upper bound on L2(ν) representation error from Proposition 3.2 is no larger for the factored class than for the joint class. The argument uses only set inclusion. Appendix C.5 gives Rn(Gfac ) ≤ Rn(Gjoint ) from 
+
+Gfac ⊆ G joint . The induced quadratic class HG = {(s, a ) 7 → R g2(s, a, u ) dν (u) : g ∈ G} in-herits this monotonicity, since hg is determined by g alone, so Rn(HGfac ) ≤ R n(HGjoint ). Under CP realizability both approximation terms L(g∗G ) in Proposition 3.2 equal zero; with the shared envelope 
+
+Bg giving the same McDiarmid tail, the certificate (25) yields a no-larger upper bound on L(ˆ gn)
+
+for the factored class at the same n. This certifies an ordering of two upper bounds, not a minimax separation. 
+
+C.8 Conditional Implication for LSVI-UCB 
+
+The representation results above control an average transition-density error in L2(ν). This is the right object for spectral representation learning, but LSVI-UCB requires a stronger condition: the Bellman backup must be uniformly approximable as a linear function of the feature used by the algorithm. We state this downstream implication conditionally. The point is not to derive this condition from L2(ν)
+
+error alone, but to record what the factored structure would buy once the learned feature satisfies the standard approximate-linear condition required by LSVI-UCB. 
+
+Definition 1 ((η, V, W )-approximate Bellman linearity) . A feature map bψ : S × A → Rd satisfies 
+
+(η, V, W )-approximate Bellman linearity if for every V ∈ V there exists a vector wV ∈ Rd with 
+
+∥wV ∥2 ≤ W such that 
+
+sup 
+
+> (s,a )∈S×A
+
+r(s, a ) + γEs′∼P (·| s,a )[V (s′)] − bψ(s, a )⊤wV ≤ η. (36) 32 Here V can be taken as the value-function class generated by the LSVI-UCB dynamic program. A stronger but more conservative version is obtained by taking V to be all bounded functions with 
+
+∥V ∥∞ ≤ Rmax /(1 − γ).
+
+Proposition C.4 (Conditional LSVI-UCB compatibility) . Let bψ be a learned d-dimensional feature map, with sup s,a ∥ bψ(s, a )∥2 ≤ Bψ . Suppose that bψ satisfies (η, VLSVI , W )-approximate Bellman linearity in the sense of Definition 1. Assume that LSVI-UCB is run with bψ, the standard elliptical bonus, and the usual discounted-to-effective-horizon reduction H = eO((1 − γ)−1).If 
+
+η ≤ c0(1 − γ)ϵ
+
+for a sufficiently small numerical constant c0, then LSVI-UCB returns an ϵ-optimal policy after 
+
+eO poly  d, W, B ψ , (1 − γ)−1, ϵ −1 
+
+episodes. Under the standard bounded-norm normalization used in linear-MDP analyses, this specializes to the familiar certificate 
+
+eO
+
+ d2
+
+(1 − γ)4ϵ2
+
+
+
+.
+
+Proof. Under approximate Bellman linearity, the Bellman target used by LSVI-UCB is linear in bψ
+
+up to a uniform misspecification error η. Standard misspecified-linear-MDP analyses for LSVI-UCB then yield a regret decomposition of the form 
+
+Regret( T ) ≤ eO d√T
+
+(1 − γ)3/2
+
+!
+
++ Cmis 
+
+T η 
+
+1 − γ , (37) where the hidden factors depend polynomially on the feature and weight norm bounds. The first term is the usual exact-linear-MDP regret term, and the second term is the cumulative Bellman misspecification error. To make the average regret at most ϵ, it suffices to choose T so that 
+
+d
+
+(1 − γ)3/2√T ≲ ϵ, 
+
+which gives 
+
+T = eO
+
+ d2
+
+(1 − γ)3ϵ2
+
+
+
+.
+
+At this value of T , the misspecification term in (37) contributes at most order ϵT whenever 
+
+η ≲ (1 − γ)ϵ. 
+
+Thus the condition η ≤ c0(1 − γ)ϵ ensures that the misspecification term does not dominate the exact-feature regret term. Converting the average-regret guarantee to a single output policy by the standard PAC conversion for discounted problems introduces one additional factor of (1 − γ)−1,yielding 
+
+eO
+
+ d2
+
+(1 − γ)4ϵ2
+
+
+
+under the usual bounded-norm normalization. Keeping the norm constants explicit gives the stated polynomial dependence on d, W, B ψ , (1 − γ)−1 and ϵ−1.
+
+Implication for the factored representation. Under exact CP realizability, the true feature 
+
+ψ∗(s, a ) = ϕ∗ 
+
+> s
+
+(s) ⊙ ϕ∗
+
+> a
+
+(a)
+
+satisfies Bellman linearity exactly: for every bounded V ,
+
+r(s, a ) + γE[V (s′) | s, a ] = ψ∗(s, a )⊤wV
+
+33 for an appropriate coefficient vector wV . Thus the CP feature is a valid linear-MDP feature. The learned feature bψ can be used by LSVI-UCB once it satisfies the stronger uniform condition (36) . The representation-learning results in Appendix C.6 do not by themselves prove this uniform condition from average L2(ν) error; rather, they provide a route for reducing the number of representation-learning samples needed to obtain an accurate transition feature. The potential advantage of the factored structure is therefore conditional but clear. If the factored and joint learned features are both evaluated through the same downstream LSVI-UCB analysis, then the online exploration guarantee depends on the feature dimension and the Bellman misspecification level η. The factored representation can improve the upstream sample requirement for reaching a small η because its representation class has a smaller certified estimation term in the low-CP-bias regime. Once the threshold η ≤ c0(1 − γ)ϵ is reached, the downstream LSVI-UCB guarantee is the standard one. 
+
+## D Ablation Study and Analysis 
+
+This appendix gathers two complementary analyses of the FaStR design. Section D.1 is a controlled encoder ablation that isolates which architectural ingredient drives the empirical gain by interpolating between CTRL-SR and FaStR through two intermediate architectures. Section D.2 is an offline diagnostic that estimates the cost of imposing the CP factorization on the dynamics of each task, independently of the RL training pipeline. The two analyses answer distinct questions: which property of the encoder produces the gain , and when the underlying CP assumption is a good fit for the environment .
+
+D.1 Interaction Structure of the Spectral Encoder 
+
+FaStR differs from CTRL-SR in three design choices: the encoder is split into separate state and action networks, their outputs are combined through element-wise multiplication, and the NCE logit is a diagonal trilinear transition-ratio score rather than a fused state-action logit. We isolate the contribution of each choice with a four-condition ablation in which two intermediate architectures (concat-of-separate and Tucker) sit between the monolithic baseline and FaStR. 
+
+D.1.1 Encoder Structure of the Four Conditions 
+
+The four conditions share the TD3 backbone, optimization, RP-NCE protocol, and evaluation setup of Appendix B (Sections B.1 and B.2); they differ only in the encoder used to produce the spectral feature and, where the encoder structure forces it, in the matching critic. 
+
+Condition (a): CTRL-SR. The baseline of Gao et al. [2025], identical to Appendix B.3: a monolithic encoder φ(s, a ) ∈ R512 on [s; a], bilinear NCE logit φ(s, a )⊤μ(s′), and an RFF-MLP critic on φ. Effective NCE dimension d=512 .
+
+Condition (b): Concat-of-separate. Two independent networks ϕs: S → R256 and ϕa: A → R256 ,concatenated and projected through a learned linear layer with Mish activation: ψ = σ(W [ϕs; ϕa] + 
+
+b), W ∈ R512 ×512 . The 256-dim outputs are sized so that the joint feature matches the 512-dim ψ of the other conditions. Each component of ψ depends additively on ϕs and ϕa. The critic is the same RFF-MLP on ψ as in FaStR. Effective NCE dimension d=512 .
+
+Condition (c): Tucker. Two independent networks ϕs: S → R64 and ϕa: A → R64 feeding a full trilinear score: h(s, a, s ′) = ϕs(s)⊤M (s′) ϕa(a) with M (s′) ∈ R64 ×64 . This is the Tucker parameterization of Section 3.1, with effective NCE dimension ds · da = 4096 . Because full trilinear scoring is incompatible with the Hadamard critic, we use a structurally matched critic: a bilinear term 
+
+ϕ⊤ 
+
+> s
+
+W ϕ a plus an RFF-MLP residual on [ϕs; ϕa]. The dimension ds=da=64 keeps total parameters and per-step floating-point operations (FLOPs) within 10% of FaStR’s. 
+
+Condition (d): FaStR (ours). Identical to Appendix B.2: diagonal trilinear NCE score (ϕs(s) ⊙
+
+ϕa(a)) ⊤m(s′) with ϕs, ϕ a, m → R512 , factored critic feature ψ = ϕs(s) ⊙ ϕa(a), and an RFF-MLP critic on ψ. Effective NCE dimension d=512= B.34 The critic architecture varies only where the interaction structure forces it: FaStR’s diagonal trilinear score induces the same Hadamard feature used by the critic, while Tucker’s full interaction matrix requires a bilinear-residual head. 
+
+D.1.2 Results 
+
+Figure 4 reports learning curves on five DM Control Suite tasks at two action dimensions. Humanoid tasks ( dim A=21 ) are the primary comparison because the factored advantage is largest in high-dimensional action spaces; quadruped tasks ( dim A=12 ) act as a control where all methods are expected to perform comparably. 0.00 0.25 0.50 0.75 1.00                          
+
+> Steps ×10 6
+> 0
+> 250
+> 500
+> 750
+> Return
+> Humanoid Stand
+> 0.00 0.25 0.50 0.75 1.00
+> Steps ×10 6
+> 0
+> 200
+> 400
+> 600
+> Humanoid Walk
+> 0.00 0.25 0.50 0.75 1.00
+> Steps ×10 6
+> 0
+> 50
+> 100
+> 150
+> 200
+> Humanoid Run
+> 0.00 0.25 0.50 0.75 1.00
+> Steps ×10 6
+> 200
+> 400
+> 600
+> 800
+> 1000 Quadruped Walk
+> 0.00 0.25 0.50 0.75 1.00
+> Steps ×10 6
+> 200
+> 400
+> 600
+> 800
+> Quadruped Run
+> CTRL-SR Concat Tucker FaStR (Ours)
+
+Figure 4: NCE transition-ratio score structure ablation. Learning curves on five DM Control Suite tasks at two action dimensions: Humanoid ( dim A=21 ) is the primary comparison; Quadruped (dim A=12 ) is a control. Curves: mean return across seeds; shaded: ±1 std. 
+
+Encoder separation alone does not explain the gain. The (a)-vs-(b) contrast isolates the effect of using separate ϕs and ϕa networks without multiplicative interaction. Concat preserves the split but combines through a learned affine transformation, so each component of ψ is a linear mixture of ϕs
+
+and ϕa. On humanoid tasks, concat gives a modest improvement over the monolithic encoder; on quadruped, the two are within noise. The improvement is well below FaStR’s gain on the same tasks, ruling out the hypothesis that the split architecture alone accounts for FaStR’s advantage. 
+
+The diagonal trilinear interaction is the source of the gain. The (b)-vs-(d) contrast isolates the CP interaction in the transition-ratio score versus linear projection with encoder separation held constant. FaStR gives higher returns than concat on every humanoid task, despite using the same 512-dimensional ψ and the same RFF-MLP critic. The structural reason is that concat gives an additive scoring function ψk = P 
+
+> j
+
+(Ws)kj ϕs,j + P 
+
+> j
+
+(Wa)kj ϕa,j + bk, mixing all dimensions, while FaStR’s NCE logit contains the per-component product ϕs,k (s) · ϕa,k (a) · mk(s′): the k-th action feature directly scales the k-th state feature before comparison with the k-th next-state factor. This per-component product is the algebraic structure required by Theorem 3.1 for the log covering number to decompose additively over Fs, Fa, Fm. Concat loses this decomposition at the projection layer, where W introduces cross-mode coupling. 
+
+Tucker is more expressive but trains worse under NCE. The (c)-vs-(d) contrast tests whether the strictly more expressive Tucker trilinear score translates into better contrastive performance. Tucker can represent arbitrary cross-component products ϕs,i · ϕa,j , i̸ = j, that diagonal CP excludes. Empirically Tucker gives lower returns than FaStR on humanoid tasks and matches FaStR on quadruped, where the gradient-coverage constraint is weaker. The cause is the gradient rank deficiency of Section 3.1: ∇vec M (s′ 
+
+> j)
+
+ℓ lies in span {ϕa(ai) ⊗
+
+ϕs(si)}Bi=1 , a subspace of dimension at most min( B, d sda). In condition (c), dsda=4096 while 
+
+B=512 , so each mini-batch constrains only 512 of 4096 parameter directions of M (s′). Three requirements then conflict: encoder capacity, NCE validity ( B ≥ dsda), and gradient coverage in a single batch. At standard batch size, Tucker cannot satisfy all three simultaneously. 
+
+Low-rank Tucker does not recover the gap. The natural fix is to lower ds, d a until dsda ≤ B.The boundary case ds=da=22 (dsda=484 ≤ B) on humanoid-walk gives near-zero return: encoder dimension becomes the binding constraint. Any low-rank Tucker variant within the validity constraint lies between this point and dense Tucker, so neither end matches CP. FaStR avoids the trilemma by restricting M (s′) to a diagonal m(s′) ∈ Rd, with d parameters per next-state and gradient spanning all of Rd whenever B ≥ d (d=B=512 here). The rank-one chain-rule 35 structure of Section 3.1 holds for any trilinear-score loss ℓ = f (ϕ⊤ 
+
+> s
+
+M ϕ a), so the same mechanism applies to the energy-based score matching of SPEDER [Ren et al., 2023] and the diffusion objective of Diff-SR [Shribak et al., 2024]. 
+
+What CP gives up. CP excludes cross-component products ϕs,i · ϕa,j with i̸ = j, which introduces approximation bias when action dimensions are tightly coupled. Whenever the Tucker core is approximately superdiagonal after a change of basis, the deep encoders can absorb the rotation internally and the CP restriction does not reduce expressiveness. CP’s statistical advantage can also outweigh the approximation bias under limited training data, which is the typical online RL regime. Tucker is preferable when the training objective is not constrained by contrastive trilinear scoring (e.g., regression or MLE with enough data to span Rdsda ), as in prior bilinear-MDP work [Du et al., 2021, Yang and Wang, 2020], and when the environment has cross-component couplings that no encoder rotation can absorb. 
+
+D.2 Empirical CP Misfit Diagnostic 
+
+The finite-sample certificate of Proposition 3.2 decomposes representation error into a CP approxima-tion bias ϵ2CP and an estimation term whose rate depends on the covering number. Proposition 3.3 shows that, under low CP bias, the estimation advantage of the factored class over the joint class scales with min( ds, d a). The single-task experiments are consistent with this prediction but do not measure ϵCP directly. We construct an offline diagnostic that estimates the transition-modeling cost of enforcing CP, independently of the RL training pipeline, providing a structural complement to the per-task return numbers in Table 1. 
+
+D.2.1 Implementation Details 
+
+For each of the 13 DM Control Suite tasks in Figure 5, we collect a replay buffer of 500k transitions from a trained CTRL-SR agent across 5 seeds. Buffers are sourced from CTRL-SR rather than FaStR so that the state-action distribution is not shaped by the CP-factored encoder under evaluation, and they cover a range from early random exploration to trained locomotion, reflecting the RL-relevant state distribution. We train two transition-modeling predictors on each buffer: the CP predictor scores transitions as gCP (s, a, s ′) = ( ϕs(s) ⊙ ϕa(a)) ⊤m(s′) with separate state and action encoders, and the joint predictor uses gjoint (s, a, s ′) = φ(s, a )⊤μ(s′) with a single monolithic encoder. Both share feature dimension ( d=512 ), encoder depth (2 residual blocks with LayerNorm and Mish), learning rate (10 −4), batch size (512), training epochs (50), and noise schedule (25 VP levels). The CP predictor has more parameters in every task, making the comparison conservative: if it still incurs higher test loss, the gap reflects structural misfit rather than underfitting. Each predictor is trained with the RP-NCE ranking loss plus an auxiliary conditional-moment head (weight 0.1) that predicts standardized next-state features (raw observations and random Fourier projections). Data is split 70/15/15 into train, validation, and test. We select the checkpoint with the lowest validation NCE loss and report two test-set metrics: the NCE misfit b∆NCE CP = Ltest CP − L test joint , which matches the contrastive objective used in the RL pipeline, and the moment misfit b∆mom CP , which is independent of NCE. Both are distribution-weighted empirical proxies for ϵ2CP rather than direct estimates. 
+
+D.2.2 Results 
+
+Figure 5 reports the diagnostic across 13 tasks with action dimensions from 2 to 38. The CP factorization incurs a small excess transition-modeling loss in nearly all tasks. Walker-Walk is an outlier on both metrics: it has the highest NCE misfit and the highest moment misfit of any task in the figure. 
+
+Two-condition pattern. The gains match the prediction of Propositions 3.2 and 3.3. Among low-dimensional tasks ( dim A ≤ 6, lower-left cluster of Figure 5), CP fits the dynamics well, but the covering-number separation at small min( ds, d a) is too small to yield a measurable return difference. Among high-dimensional tasks ( dim A ≥ 12 ), where the theory predicts a larger estimation advantage, gains appear in every case where CP misfit is low: the Humanoid and Dog points sit in the upper 36 0.000 0.005 0.010 0.015 0.020 0.025 
+
+NCE misfit NCE CP (test excess loss) 
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+> 300
+> FaStR gain over CTRL-SR (final return)
+
+(a) NCE misfit vs FaStR gain      
+
+> Finger-Spin
+> Reacher-Easy
+> Hopper-Hop
+> Fish-Swim
+> Cheetah-Run
+> Walker-Walk
+> Quad-Walk
+> Quad-Run
+> Hum-Stand
+> Hum-Walk
+> Hum-Run
+> Dog-Stand
+> Dog-Run
+> 10 310 210 1
+
+Moment misfit mom CP (log scale; test excess loss) 
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+> 300
+> FaStR gain over CTRL-SR (final return)
+
+(b) Moment misfit vs FaStR gain 
+
+> Finger-Spin
+> Reacher-Easy
+> Hopper-Hop
+> Fish-Swim
+> Cheetah-Run
+> Walker-Walk Quad-Walk
+> Quad-Run
+> Hum-Stand
+> Hum-Walk
+> Hum-Run
+> Dog-Stand
+> Dog-Run
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> Action dimension  dim(  )
+
+Figure 5: Empirical CP misfit diagnostic across 13 DM Control Suite tasks. Each marker is one task; the x-axis is the test-set excess loss of the CP predictor over the joint predictor (positive means CP is worse), measured by (a) NCE misfit b∆NCE CP and (b) moment misfit b∆mom CP (log scale); the y-axis is the final-return gain FaStR − CTRL-SR from Figure 2. Marker color and size encode action dimension 
+
+dim A. The CP predictor has more parameters than the joint predictor in every task. region of both panels, while the high-misfit Walker-Walk point, with the same action dimension as Cheetah-Run, has no gain, which corresponds to the regime of Remark C.7 in which the bias term offsets the estimation advantage. Neither low misfit nor high action dimensionality alone is sufficient: both conditions must hold together. 
+
+Scope of the diagnostic. The misfit metrics do not rank-order gain magnitudes within the low-misfit group. This is expected, since the estimation advantage depends both on the action dimension and on the effective complexity of the dynamics within the factored class, neither of which is captured by a scalar proxy. We therefore use the diagnostic as a compatibility check for the CP assumption rather than as a continuous predictor of gain magnitude. 37
