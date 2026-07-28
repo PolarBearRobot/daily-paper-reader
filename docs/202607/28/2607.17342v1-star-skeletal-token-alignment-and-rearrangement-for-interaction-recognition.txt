@@ -1,0 +1,774 @@
+Title: STAR: Skeletal Token Alignment and Rearrangement for Interaction Recognition
+
+URL Source: https://arxiv.org/pdf/2607.17342v1
+
+Published Time: Tue, 21 Jul 2026 01:14:14 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+
+# STAR: Skeletal Token Alignment and Rearrangement for Interaction Recognition 
+
+Yuhang Wen, Mengyuan Liu †, Zixuan Tang, Junsong Yuan, Sirui Li, Beichen Ding †
+
+Abstract —Understanding physical human-robot and human-human interactions is a challenging yet emerging topic in 3D vision. While most existing methods rely on skeleton se-quences—effective in low-light and privacy-sensitive environ-ments—they face two major challenges: 1) learning and ef-fectively exploiting interaction cues from skeletal data, and 2) compensating for the lack of visual information absent in skeletons alone. To address these challenges, we propose skeletal token alignment and rearrangement (STAR) for human-robot and human-human interaction recognition. It learns interaction-specific skeleton features and enriches them using visual cues by aligning skeleton and RGB video representations in a shared latent space. Specifically, STAR consists of three key components. First, we design a skeleton encoder that captures fine-grained interdependencies using Entity Rearrangement (ER) and Inter-active Spatiotemporal Tokens (ISTs). Second, we present Visual Interaction Encoding that introduces a Focus on Interactions (FoI) strategy to attend to spatiotemporal regions relevant to interactions in RGB videos. Finally, these representations are aligned via a contrastive learning objective, with a refine-ment head further refines predictions. During training, STAR leverages both skeleton and RGB video data to learn robust, discriminative interaction representations. At inference time, it operates on skeletons alone, retaining visual-informed benefits while preserving skeleton-only efficiency. Extensive experiments on Chico, HARPER, NTU Mutual 11 and 26 datasets consistently validate our approach by demonstrating superior performance over state-of-the-art methods. Our code is publicly available at https://github.com/Necolizer/STAR. 
+
+Index Terms —Action recognition, interaction recognition, multi-modal alignment, human-robot interaction, skeletons. 
+
+I. I NTRODUCTION 
+
+# INTERACTION recognition task aims to understand mu-tual dyadic interactions within a scene, such as human interacting with a robot or another human. Examples of such interactions include robot following human in a circle (human-robot interactions) and high-five (human-human interactions). Unlike conventional action recognition tasks [1]–[12], this task emphasizes learning spatiotemporal interactions, which 
+
+> †
+
+Corresponding authors: Mengyuan Liu (liumengyuan@pku.edu.cn) and Beichen Ding (dingbch@mail.sysu.edu.cn) Yuhang Wen and Zixuan Tang are with School of Intelligent Systems Engineering, Sun Yat-sen University, Shenzhen, China. Mengyuan Liu is with State Key Laboratory of General Artificial Intelli-gence, Peking University, Shenzhen Graduate School, Shenzhen, China. Junsong Yuan is with University at Buffalo SUNY, USA. Sirui Li is with Department of Computer and Information Science, Univer-sity of Pennsylvania. Beichen Ding is with the School of Advanced Manufacturing & Southern Marine Science and Engineering Guangdong Laboratory (Zhuhai), Sun Yat-sen University. (a) Learning Skeletal Interactions  
+
+> Training & Inference Prediction Skeleton Backbone (e.g. ,GCN, Transformer) CLS Head Circular Walk
+> The model fails to judge whether they collide due to skeletal position errors.
+
+(b) Naive Late Fusion for Skeleton & Vision      
+
+> Inference Prediction Skeleton Backbone (e.g. ,GCN, Transformer) CLS Head Circular Walk
+> Vision Backbone CLS Head Training Separately
+> The vision branch fails to work at inference time in dark or privacy-sensitive workspaces.
+> Pretrained Vision Encoder MLP Skeleton Encoder CLS Head Training Prediction Interaction RoI of RGB Video Frames
+> REF Head Refinement
+> Multi-Modal Alignment for Interaction features
+> Skeleton Encoder CLS Head Prediction Inference
+
+(c) Align Skeletal Interactions & Visual Interactions (Ours) 
+
+> REF Head 3D Skeleton Sequence of Mutual Entities Circular Follow + Crash Circular Follow + Crash
+> Ours can infer the interactions in dark or privacy-sensitive workspaces.
+
+Fig. 1. Ways to learn interactions. (a) Most existing methods leverage skeleton backbones to model skeletal interactions, which lack visual cues to understand complex interactions. (b) Methods adopting fusion strategies suffer from inefficient inference. Their vision branch cannot work at inference time in dark environments or privacy-sensitive scenarios. (c) Our proposed STAR framework aligns multi-modal interaction features during training to learn more distinctive representations of diverse interactions. It benefits inference with only skeletons, preserving efficiency and efficacy. 
+
+is a challenging and essential issue in human-robot interac-tion (HRI) or collaboration (HRC) [13]–[17], 2D/3D scene understanding [18]–[25], human-centric models [26]–[33], and numerous other areas related to human motion analysis. Skeletons have emerged as a prominent modality for mod-eling motions and interactions [34]–[41], well representing the interdependent physical dynamics in a compact format. Additionally, skeletal representations offer excellent real-time performance at inference [42]. However, skeleton-based ap-proaches face two main challenges in interaction recogni-tion. First, prior methods have not fully exploited interaction features in skeletons [43]–[47]. Their architectural designs often either lack interaction modeling or are inapplicable to skeleton-based human-robot interactions [15]. Second, they usually fall short in distinguishing between similar and com-plex interactions, as shown in Fig. 1 (a), because skeletons 
+
+0000–0000/00$00.00 © 2021 IEEE arXiv:2607.17342v1 [cs.CV] 19 Jul 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+
+lack visual cues necessary for effective disambiguation. Some methods try to solve this problem with multi-modal fusion strategies, but they may fail in low-light or privacy-sensitive scenarios where using RGB videos is impractical. This leads to a natural question: How can we better exploit skeletal interaction features and enhance them with visual cues? To address the aforementioned problems, we propose a framework based on Skeletal Token Alignment and Rearrange-ment (STAR) for human-robot and human-human interactions. Our main insight lies in leverage permutation-invariance and interactive spatiotemporal local features to more effectively exploit skeletal features, while further enhancing these representations by aligning skeleton-vision feature pairs to achieve more distinctive interactions. Specifically, STAR con-sists of 3 key components. (1) A skeleton encoder. We present Entity Rearrangement, an approach to preserve permutation-invariance among mutual entities and stabilize the optimization of the backbone. Additionally, addressing the limitations of previous architecture designs—such as insufficient interaction modeling and reliance on subject priors—we propose Interac-tive Spatiotemporal Tokens to represent interactive spatiotem-poral local features for interacting skeleton sequence. Building on ISTs, we develop a backbone that effectively encodes skeletal interactions. (2) Visual Interaction Encoding. STAR incorporates Focusing on Interactions to concentrate on the spatiotemporal Region of Interest (RoI) of interactions in RGB videos. (3) A multi-modal interaction alignment framework. We employ a contrastive objective to align RoI features from a pretrained vision encoder with global token features from our skeleton encoder, facilitating disambiguation through visual prompts. Furthermore, we refine the predictions using an auxiliary refinement head. As illustrated in Fig. 1 (c), STAR leverages both skeletons and videos during training, while using only skeletons at inference for efficacy and privacy. Our main contributions are three-fold:  
+
+> •
+
+We propose STAR, a framework for learning human-robot and human-human interactions. STAR is the first to introduce multi-modal interaction alignment into skeleton-based interaction recognition. During training, it aligns interaction features from both skeletons and videos to learn highly discriminative interaction representations, thereby benefiting skeleton-only inference.  
+
+> •
+
+Specifically, STAR comprises two encoders and a multi-modal interaction alignment framework that facilitates disambiguation through visual cues. Our skeleton encoder preserves the inherent permutation-invariance in interac-tions and captures interdependencies between interactive spatiotemporal local features. The visual encoder adopts a Focus on Interactions strategy to target and encoder features related to interactions. The alignment framework further improves the learning of distinguishable repre-sentations through contrastive learning in a shared latent space of skeletons and visual RoI.  
+
+> •
+
+Extensive experiments on Chico, HARPER, NTU Mutual 26, and NTU Mutual 11 datasets consistently verify STAR, demonstrating its superior performance compared to other state-of-the-art methods. This paper is an extension of our conference paper [15]. The new contributions of this paper include:  
+
+> •
+
+We conduct a more comprehensive analysis of our skele-ton encoder, including why Entity Rearrangement works for skeletal interactions and the advantages of Interactive Spatiotemporal Tokens in learning interactive spatiotem-poral features. These show STAR’s capability to better capture and exploit skeletal interactions.  
+
+> •
+
+To further enhance interaction representations, we in-troduce a novel multi-modal alignment framework that aligns skeleton-vision interaction representations in ashared latent space. This framework consists of three key components: first, we propose Focusing on Interactions to concentrate on interactions in videos both spatially and temporally; second, we adopt a contrastive objective to align positive pairs of skeleton and vision features in the shared latent space; finally, we present a test-time refinement strategy with the refinement head.  
+
+> •
+
+We conduct extensive experiments on two new HRI datasets, Chico [16] and HARPER [17], demonstrating how our approach aids in supervising physical HRI. Ad-ditionally, we compare our method against more state-of-the-art approaches on NTU Mutual 26 and NTU Mutual 11 datasets. Furthermore, we benchmark various state-of-the-art pretrained vision encoders within our framework. The rest of this paper is organized as follows: We first dis-cuss the related work in Section II and then detail our proposed STAR in Section III. Section IV provides the experimental results. Section V finally concludes this paper. II. R ELATED WORK 
+
+A. Skeleton-based Action & Interaction Recognition 
+
+Supported by the development of large human activ-ity datasets [48]–[56], skeleton-based action recognition has emerged as a prominent area of research, particularly in designing effective architectures for recognizing individual actions. Early approaches [57]–[62] tended to capturing long-term contexts with recurrent architectures. Subsequently, meth-ods based on Graph Convolution Network (GCN) became mainstream up till today [1], [63]–[74]. DeGCN [73] in-troduced deformable sampling locations on spatiotemporal graphs, enhancing the perception of discriminative receptive fields. BlockGCN [74] proposed an efficient refinement to graph convolutions to address redundancy issues. Recent ad-vancements have incorporated self-attention mechanisms into spatiotemporal modeling of skeletons [75]–[82]. However, when adapting these models for interaction recognition tasks, most implementations rely on a naive late fusion strategy [67]– [69], [75]–[77]. Unfortunately, they often yield unsatisfactory performance due to insufficient interaction learning [15]. To learn interactions based on skeletons, most interac-tive action recognition methods employ specially designed modules that leverage subject priors [43]–[47], [83], [84]. For example, IGFormer [44] utilized prior knowledge about human body structure to build up co-attention mechanisms for interaction recognition. Similarly, me-GCN [46] extracted adjacency matrices for each person and modeled the mutual JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3TSA Blocks 
+
+×̂ 𝑙𝑙 
+
+TSA Blocks 
+
+× ( 𝐿𝐿 −̂ 𝑙𝑙 )
+
+> Pretrained
+> Vision Encoder
+> CLS
+> Head
+> 3D Skeleton
+> MLP
+> RGB Video
+
+IST 
+
+Entity Rearrangement  
+
+> (Section Ⅲ.A)
+
+Training 
+
+Inference 
+
+> Open-set
+> Object Detector
+> 𝓛𝓛 CLS
+
+∩
+
+> Sampling
+
+Focus on Interactions (Section Ⅲ.C) 
+
+> REF
+> Head
+> 𝓛𝓛 REF
+
+Refinement Head  
+
+> (Section Ⅲ.D)
+
+Align in Shared 
+
+Latent Space  
+
+> (Section Ⅲ.D)
+
+Interactive Spatiotemporal Tokens (Section Ⅲ.B) 
+
+> 𝓛𝓛 𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴
+
+TSA Blocks 
+
+×̂ 𝑙𝑙 
+
+TSA Blocks 
+
+× ( 𝐿𝐿 −̂ 𝑙𝑙 )
+
+CLS 
+
+Head 
+
+> 3D Skeleton
+
+IST 
+
+REF 
+
+Head    
+
+> Softmax  ×𝛽𝛽
+> × (1 −𝛽𝛽 )
+> Predicted
+> Interaction
+> Addition
+
+∩ Intersection   
+
+> Frozen Unfrozen
+> 𝓛𝓛 Loss Function
+
+�𝑋𝑋 
+
+�𝑋𝑋 𝑣𝑣    
+
+> Skeleton
+> Vision (�𝑋𝑋 𝐴𝐴 ,�𝑋𝑋 𝑣𝑣 𝐴𝐴 )�𝑋𝑋 𝑣𝑣 𝐴𝐴
+> �𝑋𝑋 𝐴𝐴
+> Positive Pairs:
+> Negative Pairs:
+> Others
+> Time
+> Time
+> Max Square Covering Box
+> “person . robot dog”
+> Neck
+> Head
+> Fig. 2. The overall framework of the proposed STAR for human-robot and human-human interactions. STAR consists of an encoder to learn skeletal interactions, an encoder to embed visual interactions, and a multi-modal interaction alignment framework to enable disambiguation with visual cues. Our skeleton encoder incorporates Entity Rearrangement to maintain the permutation-invariance of mutual entities and captures interdependencies using Interactive Spatiotemporal Tokens. Visual Interaction Encoding introduces a Focusing on Interactions approach, which targets the spatiotemporal regions of interactions in RGB videos and encodes it with a vision encoder. In our alignment framework, a contrastive objective aligns skeleton-vision feature pairs from the skeleton and vision encoders. Finally, STAR refines inference with an auxiliary refinement head.
+
+constraints between them. Furthermore, some recent works ab-stract interactions to handle a variety of interaction types [15], [85]. For instance, ISTA-Net [15] unified the recognition task of interactions across various graph types [43]–[47], [86]–[93] without relying on adjacency definitions based on subject-type-specific priors. Moreover, CHASE [85] proposed a normalization methods for individual encoders to benefit recognition in multi-entity settings, including interactions and group activities. However, these approaches rely solely on skeletons as the modality for modeling mutual interactions, lacking visual prompts to comprehend complex and ambigu-ous interactions, which limits their performance. To address this issue, our method introduces a multi-modal interaction alignment framework, effectively aligning interaction features from both skeletons and videos within a shared space. 
+
+B. Multi-modal Learning in Action Recognition 
+
+As multi-modal models become increasingly prevalent in computer vision tasks, recent advancements in skeleton-based action recognition have focused on leveraging diverse modal-ities to enhance skeletal approaches. There are two main strategies: multi-modality fusion and multi-modality align-ment. Multi-modality fusion incorporates different modalities during both training and evaluation, aiming to fully exploit all available data. Previous studies have made significant progresses in fusing various modalities with skeletal data, including widely adopted RGB videos [8], [94]–[99], hu-man parsing maps [100], motion maps [101], intra-skeleton modality streams [73], [81]. This technique appears intuitive and straightforward, using multi-modal data at both training and inference stages. However, it usually increases the com-plexity and verbosity of the framework, resulting in costly and inefficient inference. In contrast, multi-modality alignment employs skeletons exclusively during evaluation, aiming to en-rich skeletal representations through feature alignment. Several cutting-edge works [102]–[104] have begun to explore this strategy by designing their auxiliary optimization objectives with corresponding RGB patchworks or texts. IPL [105] was proposed for egocentric hand-object interactions in only RGB videos, while our work focuses on multi-modal modeling of human-human and human-robot interactions using 3D skele-tons and vision. C 2VL [106] pulled vision-language knowl-edge prompts and corresponding skeletons closer for human actions in a self-supervised learning paradigm, while our work aligns skeleton-vision pairs in the end-to-end interaction recognition training. To the best of our knowledge, our method is the first to leverage multi-modal alignment to learn both human-robot and human-human interactions. It benefits from learning with visual cues and preserves the advantages of inferring with sole skeletons. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4These skeletal interactions    
+
+> are the same !
+> Human Observer
+> These skeletal interactions
+> are the same !
+> Human Observer
+> These skeletal interactions
+> are the same !
+> Human Observer
+> Fig. 3. Motivation of Entity Rearrangement. We observe that the category of interaction remains unchanged regardless of the order of mutual entities. The entity order in a skeleton sequence is indicated using blue and orange.
+
+III. STAR The goal of our task is to classify human-robot and human-human interactions based on their 3D skeleton sequences. This can be expressed as finding the parameterized model fθ
+
+with its optimal ˆθ for the mapping f : X 7 → Y , where X
+
+represents the interacting skeleton sequences and Y denotes their corresponding one-hot interaction labels. Let E ∈ Z+
+
+be the number of mutual entities engaged in an interaction over a period of time T ∈ Z+. Each entity may have up to 
+
+J ∈ Z+ joints, each with C-dimensional coordinates ( C = 3 
+
+for this task). Zero-padding is applied to entities with fewer than J joints. Consequently, the input skeleton sequence of an interaction is defined as X ∈ RC×T ×J×E .Fig. 2 depicts the overview of our proposed STAR for learning human-robot and human-human interactions. It com-prises an attention-based encoder to jointly learn the spatial, temporal, and interactive relations of interacting subjects, along with a multi-modal interaction alignment framework to align hidden states across distinct modalities. Specifically, given a 3D skeleton sequence of an interactive action, our end-to-end framework aims to infer the corresponding category of interaction. First, STAR employs Entity Rearrangement during training to preserve the equivalence of unordered subjects. Next, a 3D sliding window tokenizes the skeleton sequences into Interactive Spatiotemporal Tokens, which are then pro-cessed by L-layer Token Self-Attention Blocks to learn token-level interdependencies. During training, we adopt multi-modal interaction alignment to align skeleton features with vision RoI features. The latter is obtained from a pretrained vision encoder followed by a learnable multi-layer perceptron (MLP). In the inference stage, we ensure efficiency using only concise skeletons. Additionally, with an optimized refinement head, we employ a test-time refinement strategy to achieve refined predictions. 
+
+A. Entity Rearrangement 
+
+As illustrated in Fig. 3, mutual entities in an interaction can be arranged in any order while still representing the same interaction. It implies that the skeletons of unordered entities exhibit permutation-invariance along the entity dimen-sion. This observation inspires a simple yet effective way to eliminate orderliness when modeling interactions, termed Entity Rearrangement (ER). We begin by formulating ER through a special symmetric group. Consider the finite set Xs = {x1, . . . , x E }, where xi ∈
+
+RC×T ×J is the spatiotemporal keypoints of an entity i. A permutation is defined as a one-to-one mapping of the set onto itself, formulated as 
+
+π =
+
+ x1 . . . xE
+
+xk1 . . . xkE
+
+
+
+, (1) where k1, . . . , k E a specific permutation of the indices 
+
+1, . . . , E . The set of all permutations on Xs forms a symmetric group (a permutation group), denoted by SE .Consider observations O1, . . . , O n ∈ O sampled i.i.d. from a probability distribution P over the sample space O, where each observation of interaction includes a skeleton sequence and its label Oi = {Xsi , Y i}. Since the category of interaction remains unchanged regardless of the order of the entities, we assume the skeletal data of interactions is permutation-invariant in entity dimension. Consequently, for any group element π ∈ SE and almost any O ∼ P, we have an exact equality in distribution: 
+
+O =d πO, (2) where πO = {πX s, Y } and =d denotes equality in distri-bution. This exact invariance means that the probability of a skeleton sequence being shaking hands is exactly the same as that of a permuted skeleton sequence. Chen et al. [107] proved that when the exact invariance holds, the group action decreases the mean squared error of general estimators and reduces variance in empirical risk minimization (ERM). In our context of learning skeletal interactions, the symmetric group 
+
+SE can reduces variance in maximum likelihood estimation (a special case of ERM), stabilizing the optimization of the optimal estimator ˆθ. [107] also analyzed the case under the approximate invariance O ≈d πO , a weaker assumption than Eq. 2 where ≈d denotes approximate equality in distribution. In this case, the symmetric group SE can also reduce variance. In implementation, we randomly choose a πO for any π ∈
+
+SE during training. Evidently the cardinality |Xs| = E implies 
+
+|SE | = E!, indicating that each permutation has a probability of 1/E ! to be chosen. In practice, E is typically a small integer in most interaction cases, avoiding non-convergent training. 
+
+B. Interactive Spatiotemporal Tokens 
+
+Many previous works adopted GCN-based architectures, but they typically require the manual definition of the adjacency matrices [66]–[69], [73], [74]. The prior definition varies depending on the entity type—for example, the physical joint connections of a human body differ significantly from those of a quadruped robot. This limits their use in most HRI scenarios. Furthermore, previous models on individual actions attempted to unlock their capability in interaction recognition by a naive late fusion strategy [67]–[69], [75], [76]. But this simple walk-around lacks interaction modeling, leading to unsatisfactory performance [15]. To address the above issues in previous model design, we introduce the Interactive Spatiotemporal Tokens (ISTs), which represent interactive spatiotemporal local features for interactive skeleton sequences. The overall architecture of our proposed skeleton encoder is illustrated in Fig. 4. We JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5Notations   
+
+> �
+> SEA Permutation in S EAll Permutations
+
+Token Self-Attention (TSA) × H QKVFeed Forward (with DownSampling) Temporal Aggregation Add Multiply Positional Encoding Embedding   
+
+> ×α+B αA Learnable Factor
+> BA Learnable Bias Term
+
+Entity Rearrangement IST TSA CLS Head   
+
+> × L Prediction Skeleton Sequence
+> �SE
+> ··· Conv3D
+> BatchNorm
+> LeakyReLu IST Embedding
+> TJETJE
+> TJE
+> EwJwTwWindow as an interactive spatiotemporal token Coordinates of entity e’s joint j at moment t
+
+Interactive Spatiotemporal Tokenization (IST) 
+
+> Fig. 4. The architecture of the skeleton encoder in our proposed STAR. Given a skeleton sequence of an interaction, the skeleton backbone encoders the spatial, temporal, and interactive features simultaneously based on ISTs.
+
+delineate the tokenization approach to obtain ISTs and present the Token Self-Attention (TSA) Blocks to capture inter-token correlations. This design simultaneously models the spatial, temporal, and interactive relationships. Moreover, our method does not require priors of the adjacency matrices, offering a unified approach to model both human-robot and human-human interactions. 
+
+Interactive Spatiotemporal Tokenization. STAR employs non-overlapping 3D windows to get ISTs. A window is a tuple 
+
+W = ( Tw, J w, E w) of integers Tw, J w, E w ∈ Z+. It slides along temporal, spatial and entity dimensions, partitioning the input data in a non-overlapping manner. Therefore, the input 
+
+X ∈ RC×T ×J×E is divided into U = ⌈T /T w⌉ × ⌈ J/J w⌉ × ⌈E/E w⌉ patches in total: 
+
+XuT ,u J ,u E = ζ(X)[: , u T Tw : ( uT + 1) Tw,uJ Jw : ( uJ + 1) Jw, u E Ew : ( uE + 1) Ew], (3) 
+
+Xw = {XuT ,u J ,u E }, (4) where uT ∈ { 0, . . . , ⌈T /T w⌉− 1}, uJ ∈ { 0, . . . , ⌈J/J w⌉− 1},
+
+uE ∈ { 0, . . . , ⌈E/E w⌉ − 1}, ζ denotes padding to ensure the shape of X is dividable by W , and [:] denotes slicing. The embedding layer for ISTs can be formulated as 
+
+Xist = ψ(σ(Conv (Xw))) , (5) where ψ denotes an activation function, σ denotes a normal-ization layer, and Xist ∈ RC′×Tw ×Jw ×Ew ×U are the ISTs. 
+
+Token Self-Attention. STAR employs self-attention mecha-nism to capture inter-token relations. Self-attention scores Xhl
+
+of the h-th head in the l-th TSA Blocks are computed by 
+
+Xhl = ( α · ϕ( QhKhT
+
+q
+
+Cqkv l
+
+) + B)V h, (6) where Qh, Kh, V h are embedded from the output of the prior TSA Block, Cqkv l ∈ Z+ is the number of the attention channels, and ϕ denotes the activation function with a trainable bias term B ∈ RU ×U and a trainable balanced factor α ∈ R
+
+[108]. To avoid over-sparsity in attention maps, we implement multi-head self-attention, where all Xhl of H heads in total are concatenated to get XHl .
+
+Feed Forward Layer with Downsampling. To enable multi-scale channel capacity, we downsample the features in some certain layers of TSA Blocks. Suppose LD is denoted as the set formed by the indices of the downsampling layers, the channel number Cl+1 of the output after the l-th layer is 
+
+Cl+1 =
+
+(2 × Cl, if l ∈ LD
+
+Cl, otherwise , (7) where l indicates the current layer with input channel Cl.
+
+Temporal Aggregation. As temporal aggregation is crucial for modeling actions [15], [69], STAR adopts a 3D convolution with a temporal kernel size larger than 1 to aggregate inter-frame information in TSA Blocks. 
+
+C. Visual Interaction Encoding 
+
+To effectively align skeleton and RGB features, it is crucial to first extract meaningful interaction representations from RGB videos. Given that videos often contain task-irrelevant noise, STAR employs a strategy called Focus on Interactions (FoI) to enhance its focus on interaction-relevant regions, both spatially and temporally. Consider an RGB video of k frames 
+
+V = {vi|1 ≤ i ≤ k} recording an interaction. For spatial concentration, STAR employs a pretrained object detector 
+
+Ω to detect the interacting entities in each frame. Open-set detectors [109] can be used here by specifying names of all potential interacting entities in the scene, such as person and 
+
+robot dog . To ensure the images capture not only these entities but also the spatial context between them, STAR utilizes a simple algorithm to find the maximum square bounding box that covers all detected entities in V . As shown in Fig. 2, it gathers all detected bounding boxes of humans and robots across different time steps, represented by blue and orange rectangles, respectively. It then computes a maximum covering box, depicted as a green square. This box then crops each JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6
+
+Algorithm 1 Pseudo Code of STAR 
+
+Input: An input skeleton sequence X ∈ RC×T ×J×E with its visual representation Xv ∈ RCv . A boolean indicator η ∈{0, 1} of training phase. A symmetric group SE for the set of all permutations on X along entity dimension. A 3D sliding window (Tw, J w, E w), where Tw, J w, E w ∈ Z+.A number C′ ∈ Z+ for embedding channel. A negative slope γ ∈ R for LeakyReLu. L ∈ Z+ layers of TSA Blocks.  
+
+> 1:
+
+if η then  
+
+> 2:
+
+˜X = πX , for a random π ∈ SE 
+
+> 3:
+
+else  
+
+> 4:
+
+˜X = ϵX , where ϵ is the identity element of SE 
+
+> 5:
+
+end if  
+
+> 6:
+
+Xw = pad ( ˜X) 
+
+> 7:
+
+Xw = Xw.view (C, T w, ⌈T /T w⌉, J, ⌈J/J w⌉, E, ⌈E/E w⌉) 
+
+> 8:
+
+Xw = Conv3D (1 ×1×1) (Xw, (C, C ′))  
+
+> 9:
+
+X1 = Xist = LeakyReLu (BatchNorm3D (Xw), γ ) 
+
+> 10:
+
+for 1 ≤ l ≤ L do  
+
+> 11:
+
+Xl+1 = TSABlock l(Xl) 
+
+> 12:
+
+if l = ˆl and η then  
+
+> 13:
+
+Lalign , ˆXv = Align(mean( Xˆl+1 ), Xv ) 
+
+> 14:
+
+end if  
+
+> 15:
+
+end for  
+
+> 16:
+
+ˆY = Linear (XL+1 ) 
+
+> 17:
+
+if η then  
+
+> 18:
+
+ˆYv = Linear v ( ˆXv ) 
+
+> 19:
+
+return [ ˆY , ˆYv , Lalign ] 
+
+> 20:
+
+else  
+
+> 21:
+
+ˆYv = Linear v (mean (Xˆl+1 ))  
+
+> 22:
+
+return [ ˆY , ˆYv ] 
+
+> 23:
+
+end if 
+
+frame, serving as a spatial filter to exclude irrelevant back-ground. For temporal concentration, STAR samples frames from a trimmed segment of the video, a consecutive sequence of frames obtained by discarding random frames from both the beginning and the end of the raw video. This approach maintains key motions and apex frames crucial to interaction recognition. STAR then encodes the Region of Interest (RoI) of interactions using a pretrained vision encoder Θ. The FoI can be formulated as 
+
+Xv = Θ( δ(⊎(Ω( V )) ∩ V )) , (8) where δ represents the temporal sampling, ⊎ denotes finding the maximum covering box, and ∩ denotes intersection. 
+
+D. Multi-modal Interaction Alignment 
+
+STAR aims to enhance skeletal representations of interac-tions with multi-modal training data. To this end, we propose a multi-modal interaction alignment framework, which aligns interaction representations within a shared latent space of skeletons and visual RoI features. 
+
+Align in Shared Latent Space. To learn distinguishable interaction representations, STAR aligns multi-modal repre-sentations of interactions in a shared latent space. After the 
+
+ˆl-th TSA Block, the intermediate skeleton feature ¯Xˆl+1 ∈ R ˆC
+
+is hooked for alignment. We denote it as ˆX for simplicity. For vision feature Xv ∈ RCv after FoI, a MLP Ψ : RCv 7 → R ˆC
+
+projects it to a lower-dimensional latent space by reducing its channel dimension, which is consistent with the skeletal hidden state ˆX. This space is called a shared latent space. We denote ˆXv = Ψ( Xv ). STAR adopts a contrastive objective based on [104], [110] to align skeleton-vision positive pairs 
+
+( ˆX, ˆXv ). Firstly we define a critic ℓ(·, ·) of a given vector pair 
+
+(ai, b i) in a batch of N ∈ Z+ pairs: 
+
+ℓ(ai, b i) = d(ai, b i)
+
+τ − log( 
+
+> N
+
+X
+
+> k=1
+
+e d(ai,b k ) 
+
+> τ
+
++
+
+> N
+
+X 
+
+> j=1 (j̸=i)
+
+e d(ai,a j ) 
+
+> τ
+
+), (9) where τ ∈ R+ is the temperature and d(·, ·) is a metric. The first term measures the distance of the positive pair, while the second term weights the logarithmic total distance of all negative pairs. Then the alignment loss is formulated as the averaged score of all pair-wise critics 
+
+LAlign = 12N
+
+> N
+
+X
+
+> i=1
+
+[ℓ( ˆXi, ˆXvi ) + ℓ( ˆXvi , ˆXi)] , (10) where N ∈ Z+ is the batch size. 
+
+Refinement Head. We unlock the think-twice ability of STAR by approximating the vision feature ˆXv with the skele-ton one ˆX at inference. During training, we train a refinement head ξ(·) using pretrained vision features ˆXv as input with an auxiliary objective beforehand 
+
+LREF = − X
+
+> i
+
+Yi log(softmax( ˆYvi )) , (11) where Yi is the ground-truth, and ˆYvi is the output of the refinement head ξ(·).As skeleton-vision positive pairs ( ˆX, ˆXv ) get aligned dur-ing training, STAR then applies skeleton hidden state ˆX to estimate the potential corresponding vision feature ˆXv at inference. The output ξ( ˆX) can be used to refine the vanilla classification scores. STAR uses test-time refinement to refine the prediction logits using a convex combination: 
+
+ˆYlogits = β · softmax( ˆY ) + (1 − β) · softmax( ξ( ˆX)) , (12) where β ∈ [0 , 1] is the coefficient for the convex combination. 
+
+Training Objective. To sum up, the complete training loss function can be formulated as 
+
+L = LCLS + λ1LAlign + λ2LREF , (13) where λ1, λ 2 ∈ R+ are trade-off factors, and the first term is the classification loss for the skeleton encoder. IV. E XPERIMENTS 
+
+A. Datasets & Settings 
+
+Chico [16] is a HRI dataset recording interactions in assem-bly lines. It provides multi-view videos and 3D skeletons of 20 operators and cobots, engaging in 7 industrial collaborations. 
+
+HARPER [17] is the first dataset that depicts physical dyadic interactions between users and quadruped robots. It includes 15 categories of interactions performed by 17 human JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7                                                                                                                                                                                                               
+
+> TABLE I DETAILS OF 3D I NTERACTION RECOGNITION BENCHMARKS
+> Benchmarks 3D Skeleton Egocentric #Actions #Joints #Entities Data Source Example(s) Human Robot Chico [16] !!(Arm) %715+9 2Voxelpose surface polishing
+> HARPER [17] !!(Quadruped) !(Robot) 15 21+23 2MoCap walk+punch ,circular walk
+> NTU Mutual 11 [48] !%%11 25 ×22Kinect v2 pushing ,shaking hands
+> NTU Mutual 26 [49] !%%26 25 ×22Kinect v2 hit with object ,follow
+> TABLE II COMPARISONS WITH STATE -OF -THE -A RT METHODS ON 3D I NTERACTION RECOGNITION DATASETS
+> Methods Venue NTU Mutual 26 (%) NTU Mutual 11 (%) Chico (%) HARPER (%)
+> X-Sub X-Set X-Sub X-View IR UCD
+> Training: Pose Inference: Pose
+> CTR-GCN [67] ICCV’21 89.32 90.19 95.94 98.32 N/A N/A N/A
+> LSTM-IRN [43] TMM’22 77.70 79.60 90.50 93.50 ---
+> InfoGCN [68] CVPR’22 90.22 91.13 95.51 97.76 N/A N/A N/A
+> IGFormer [44] ECCV’22 85.40 86.50 93.60 96.50 N/A N/A N/A
+> STSA-Net [76] Neuro.’23 90.20 90.97 95.96 98.47 --78.71
+> HD-GCN [69] ICCV’23 88.25 90.08 95.58 97.93 N/A N/A N/A
+> SkeleTR [86] ICCV’23 87.80 88.30 -----
+> ISTA-Net [15] IROS’23 90.56 91.72 --83.42 77.89 79.63
+> GDCN [45] TPAMI’23 85.80 92.10 --N/A N/A N/A
+> AHNet-Large [111] PR’24 86.43 86.64 90.85 93.38 ---
+> ME-Former [47] Biomi.’24 90.84 91.33 95.37 97.60 N/A N/A N/A
+> BlockGCN [74] CVPR’24 88.40 89.84 95.05 97.11 N/A N/A N/A
+> DeGCN [73] TIP’24 90.84 90.36 95.94 97.95 N/A N/A N/A
+> CHASE+CTR-GCN [85] NeurIPS’24 91.30 92.34 96.45 98.83 N/A N/A N/A
+> me-GCN [46] THMS’25 90.00 90.00 95.50 98.20 N/A N/A N/A
+> Training: Multi-Modality Inference: Pose
+> GAP [103] ICCV’23 89.27 90.60 --N/A N/A N/A
+> MMCL [104] ACMMM’24 91.42 91.66 96.43 98.55 N/A N/A N/A
+> STAR (Ours) -92.23 92.75 96.63 99.05 84.63 78.50 81.07
+> N/A: Not applicable to heterogeneous interacting entities in human-robot interactions.
+
+subjects and a Boston Dynamics Spot, most of which involve physical contact. Notably, Chico [16] and HARPER [17] are the only two existing HRI datasets that proffer both human and robot 3D skeletons with sufficient interaction categories. 
+
+NTU Mutual 11 [48] is a well-recognized benchmark for evaluating human-human interaction recognition methods. It consists of two-person mutual actions from NTU RGB+D [48] dataset, a large-scale human activity dataset. 
+
+NTU Mutual 26 [49], similarly, is the subset of NTU RGB+D 120 [49] focusing on mutual actions. This dataset features more similar fine-grained interaction categories, e.g, 
+
+hitting with object , patting on back , pushing , punching , etc. 
+
+Settings. Details of the above datasets are listed in Table I. In our experiments, we use 3D pose sequences in joint modality (without intra-skeleton modality fusion, to ensure fair comparisons [15], [44]) and RGB videos (for alignment) in each dataset. In Chico, we follow the train/validation/test split in [16]. We pick continuous 300-frame clips with 50-frame stride in long skeleton sequences as HRI samples. Two eval-uation protocols are adopted: Interaction Recognition (IR) is to recognize different types of HRI, and Unexpected Collision Detection (UCD) is to judge whether an HRI involves at least an unexpected physical collision. In HARPER, we follow the train/test split in [17] using 30Hz pose sequences. In NTU Mutual 11, we leverage the Cross-subject (X-Sub) and Cross-view (X-View) settings [48] for evaluation, while in NTU Mutual 26, we adopt the Cross-subject (X-Sub) and Cross-set (X-Set) protocol [49]. The top-1 accuracy is adopted as the evaluation metric. Some experimental results for comparisons are from related works [15], [44], [47], [85]. 
+
+B. Implementation Details 
+
+Our experiments are conducted on 8 GeForce RTX 3080Ti GPUs. Grounding Dino [109] is employed as the default pre-trained object detector Ω. A more efficient close-set detector YOLOv5 [112] is employed for human-human interactions to accelerate processing. The default pretrained vision encoder 
+
+Θ is UniformerV2 [113]. We use mixup [114] and manifold mixup [115] strategies during training. In skeleton encoder, we adopt L = 8 , LD = {3, 5}, W = (20 , 1, 2) , and H = 3 .In multi-modal alignment, LCLS is implemented by the cross entropy with label smoothing factor 0.05. We set default ˆl = 6 ,
+
+λ1 = 0 .4, λ2 = 0 .7, and β = 0 .8. d(·, ·) is implemented by cosine similarity. SGD optimizer is used with Nesterov momentum of 0.9, a initial learning rate of 0.1 and a decay rate 0.1 at 80th, 110th, 130th, 140th epoch. Batch size is 64. With the first 5 warm-up epochs, each training process is terminated after 160 epochs. As some hyper-parameters may vary across JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8(a) Confusion Matrix (Baseline)  (b) Confusion Matrix (STAR)  (c) Comparison of Category Accuracy ( ↑)
+
+> Better
+> Worse
+> Top 3
+> Improvement
+
+Fig. 5. Confusion matrices of the baseline (a) and our proposed STAR (b). Their detailed category results (c) demonstrate that STAR effectively recognizes similar, fine-grained skeletal interactions by aligning with visual RoI of interactions, e.g., hit with object , punch/slap , and pat on back .
+
+different benchmarks, please refer to the benchmark-specific configurations in our code repository. All experiments require the type of actors to be specified in advance, as we focus on the Interaction Recognition task, following the widely accepted setting in recent works [43], [45], [46], [85]. This also ensures a fair comparison with existing approaches. 
+
+C. Quantitative Results 
+
+Table II presents the quantitative comparison of STAR with existing methods on 3D human-robot and human-human interaction recognition datasets. We categorize the baselines into (1) skeleton-based action recognition methods using a late fusion strategy [67]–[69], [73], [74], [76], (2) skeleton-based interaction recognition methods [15], [43]– [47], [85], [86], [111], and (3) action recognition methods leveraging multi-modal alignment [103], [104]. Note that most related methods cannot apply to heterogeneous entities in HRI datasets (Chico and HARPER) without modifying their architectures or defined adjacency matrices. Our proposed STAR is the first to introduce multi-modal interaction align-ment in skeleton-based interaction recognition. It outperforms these state-of-the-art methods across all benchmarks by a noticeable margin. Our method outperforms ISTA-Net [15], DeGCN [73], CHASE [85] with CTR-GCN [67] backbone, and other methods training with only skeletons, highlight-ing the effectiveness to introduce multi-modal representa-tions into modeling interactions. Specifically, ISTA-Net [15] and related methods are uni-modal, which fails to classify complicated interactions. STAR’s ability to align skeleton and vision RoI features mitigates this limitation, leading to improved performance. Additionally, we compare our method with action recognition methods using multi-modal alignment. GAP [103] leverages category-shared text descriptions in training. Similarly, MMCL [104] adopts vision-language pairs with manual written queries about the actions. Compared with these approaches, STAR achieves better interaction recognition performance by aligning skeleton and vision RoI features of spatiotemporal interactions. In NTU Mutual 26, STAR outperforms MMCL by 0.81% and 1.09% on X-Sub and X-Set criteria, respectively. This is attributed not only to our effective skeleton encoder design, but also to our learning strategy of distinguishable representations, using contrastive learning in a shared latent space of skeletons and visual interaction RoI. Baseline  STAR Case              
+
+> light
+> P&P
+> polish lift
+> Ground-Truth: light P&P (Chico)
+> Ground-Truth: lift (Chico)
+> Ground-Truth: hit with object (NTU Mutual 26)
+> punch/
+> slap
+> hit with
+> object
+> touch
+> pocket
+> Ground-Truth: touch pocket (NTU Mutual 26)
+> circular
+> walk
+> circular
+> follow
+> + crash
+> Ground-Truth: circular walk (HARPER)
+> walk
+> + stop
+> walk +
+> crash
+> frontal
+> Ground-Truth: walk + stop (HARPER)
+> heavy
+> P&P
+> pat on
+> back
+
+Fig. 6. Case visualization and analysis of difficult interaction samples. We present confusing interaction samples that make the baseline classifier produce wrong answers. They require visual cues of manipulated objects and contacting parts to be distinguished from other similar interactions. 
+
+D. Qualitative Results 
+
+Fig. 5 shows the confusion matrices and a comparison of category-level scores between the baseline [15] and our pro-posed STAR. Compared with the baseline, STAR can achieve better category-level recognition performance, e.g., hit with object (+8.17%), shoot with gun (+6.09%), and punch/slap 
+
+(+2.19%). It implies training with visual cues of interactions benefits better disambiguation. For example, this alignment framework learns from additional information such as manip-JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9(a) UMAP Visualizations of the baseline (left) and our STAR (right)  (b) Ablation on Trade-off Factors in Loss   
+
+> Fig. 7. (a) UMAP [116] visualizations of skeletal representations of interactions on the test set. Compared to the baseline (left), STAR (right) produces more compact and well-separated clusters, indicating that it learns more discriminative interaction representations. This improvement is attributed to the alignment between the skeleton hidden state and visual RoI features during training, which helps STAR better differentiate similar interaction patterns. (b) We conduct ablation on different values of the trade-off factors λ1, λ 2in our training objective.
+
+ulated objects to better recognize hit with object and shoot with gun . It also learns from exact contacting body parts in visual appearances to differentiate between similar interactions like punch/slap , pushing , pat on back , and support somebody .We note that object-related interaction categories (e.g., hit with object) show relatively lower accuracy, mainly due to the dataset’s lack of 3D keypoints for manipulated objects. This limits the contextual cues available for skeleton-only inference. We believe that incorporating 3D object keypoints would further improve our method’s performance on such categories by enabling finer-grained interaction understanding. Additionally, Fig. 6 conducts a case study of hard interaction samples. These interactions involve manipulating objects or close contact, which are confusing for the baseline method. In contrast, our proposed STAR aligns skeletal and visual representations of interactions within a shared latent space during training, facilitating the development of distinct repre-sentations. It helps the skeleton encoder to accurately classify these difficult samples at inference stage. Moreover, the UMAP [116] visualization in Fig. 7 (a) demonstrates STAR effectively learns more discriminative skeletal representations of interactions compared to the base-line. Each point in the figure corresponds to a test sample’s latent representation, color-coded by interaction class. While the baseline exhibits overlapping clusters, STAR produces clearer and more separated ones. This is attributed to our training-time alignment between skeletons and visual RoI features, which enhances the model’s ability to distinguish similar interactions using skeleton data alone at inference. 
+
+E. Ablation Study 
+
+Pretrained Vision Encoders. We benchmark different state-of-the-art pretrained vision encoders in our STAR frame-work, including image encoders (DINOv2 [117] and Sapi-ens [33]) and video encoders (VideoMAEv2 [118] and Uni-formerV2 [113]). As image encoders encode a single image instead of a multi-frame video, we test two common adapta-tions to video inputs. 1) For DINOv2 [117], we use the frame-averaged feature Xv for alignment. 2) For Sapiens [33], due to its high-resolution input requirement, we implement frame concatenation (a common practice for video action recognition task [8], [100], [104]) to construct the input image. Table III (a) suggests that video encoders outperform image encoders with the above two adaptation strategies. This interesting observation implies that complex temporal modeling ability of pretrained video encoders offers more semantically meaningful and discriminative representations. 
+
+Multi-modal Interaction Alignment. Table III (b) ablates the key components in our multi-modal interaction alignment framework. First, we replace FoI with a simple pipeline that first resizes the frames and then encodes them with vision encoders. The significant drop in accuracy highlights the importance of concentrating on the RoI of interactions in the videos. Second, we observe a substantial decline in performance when removing the alignment loss, which means STAR without multi-modal alignment. This result validates the effectiveness of our multi-modal interaction alignment framework. It also proves that it’s effective and necessary to align skeletons and RGB videos, as they provide distinct yet complementary representations of interactions from dif-ferent sources. Additionally, removing the refinement head during training results in a decrease in accuracy, indicating that STAR benefits from the visual refinement head through disambiguation of interactions in the shared latent space. The result also shows that STAR could recognize interactions better by leveraging our test-time refinement strategy. 
+
+Skeletal Interaction Modeling. We compare different ap-proaches to model skeletal interactive relations of spatiotem-poral keypoints. 1) Co-attention employs weight-shared dual-branch attention blocks for two entities [44], [46]. One branch uses entity features from another branch to query the key-value pairs of its own. 2) Late Fusion is a common practice for single-entity action recognition models when adapting to inter-active skeletons [67]–[69], [75]–[77]. This strategy means that skeletal interactions are modeled only in classification heads. 3) Channel Concat directly concatenates entity skeletons along coordinate dimension. 4) Our proposed ISTs fuse interactive features during early tokenization. Table III (c) indicates that 
+
+ISTs outperforms the alternatives by 0.47%, 1.61% and 3.02%, respectively, highlighting the superiority of ISTs to model interactive spatiotemporal features. Additionally, we validate the effectiveness of Entity Rearrangement by removing this JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 10 
+
+TABLE III ABLATION ON KEY COMPONENTS AND HYPER -PARAMETERS OF STAR Vision Encoder Input Shape Acc (%) No Alignment - 91.50 DINOv2-B [117] 1 × 224 × 224 91.52 Sapiens-0.3B [33] 1 × 1024 × 1024 91.54 VideoMAEv2-B [118] 16 × 224 × 224 91.94 
+
+UniformerV2-B [113] 8 × 224 × 224 92.23   
+
+> (A) P RETRAINED VISION ENCODERS
+
+Method Acc (%) 
+
+STAR 92.23 
+
+w/o FoI (Resize + Encode) 91.48 ↓0.75 
+
+w/o Multi-modal Alignment 91.50 ↓0.73 
+
+w/o Refinement Head 91.72 ↓0.51 
+
+w/o Test-Time Refinement 92.18 ↓0.05   
+
+> (B) M ULTI -MODAL INTERACTION ALIGNMENT
+
+Method Acc (%) 
+
+ISTs 92.23 
+
+Co-attention 91.76 ↓0.47 
+
+Late Fusion 90.62 ↓1.61 
+
+Channel Concat 89.21 ↓3.02 
+
+w/ ER 92.23 
+
+w/o ER 91.50 ↓0.73   
+
+> (C) S KELETAL INTERACTION MODELING
+
+Loss Acc (%) 
+
+Contrastive 92.23 
+
+MSE 91.76 ↓0.47 
+
+MMD 91.65 ↓0.58  
+
+> (D) A LIGNMENT LOSS
+
+Layer Param. Acc (%) 10 8.19M 92.11 ↓0.12 
+
+8 6.63M 92.23 
+
+6 5.06M 91.60 ↓0.63 
+
+4 3.50M 91.39 ↓0.84 
+
+No Alignment 6.22M 91.50 ↓0.73  
+
+> (E) E NCODER LAYERS
+
+ˆl Acc (%) 8 91.81 ↓0.42 
+
+7 91.93 ↓0.30 
+
+6 92.23 
+
+5 92.00 ↓0.23  
+
+> (F) A LIGNING BLOCK
+
+Shape Acc (%) 
+
+(20, 1, 2) 92.23 
+
+(30, 1, 2) 91.52 ↓0.71 
+
+(10, 1, 2) 90.99 ↓1.24 
+
+(20, 2, 2) 91.65 ↓0.58 
+
+(20, 1, 1) 91.46 ↓0.77  
+
+> (G) S LIDING WINDOW
+> SHAPES
+
++ Noise Acc (%) Baseline 90.06 ↓1.05 
+
+STAR 91.11 
+
++ Mask Acc (%) Baseline 91.04 ↓0.97 
+
+STAR 92.01  
+
+> (H) T EST -TIME ROBUSTNESS
+
+step. As reported in Table III (c), the accuracy score declines by 0.73% without ER, showing that ER is beneficial for preserving permutation-invariance and stabilizing backbone optimization of the backbone. 
+
+Alignment Loss. Table III (d) presents an ablation study of different alignment loss functions, comparing the contrastive objective with Mean Square Error (MSE) and Maximum Mean Discrepancy (MMD). The latter two losses have been used in several recent recognition methods requiring feature alignment [7], [68], [85]. The contrastive objective, as shown in Eq. 10, outperforms both MSE and MMD, enhancing the skeleton encoder by leveraging contrastive learning between intermediate skeleton features and vision-based ones. 
+
+Number of Skeleton Encoder Layers & Aligning Blocks. 
+
+In Table III (e), we scale the skeleton encoder by adding or removing TSA Blocks to evaluate the impact on performance. For each configuration, a TSA Block is added (or removed) at both the top and bottom of the encoder. Results indicate that 8 encoder layers achieve the best recognition accuracy, as more layers can lead to overfitting. Additionally, Table III (e) shows that our alignment strategy, specifically using a MLP 
+
+Ψ and a refinement head ξ(·), only increase the parameters by 0.41M, highlighting the efficiency. Moreover, we evaluate the performance when aligning skeleton-vision pairs after different 
+
+ˆl-th TSA Blocks. As reported in Table III (f), aligning the intermediate skeletal feature after the 6th block yields the best performance with the benefit of post-alignment modeling. 
+
+Different Window Sizes & Trade-off Factors. We evaluate the performance under various window sizes and balance factors. Table III (g) demonstrates that given a fixed number of input frames, the window size (20,1,2) leads to the optimal result. Results in Fig. 7 (b) suggest the optimal trade-off factors used in our loss function as the default setting. 
+
+Robustness of STAR. To evaluate the robustness of STAR, we intentionally corrupt the skeleton sequences with noise and masking at test time. This aims at resembling possible tracking or estimation errors during the inference phase. The noise Xn ∼ N (μ, σ 2) applied in this experiment is normally distributed with mean μ = 0 and standard deviation σ = 0 .01 .Masking strategy is randomly masking the skeleton sequences with probability pm = 0.01 . As shown in Table III (h), compared to STAR without multi-modal alignment as baseline, FoI Success Cases  FoI Failure Cases        
+
+> Raw Video Frame Interaction Raw Video Frame Interaction Raw Video Frame Interaction
+> Moving Entities Stationary Entities
+> Occlusion Occlusion
+> Partially out of frame
+> Partially out of frame + Too far apart
+
+Fig. 8. Success and failure cases in FoI. FoI succeeds in both dynamic and static interactions, and remains robust under occlusion. Failure cases are rare and typically occur when entities are partially out of frame or too far apart. 
+
+our STAR can recognize corrupted test-time skeletons more effectively, indicating its better robustness brought by learning distinguishable representations of interactions. 
+
+Success & Failure Cases of FoI. To better understand the robustness of FoI, we analyze typical success and failure cases in Fig. 8. FoI successfully captures interaction regions in a wide range of settings, including both dynamic and static entities, as well as moderate occlusion. We note that failure cases are rare, and usually involve situations where interacting entities are partially out of frame or positioned far apart. Despite their infrequency, such cases suggest possible gains in future extensions. V. C ONCLUSION 
+
+This paper presents STAR, Skeletal Token Alignment and Rearrangement for both human-robot and human-human inter-action recognition. To the best of our knowledge, our proposed approach is the first to introduce multi-modal interaction align-ment into skeleton-based interaction recognition. Specifically, STAR comprises three core components. First, a skeleton encoder leverages Entity Rearrangement and Interactive Spa-tiotemporal Tokens to capture fine-grained interdependencies. Second, Visual Interaction Encoding adopts a Focus on In-teractions strategy to attend to spatiotemporal regions critical to interaction understanding. Finally, a contrastive alignment objective bridges skeleton and visual modalities, while arefinement head further improves prediction accuracy. Experi-ments demonstrate that our STAR can achieve state-of-the-art performance across four interaction recognition datasets. Although our method assumes known actor types to ensure a controlled and comparable setting, extending it to more uncon-JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 11 
+
+strained environments is a valuable direction for future work. One potential approach is to incorporate clustering-based role assignment, where actor roles are inferred dynamically based on spatial-temporal movement patterns. Another promising direction is to adopt a multi-task learning framework that jointly performs interaction recognition and actor type clas-sification. Such extensions would improve the generalizability of our approach to open-world environments, enabling more robust and flexible interaction understanding. Moreover, we plan to explore end-to-end grounding strategies that eliminate the reliance on external detectors, aiming to further improve robustness and integration of the visual encoding process. ACKNOWLEDGMENTS 
+
+This work was supported by National Natural Science Foun-dation of China (No. 62473007), Natural Science Foundation of Guangdong Province (No. 2024A1515012089), Shenzhen Innovation in Science and Technology Foundation for The Excellent Youth Scholars (No. RCYX20231211090248064), and was in part by the Southern Marine Science and Engineering Guangdong Laboratory (Zhuhai) under Grant SML2024SP007. REFERENCES [1] P. Geng, X. Lu, W. Li, and L. Lyu, “Hierarchical aggregated graph neu-ral network for skeleton-based action recognition,” IEEE Transactions on Multimedia , pp. 1–16, 2024. [2] W. Song, T. Chu, S. Li, N. Li, A. Hao, and H. Qin, “Joints-centered spatial-temporal features fused skeleton convolution network for action recognition,” IEEE Transactions on Multimedia , vol. 26, pp. 4602– 4616, 2024. [3] H. Han, Q. Zheng, M. Luo, K. Miao, F. Tian, and Y. Chen, “Noise-tolerant learning for audio-visual action recognition,” IEEE Transac-tions on Multimedia , vol. 26, pp. 7761–7774, 2024. [4] Y. Shi, X. Wu, H. Lin, and J. Luo, “Commonsense knowledge prompt-ing for few-shot action recognition in videos,” IEEE Transactions on Multimedia , vol. 26, pp. 8395–8405, 2024. [5] Y. Hu, J. Gao, J. Dong, B. Fan, and H. Liu, “Exploring rich semantics for open-set action recognition,” IEEE Transactions on Multimedia ,vol. 26, pp. 5410–5421, 2024. [6] R. Wang, J. Liu, Q. Ke, D. Peng, and Y. Lei, “Dear-net: Learning diver-sities for skeleton-based early action recognition,” IEEE Transactions on Multimedia , vol. 25, pp. 1175–1189, 2023. [7] D. Reilly and S. Das, “Just add π! pose induced video transformers for understanding activities of daily living,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2024, pp. 18 340–18 350. [8] B. X. Yu, Y. Liu, X. Zhang, S.-h. Zhong, and K. C. Chan, “Mmnet: A model-based multimodal network for human action recognition in rgb-d videos,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 45, no. 3, pp. 3522–3538, 2023. [9] B. Zhou, P. Wang, J. Wan, Y. Liang, and F. Wang, “A unified multi-modal de- and re-coupling framework for rgb-d motion recognition,” 
+
+IEEE Transactions on Pattern Analysis and Machine Intelligence ,vol. 45, no. 10, pp. 11 428–11 442, 2023. [10] F. Ilic, H. Zhao, T. Pock, and R. P. Wildes, “Selective, interpretable and motion consistent privacy attribute obfuscation for action recognition,” in Conference on Computer Vision and Pattern Recognition (CVPR) ,2024. [11] J. Rajasegaran, G. Pavlakos, A. Kanazawa, C. Feichtenhofer, and J. Malik, “On the benefits of 3d pose and tracking for human action recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 640–649. [12] Z. Li, X. Gong, R. Song, P. Duan, J. Liu, and W. Zhang, “Smam: Self and mutual adaptive matching for skeleton-based few-shot action recognition,” IEEE Transactions on Image Processing , vol. 32, pp. 392– 402, 2023. [13] X. Yang, M.-L. Shyu, H.-Q. Yu, S.-M. Sun, N.-S. Yin, and W. Chen, “Integrating image and textual information in human–robot interactions for children with autism spectrum disorder,” IEEE Transactions on Multimedia , vol. 21, no. 3, pp. 746–759, 2019. [14] S. Jahangard, Z. Cai, S. Wen, and H. Rezatofighi, “Jrdb-social: A multifaceted robotic dataset for understanding of context and dynamics of human interactions within social groups,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024. [15] Y. Wen, Z. Tang, Y. Pang, B. Ding, and M. Liu, “Interactive spatiotem-poral token attention network for skeleton-based general interactive ac-tion recognition,” in IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2023, pp. 7886–7892. [16] A. Sampieri, G. M. D. di Melendugno, A. Avogaro, F. Cunico, F. Setti, G. Skenderi, M. Cristani, and F. Galasso, “Pose forecasting in industrial human-robot collaboration,” in Proceedings of the 17th European Conference on Computer Vision (ECCV) , 2022, pp. 51–69. [17] A. Avogaro, A. Toaiari, F. Cunico, X. Xu, H. Dafas, A. Vinciarelli, E. Li, and M. Cristani, “Exploring 3d human pose estimation and forecasting from the robot’s perspective: The harper dataset,” in 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2024. [18] J. Xie, S. Zhang, B. Xia, Z. Xiao, H. Jiang, S. Zhou, Z. Qin, and H. Chen, “Pedestrian trajectory prediction based on social interactions learning with random weights,” IEEE Transactions on Multimedia ,vol. 26, pp. 7503–7515, 2024. [19] B. Chopin, H. Tang, N. Otberdout, M. Daoudi, and N. Sebe, “Inter-action transformer for human reaction generation,” IEEE Transactions on Multimedia , vol. 25, pp. 8842–8854, 2023. [20] H. Ren, Y. ZHOU, X. LIN, Y. Huang, H. FU, J. Song, and B. Cheng, “Spikepoint: An efficient point-based spiking neural network for event cameras action recognition,” in International Conference on Learning Representations , vol. 2024, 2024, pp. 27 827–27 846. [21] N. Jiang, Z. Zhang, H. Li, X. Ma, Z. Wang, Y. Chen, T. Liu, Y. Zhu, and S. Huang, “Scaling up dynamic human-scene interaction modeling,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 1737–1747. [22] C. Plizzari, G. Goletto, A. Furnari, S. Bansal, F. Ragusa, G. M. Farinella, D. Damen, and T. Tommasi, “An outlook into the future of egocentric vision,” International Journal of Computer Vision , May 2024. [23] D. Wang, S. Xuan, and S. Zhang, “Locllm: Exploiting generalizable human keypoint localization via large language model,” in Proceed-ings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2024, pp. 614–623. [24] H. Liang, W. Zhang, W. Li, J. Yu, and L. Xu, “Intergen: Diffusion-based multi-human motion generation under complex interactions,” 
+
+International Journal of Computer Vision , pp. 1–21, 2024. [25] N. Xu, A. Liu, W. Nie, Y. Wong, F. Li, and Y. Su, “Multi-modal & multi-view & interactive benchmark dataset for human action recognition,” in Proceedings of the 23rd ACM International Conference on Multimedia (ACMMM) , ser. MM ’15, 2015, p. 1195–1198. [26] W. Zhu, X. Ma, Z. Liu, L. Liu, W. Wu, and Y. Wang, “Motionbert: A unified perspective on learning human motion representations,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 15 085–15 099. [27] F. Hong, L. Pan, Z. Cai, and Z. Liu, “Versatile multi-modal pre-training for human-centric perception,” in Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition (CVPR) , June 2022, pp. 16 156–16 166. [28] W. Chen, X. Xu, J. Jia, H. Luo, Y. Wang, F. Wang, R. Jin, and X. Sun, “Beyond appearance: A semantic controllable self-supervised learning framework for human-centric visual tasks,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 15 050–15 061. [29] S. Tang, C. Chen, Q. Xie, M. Chen, Y. Wang, Y. Ci, L. Bai, F. Zhu, H. Yang, L. Yi, R. Zhao, and W. Ouyang, “Humanbench: Towards general human-centric perception with projector assisted pretraining,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 21 970–21 982. [30] J. Yuan, X. Zhang, H. Zhou, J. Wang, Z. Qiu, Z. Shao, S. Zhang, S. Long, K. Kuang, K. Yao, J. Han, E. Ding, L. Lin, F. Wu, and J. Wang, “HAP: Structure-aware masked image modeling for human-centric perception,” in Thirty-seventh Conference on Neural Informa-tion Processing Systems (NeurIPS) , 2023. [31] Y. Ci, Y. Wang, M. Chen, S. Tang, L. Bai, F. Zhu, R. Zhao, F. Yu, D. Qi, and W. Ouyang, “Unihcp: A unified model for human-centric JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 12 
+
+perceptions,” in Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition (CVPR) , June 2023, pp. 17 840– 17 852. [32] Y. Wang, Y. Wu, W. He, X. Guo, F. Zhu, L. Bai, R. Zhao, J. Wu, T. He, W. Ouyang, and S. Tang, “Hulk: A universal knowledge translator for human-centric tasks,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 47, no. 7, pp. 5672–5689, 2025. [33] R. Khirodkar, T. Bagautdinov, J. Martinez, S. Zhaoen, A. James, P. Selednik, S. Anderson, and S. Saito, “Sapiens: Foundation for human vision models,” in Proceedings of the 18th European Conference on Computer Vision (ECCV) , 2024. [34] P. Wei, H. Sun, and N. Zheng, “Learning composite latent structures for 3d human action representation and recognition,” IEEE Transactions on Multimedia , vol. 21, no. 9, pp. 2195–2208, 2019. [35] K. Peng, C. Yin, J. Zheng, R. Liu, D. Schneider, J. Zhang, K. Yang, M. S. Sarfraz, R. Stiefelhagen, and A. Roitberg, “Navigating open set scenarios for skeleton-based action recognition,” Proceedings of the AAAI Conference on Artificial Intelligence , vol. 38, no. 5, pp. 4487– 4496, Mar. 2024. [36] S. Yang, J. Liu, S. Lu, E. M. Hwa, and A. C. Kot, “One-shot action recognition via multi-scale spatial-temporal skeleton matching,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 46, no. 7, pp. 5149–5156, 2024. [37] S. Yang, J. Liu, S. Lu, E. M. Hwa, Y. Hu, and A. C. Kot, “Self-supervised 3d action representation learning with skeleton cloud colorization,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 46, no. 1, pp. 509–524, 2024. [38] L. Wang, J. Liu, L. Zheng, T. Gedeon, and P. Koniusz, “Meet jeanie: A similarity measure for 3d skeleton sequences via temporal-viewpoint alignment,” Int. J. Comput. Vision , vol. 132, no. 9, p. 4091–4122, may 2024. [39] X. Wang, X. Xu, and Y. Mu, “Neural koopman pooling: Control-inspired temporal dynamics encoding for skeleton-based action recog-nition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 10 597–10 607. [40] H. Zhou, Q. Liu, and Y. Wang, “Learning discriminative representations for skeleton based action recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 10 608–10 617. [41] E. Ng, D. Xiang, H. Joo, and K. Grauman, “You2me: Inferring body pose in egocentric video via first and second person interactions,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2020. [42] J. Liu, A. Shahroudy, G. Wang, L.-Y. Duan, and A. C. Kot, “Skeleton-based online action prediction using scale selection network,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 42, no. 6, pp. 1453–1467, 2020. [43] M. Perez, J. Liu, and A. C. Kot, “Interaction relational network for mutual action recognition,” IEEE Transactions on Multimedia , vol. 24, pp. 366–376, 2022. [44] Y. Pang, Q. Ke, H. Rahmani, J. Bailey, and J. Liu, “Igformer: Interaction graph transformer for skeleton-based human interaction recognition,” in Proceedings of the 17th European Conference on Computer Vision (ECCV) , 2022, pp. 605–622. [45] S. Li, X. He, W. Song, A. Hao, and H. Qin, “Graph diffusion convolutional network for skeleton based semantic recognition of two-person actions,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 45, no. 7, pp. 8477–8493, 2023. [46] M. Liu, C. Chen, S. Wu, F. Meng, and H. Liu, “Learning mutual exci-tation for hand-to-hand and human-to-human interaction recognition,” 
+
+IEEE Transactions on Human-Machine Systems , pp. 1–10, 2025. [47] Q. Hu and H. Liu, “Multi-modal enhancement transformer network for skeleton-based human interaction recognition,” Biomimetics , vol. 9, no. 3, 2024. [48] A. Shahroudy, J. Liu, T.-T. Ng, and G. Wang, “Ntu rgb+d: A large scale dataset for 3d human activity analysis,” in 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , 2016, pp. 1010– 1019. [49] J. Liu, A. Shahroudy, M. Perez, G. Wang, L.-Y. Duan, and A. C. Kot, “Ntu rgb+d 120: A large-scale benchmark for 3d human activity understanding,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 42, no. 10, pp. 2684–2701, 2020. [50] J. Wang, X. Nie, Y. Xia, Y. Wu, and S.-C. Zhu, “Cross-view action modeling, learning, and recognition,” in Conference on Computer Vision and Pattern Recognition (CVPR) , 2014, p. 2649–2656. [51] C. Liu, Y. Hu, Y. Li, S. Song, and J. Liu, “Pku-mmd: A large scale benchmark for skeleton-based human action understanding,” in Pro-ceedings of the Workshop on Visual Analysis in Smart and Connected Communities , ser. VSCC ’17. New York, NY, USA: Association for Computing Machinery, 2017, p. 1–8. [52] S. Das, R. Dai, M. Koperski, L. Minciullo, L. Garattoni, F. Bremond, and G. Francesca, “Toyota smarthome: Real-world activities of daily living,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2019. [53] T. Ohkawa, K. He, F. Sener, T. Hodan, L. Tran, and C. Keskin, “Assemblyhands: Towards egocentric activity understanding via 3d hand pose estimation,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 12 999–13 008. [54] Y. Yin, C. Guo, M. Kaufmann, J. J. Zarate, J. Song, and O. Hilliges, “Hi4d: 4d instance segmentation of close human interaction,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 17 016–17 027. [55] L. Xu, X. Lv, Y. Yan, X. Jin, S. Wu, C. Xu, Y. Liu, Y. Zhou, F. Rao, X. Sheng, Y. Liu, W. Zeng, and X. Yang, “Inter-x: Towards versatile human-human interaction analysis,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) ,2024. [56] H. Liang, W. Zhang, W. Li, J. Yu, and L. Xu, “Intergen: Diffusion-based multi-human motion generation under complex interactions,” 
+
+International Journal of Computer Vision , Mar 2024. [57] W. Zhu, C. Lan, J. Xing, W. Zeng, Y. Li, L. Shen, and X. Xie, “Co-occurrence feature learning for skeleton based action recognition using regularized deep lstm networks,” in Proceedings of the Thirtieth AAAI Conference on Artificial Intelligence , ser. AAAI’16. AAAI Press, 2016, p. 3697–3703. [58] J. Liu, A. Shahroudy, D. Xu, and G. Wang, “Spatio-temporal lstm with trust gates for 3d human action recognition,” in Proceedings of the 17th European Conference on Computer Vision (ECCV) , 2016, pp. 816–833. [59] J. Liu, G. Wang, P. Hu, L.-Y. Duan, and A. C. Kot, “Global context-aware attention lstm networks for 3d action recognition,” in 2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR) ,2017, pp. 3671–3680. [60] P. Zhang, C. Lan, J. Xing, W. Zeng, J. Xue, and N. Zheng, “View adaptive recurrent neural networks for high performance human action recognition from skeleton data,” in 2017 IEEE International Confer-ence on Computer Vision (ICCV) , 2017, pp. 2136–2145. [61] J. Liu, G. Wang, L.-Y. Duan, K. Abdiyeva, and A. C. Kot, “Skeleton-based human action recognition with global context-aware attention lstm networks,” IEEE Transactions on Image Processing , vol. 27, no. 4, pp. 1586–1599, 2018. [62] P. Zhang, C. Lan, J. Xing, W. Zeng, J. Xue, and N. Zheng, “View adaptive neural networks for high performance skeleton-based human action recognition,” IEEE Transactions on Pattern Analysis and Ma-chine Intelligence , vol. 41, no. 8, pp. 1963–1978, 2019. [63] S. Yan, Y. Xiong, and D. Lin, “Spatial temporal graph convolutional networks for skeleton-based action recognition,” in Proceedings of the Thirty-Second AAAI Conference on Artificial Intelligence , ser. AAAI’18, vol. 32, no. 1, 2018, pp. 7444–7452. [64] M. Li, S. Chen, X. Chen, Y. Zhang, Y. Wang, and Q. Tian, “Actional-structural graph convolutional networks for skeleton-based action recognition,” in 2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2019, pp. 3590–3598. [65] L. Shi, Y. Zhang, J. Cheng, and H. Lu, “Two-stream adaptive graph convolutional networks for skeleton-based action recognition,” in 2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2019, pp. 12 018–12 027. [66] Z. Liu, H. Zhang, Z. Chen, Z. Wang, and W. Ouyang, “Disentangling and unifying graph convolutions for skeleton-based action recognition,” in 2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2020, pp. 140–149. [67] Y. Chen, Z. Zhang, C. Yuan, B. Li, Y. Deng, and W. Hu, “Channel-wise topology refinement graph convolution for skeleton-based action recognition,” in IEEE International Conference on Computer Vision (ICCV) , 2021, pp. 13 359–13 368. [68] H.-G. Chi, M. H. Ha, S. Chi, S. W. Lee, Q. Huang, and K. Ramani, “Infogcn: Representation learning for human skeleton-based action recognition,” in IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022, pp. 20 154–20 164. [69] J. Lee, M. Lee, D. Lee, and S. Lee, “Hierarchically decomposed graph convolutional networks for skeleton-based action recognition,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 10 444–10 453. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 13 
+
+[70] X. Hao, J. Li, Y. Guo, T. Jiang, and M. Yu, “Hypergraph neural network for skeleton-based action recognition,” IEEE Transactions on Image Processing , vol. 30, pp. 2263–2275, 2021. [71] H. Duan, J. Wang, K. Chen, and D. Lin, “Pyskl: Towards good practices for skeleton action recognition,” in Proceedings of the 30th ACM International Conference on Multimedia (ACMMM) , 2022, pp. 7351– 7354. [72] D. Liu, X. Li, Z. Cai, and P. Chen, “Tsgcnext: Dynamic-static multi-graph convolution for efficient skeleton-based action recognition,” 
+
+Expert Systems with Applications , vol. 276, p. 127081, 2025. [73] W. Myung, N. Su, J.-H. Xue, and G. Wang, “Degcn: Deformable graph convolutional networks for skeleton-based action recognition,” IEEE Transactions on Image Processing , vol. 33, pp. 2477–2490, 2024. [74] Y. Zhou, X. Yan, Z.-Q. Cheng, Y. Yan, Q. Dai, and X.-S. Hua, “Blockgcn: Redefine topology awareness for skeleton-based action recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2024, pp. 2049–2058. [75] L. Shi, Y. Zhang, J. Cheng, and H. Lu, “Decoupled spatial-temporal attention network for skeleton-based action-gesture recognition,” in 
+
+15th Asian Conference on Computer Vision (ACCV) , 2020, p. 38–53. [76] H. Qiu, B. Hou, B. Ren, and X. Zhang, “Spatio-temporal segments attention for skeleton-based action recognition,” Neurocomputing , vol. 518, pp. 30–38, 2023. [77] Y. Zhou, Z.-Q. Cheng, C. Li, Y. Geng, X. Xie, and M. Keu-per, “Hypergraph transformer for skeleton-based action recognition,” 
+
+arXiv:2211.09590 , 2022. [78] K. Zhu, R. Wang, Q. Zhao, J. Cheng, and D. Tao, “A cuboid cnn model with an attention mechanism for skeleton-based action recognition,” 
+
+IEEE Transactions on Multimedia , vol. 22, no. 11, pp. 2977–2989, 2020. [79] N. H. B. Long, “Step catformer: Spatial-temporal effective body-part cross attention transformer for skeleton-based action recognition,” 
+
+arXiv:2312.03288 , 2023. [80] Y. Mao, J. Deng, W. Zhou, Y. Fang, W. Ouyang, and H. Li, “Masked motion predictors are strong 3d action representation learners,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 10 181–10 191. [81] N. Trivedi and R. K. Sarvadevabhatla, “Psumnet: Unified modality part streams are all you need for efficient pose-based action recognition,” in Proceedings of the 17th European Conference on Computer Vision (ECCV) , 2022, p. 211–227. [82] J. Do and M. Kim, “Skateformer: Skeletal-temporal transformer for human action recognition,” in Proceedings of the 18th European Conference on Computer Vision (ECCV) , 2024. [83] M. Li and H. Leung, “Multiview skeletal interaction recognition using active joint interaction graph,” IEEE Transactions on Multimedia ,vol. 18, no. 11, pp. 2293–2302, 2016. [84] Y. Ji, G. Ye, and H. Cheng, “Interactive body part contrast mining for human interaction recognition,” in 2014 IEEE International Conference on Multimedia and Expo Workshops (ICMEW) , 2014, pp. 1–6. [85] Y. Wen, M. Liu, S. Wu, and B. Ding, “Chase: Learning convex hull adaptive shift for skeleton-based multi-entity action recognition,” in 
+
+Thirty-eighth Conference on Neural Information Processing Systems (NeurIPS) , 2024. [86] H. Duan, M. Xu, B. Shuai, D. Modolo, Z. Tu, J. Tighe, and A. Bergamo, “Skeletr: Towards skeleton-based action recognition in the wild,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 13 634–13 644. [87] F. Sener, D. Chatterjee, D. Shelepov, K. He, D. Singhania, R. Wang, and A. Yao, “Assembly101: A large-scale multi-view video dataset for understanding procedural activities,” in 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022, pp. 21 064– 21 074. [88] Y. Wen, H. Pan, L. Yang, J. Pan, T. Komura, and W. Wang, “Hi-erarchical temporal transformer for 3d hand pose estimation and action recognition from egocentric rgb videos,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 21 243–21 253. [89] T. Kwon, B. Tekin, J. St¨ uhmer, F. Bogo, and M. Pollefeys, “H2o: Two hands manipulating objects for first person interaction recognition,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2021, pp. 10 138–10 148. [90] B. Tekin, F. Bogo, and M. Pollefeys, “H+o: Unified egocentric recog-nition of 3d hand-object poses and interactions,” in 2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) ,2019, pp. 4506–4515. [91] M. S. Shamil, D. Chatterjee, F. Sener, S. Ma, and A. Yao, “On the utility of 3d hand poses for action recognition,” in Proceedings of the 18th European Conference on Computer Vision (ECCV) , 2024. [92] H. Cho, C. Kim, J. Kim, S. Lee, E. Ismayilzada, and S. Baek, “Transformer-based unified recognition of two hands manipulating objects,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 4769–4778. [93] W. Mucha and M. Kampel, “In my perspective, in my hands: Accurate egocentric 2d hand pose and action recognition,” in 2024 IEEE 18th International Conference on Automatic Face and Gesture Recognition (FG) . IEEE, 2024, pp. 1–9. [94] F. Guo, T. Jin, S. Zhu, X. Xi, W. Wang, Q. Meng, W. Song, and J. Zhu, “B2c-afm: Bi-directional co-temporal and cross-spatial attention fusion model for human action recognition,” IEEE Transactions on Image Processing , vol. 32, pp. 4989–5003, 2023. [95] S. Kim, D. Ahn, and B. C. Ko, “Cross-modal learning with 3d deformable attention for action recognition,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) ,October 2023, pp. 10 265–10 275. [96] S. Das, R. Dai, D. Yang, and F. Bremond, “Vpn++: Rethinking video-pose embeddings for understanding activities of daily living,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 44, no. 12, pp. 9703–9717, 2022. [97] H. Duan, Y. Zhao, K. Chen, D. Lin, and B. Dai, “Revisiting skeleton-based action recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2022, pp. 2969–2978. [98] D. Ahn, S. Kim, H. Hong, and B. Chul Ko, “Star-transformer: A spatio-temporal cross attention transformer for human action recognition,” in IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , 2023, pp. 3319–3328. [99] K. Shah, A. Shah, C. P. Lau, C. M. de Melo, and R. Chellappa, “Multi-view action recognition using contrastive learning,” in Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , January 2023, pp. 3381–3391. [100] J. Liu, R. Ding, Y. Wen, N. Dai, F. Meng, F.-L. Zhang, S. Zhao, and M. Liu, “Explore human parsing modality for action recognition,” CAAI Transactions on Intelligence Technology , 2024. [101] Q. Cheng, J. Cheng, Z. Liu, Z. Ren, and J. Liu, “A dense-sparse complementary network for human action recognition based on rgb and skeleton modalities,” Expert Systems with Applications , vol. 244, p. 123061, 2024. [102] H. Xu, Y. Gao, Z. Hui, J. Li, and X. Gao, “Language knowledge-assisted representation learning for skeleton-based action recognition,” 
+
+IEEE Transactions on Multimedia , vol. 27, pp. 5784–5799, 2025. [103] W. Xiang, C. Li, Y. Zhou, B. Wang, and L. Zhang, “Generative action description prompts for skeleton-based action recognition,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 10 276–10 285. [104] J. Liu, C. Chen, and M. Liu, “Multi-modality co-learning for efficient skeleton-based action recognition,” in Proceedings of the ACM Multi-media (ACM MM) , 2024. [105] X. Wang, L. Zhu, H. Wang, and Y. Yang, “Interactive prototype learning for egocentric action recognition,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2021, pp. 8168–8177. [106] Y. Chen, T. He, J. Fu, L. Wang, J. Guo, T. Hu, and H. Cheng, “Vision-language meets the skeleton: Progressively distillation with cross-modal knowledge for 3d action representation learning,” IEEE Transactions on Multimedia , vol. 27, pp. 2293–2303, 2025. [107] S. Chen, E. Dobriban, and J. H. Lee, “A group-theoretic framework for data augmentation,” Journal of Machine Learning Research , vol. 21, no. 245, pp. 1–71, 2020. [108] J. Ramapuram, F. Danieli, E. G. Dhekane, F. Weers, D. Busbridge, P. Ablin, T. Likhomanenko, J. Digani, Z. Gu, A. Shidani, and R. Webb, “Theory, analysis, and best practices for sigmoid self-attention,” in 
+
+International Conference on Learning Representations , vol. 2025, 2025, pp. 65 464–65 519. [109] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang, J. Yang, Q. Jiang, C. Li, J. Yang, H. Su, J. Zhu, and L. Zhang, “Grounding dino: Marrying dino with grounded pre-training for open-set object detection,” in 
+
+Proceedings of the 18th European Conference on Computer Vision (ECCV) , 2024. [110] Y. Zhu, Y. Xu, F. Yu, Q. Liu, S. Wu, and L. Wang, “Deep graph contrastive representation learning,” arXiv preprint arXiv:2006.04131 ,2020. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 14 
+
+[111] G. Wang, M. Liu, H. Liu, P. Guo, T. Wang, J. Guo, and R. Fan, “Augmented skeleton sequences with hypergraph network for self-supervised group activity recognition,” Pattern Recognition , vol. 152, p. 110478, 2024. [112] G. Jocher, “Ultralytics yolov5,” 2020. [Online]. Available: https: //github.com/ultralytics/yolov5 [113] K. Li, Y. Wang, Y. He, Y. Li, Y. Wang, L. Wang, and Y. Qiao, “Uniformerv2: Unlocking the potential of image vits for video under-standing,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2023, pp. 1632–1643. [114] H. Zhang, M. Cisse, Y. N. Dauphin, and D. Lopez-Paz, “mixup: Beyond empirical risk minimization,” in Proceedings of the 35th International Conference on Learning Representations (ICLR) , 2018, pp. 2866–2878. [115] V. Verma, A. Lamb, C. Beckham, A. Najafi, I. Mitliagkas, D. Lopez-Paz, and Y. Bengio, “Manifold mixup: Better representations by interpolating hidden states,” in Proceedings of the 36th International Conference on Machine Learning , ser. Proceedings of Machine Learn-ing Research, vol. 97. Long Beach, California, USA: PMLR, 09–15 Jun 2019, pp. 6438–6447. [116] L. McInnes, J. Healy, N. Saul, and L. Grossberger, “Umap: Uniform manifold approximation and projection,” The Journal of Open Source Software , vol. 3, no. 29, p. 861, 2018. [117] M. Oquab, T. Darcet, T. Moutakanni, H. Vo, M. Szafraniec, V. Khali-dov, P. Fernandez, D. Haziza, F. Massa, A. El-Nouby et al. , “Dinov2: Learning robust visual features without supervision,” Transactions on Machine Learning Research Journal , pp. 1–31, 2024. [118] L. Wang, B. Huang, Z. Zhao, Z. Tong, Y. He, Y. Wang, Y. Wang, and Y. Qiao, “Videomae v2: Scaling video masked autoencoders with dual masking,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , June 2023, pp. 14 549–14 560.

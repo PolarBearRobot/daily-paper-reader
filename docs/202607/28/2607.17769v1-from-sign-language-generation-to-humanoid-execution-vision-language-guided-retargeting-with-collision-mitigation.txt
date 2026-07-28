@@ -1,0 +1,277 @@
+Title: From Sign Language Generation to Humanoid Execution: Vision-Language Guided Retargeting with Collision Mitigation
+
+URL Source: https://arxiv.org/pdf/2607.17769v1
+
+Published Time: Tue, 21 Jul 2026 01:43:16 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# From Sign Language Generation to Humanoid Execution: Vision–Language Guided Retargeting with Collision Mitigation 
+
+Nabeela Khan 1,2, Bowen Wu 2,3, Runwu Shi 1, Benjamin Yen 4,1, Takeshi Ashizawa 1,Carlos Toshinori Ishi 2,3, Takashi Minato 2,3 and Kazuhiro Nakadai 1
+
+Abstract — Recent sign language generation (SLG) systems increasingly output dense 3D body representations, which better preserve full-body kinematics and geometry for downstream embodiment on humanoid robots. However, these generated motions frequently exhibit self-intersections such as hand–hand and hand–torso penetration. While such artifacts may be tolerated in offline rendering, they become critical in humanoid execution as they lead to infeasible inverse-kinematics (IK) solutions, collisions, and unstable retargeted trajectories. We present a system-level framework that bridges SLG outputs to humanoid joint-space execution via two components. First, we introduce a volumetric SMPL-X collision-mitigation module that projects generated signing motions toward physically plau-sible configurations while minimally deviating from the orig-inal trajectory. Second, we propose a vision–language–guided retargeting algorithm built on an IK backbone: a VLM serves as a visual critic over rendered humanoid motion, identifies embodiment-specific failure modes, and triggers targeted task-space corrections. Our results highlight collision handling and perception-guided refinement as key missing components for reliable humanoid signing. 
+
+I. INTRODUCTION Sign language (SL) is a primary communication modality for Deaf and Hard-of-Hearing (DHH) communities[1], and enabling robots to express SL offers a direct path toward accessible human–robot communication in public spaces, service contexts, and assistive interaction [2], [3]. While sign language processing has advanced rapidly in recognition and translation, sign language generation (SLG)[4], the synthesis of sign motions from spoken or written language remains challenging, particularly when moving from offline anima-tion to physical embodiment on a humanoid platform. Recent SLG models increasingly aim to produce full-body 3D motion rather than sparse upper-body keypoints [5]. Dense human-body representations such as SMPL-X [6] are attractive because they encode whole-body kinemat-ics and a coherent body surface, enabling consistent joint  
+
+> This paper has been accepted for presentation at the 2026 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS 2026). *This work was supported in part by JST Moonshot R&D under Grant JPMJMS2011, JSPS KAKENHI Grant No. 26H02525, and ROIS NII Open Collaborative Research 2026-261S04-24183.
+> 1Department of Systems and Control Engineering, Institute of Science Tokyo, Tokyo, Japan
+
+nabeela@ra.sc.e.titech.ac.jp 
+
+> 2RIKEN Guardian Robot Project, Kyoto, Japan
+> 3ATR Hiroshi Ishiguro Laboratories, Kyoto, Japan
+> 4RIKEN Center for Biosystems Dynamics Research, Kobe, Japan © 2026 IEEE. Personal use of this material is permitted. Permission from IEEE must be obtained for all other uses, including reprinting/republishing this material for advertising or promotional purposes, creating new collective works for resale or redistribution to servers or lists, or reuse of any copyrighted component of this work in other works.
+
+coordination, more realistic articulation, and downstream embodiment pipelines that require explicit geometry. In contrast, sparse skeletons often discard surface information that is critical when transferring motion to a robot, where feasibility depends on collisions, joint limits, and realistic limb trajectories. This shift toward dense representations, therefore, brings SLG closer to physical execution, but it also exposes a gap that is easy to overlook in purely visual evaluation. A key failure mode is self-collision, including hand–hand and hand–torso interpenetration, which appears frequently in generated sign motions. In offline rendering, mild penetration may be visually tolerable or may pass unnoticed under typi-cal qualitative inspection. For humanoid execution, however, self-collision becomes a first-order constraint: penetrations can yield infeasible inverse-kinematics (IK) solutions, force discontinuous corrections, and induce collision events or un-stable control after retargeting [7]. Importantly, these artifacts are not merely a “retargeting problem.” They often originate upstream in SLG due to imperfect motion priors and learning objectives that do not explicitly enforce physical plausibility. As a result, even a strong retargeting backbone can inherit penetrations and amplify them into execution failures. At the same time, retargeting SL motion to humanoids is underexplored compared to retargeting for locomotion, whole-body imitation, or generic tracking. Existing hu-manoid retargeting pipelines typically prioritize reproducing reference kinematics under robot constraints[8], but SL in-troduces additional challenges: meaning depends on subtle hand trajectories, relative placement in signing space, and coordination between torso and arms. A retargeter must therefore balance constraint satisfaction (joint limits, colli-sions) with motion fidelity to preserve communicative intent. This makes SLG-to-humanoid retargeting a distinct robotics problem rather than a straightforward reuse of animation retargeting tools. A natural alternative to retargeting generated motion would be a precomputed dictionary of collision-free, robot-specific sign trajectories that are stitched together at runtime. However, SLs are productive rather than a fixed inventory of isolated tokens: the realization of a sign varies with sen-tence context through spatial referencing, coarticulation with neighboring signs, and grammatical use of the signing space, so continuous signing cannot in general be reproduced by concatenating canonical dictionary entries without degrading naturalness and meaning. Moreover, a trajectory dictionary is tied to a specific embodiment and must be re-authored arXiv:2607.17769v1 [cs.RO] 20 Jul 2026 for every robot morphology, whereas SLG models already produce open-vocabulary, context-dependent motion in ashared human-body representation. A generative retargeting pipeline therefore scales across sentences and platforms; conversely, our framework can itself be used as an automated offline tool for constructing validated, robot-specific sign trajectory libraries where a fixed vocabulary suffices. In this work, we address this gap with a framework that converts generated sign motions to humanoid joint trajectories through two complementary components: acollision-mitigation module based on volumetric SMPL-X self-intersection modeling [9], which projects the generated motion toward physically plausible configurations while con-straining deviation from the original trajectory and main-taining temporal smoothness; and a vision–language model (VLM) guided retargeting algorithm built on an IK backbone, in which the VLM acts as a visual critic on rendered humanoid motion and triggers targeted task-space corrections through a small set of interpretable primitives. Our primary contribution is system-level: rather than proposing a new motion-generation algorithm, we identify the failure modes that arise specifically at the point of physical embodiment and integrate collision mitigation and perception-guided refinement into a unified, practical SLG-to-humanoid pipeline. We summarize our contributions as follows:  
+
+> •
+
+We formulate SLG-to-humanoid transfer as an embod-iment pipeline in which geometric artifacts inherited from generated SMPL-X motion must be resolved before robot retargeting, and instantiate this with a volumetric SMPL-X collision-mitigation module with trajectory-preserving and temporal smoothness regular-ization.  
+
+> •
+
+We introduce an IK-based retargeting pipeline aug-mented with a VLM visual critic that identifies failure modes from rendered humanoid motion and triggers targeted corrective primitives. II. R ELATED WORK 
+
+A. Sign Language Generation 
+
+Early SLG research largely relied on glosses 0 as an intermediate representation, following a text →gloss →pose (or video) pipeline [10], [11], [12], [13], [14], [15], [16], [17], [18]. These systems were commonly assessed with keypoint-or pose-based metrics and qualitative visual inspection [19], [20]. More recent work has pushed toward end-to-end, gloss-free SLG and toward 3D body representations that better capture full-body coordination and signing-space geometry [21], [22], [23]. In particular, approaches that predict dense 3D human-body motion (e.g., SMPL/SMPL-X pose parame-ters or mesh-consistent kinematics) are increasingly attractive for downstream embodiment because they provide a coherent articulation model and an explicit body surface that can be rendered or transferred to other embodiments [24], [25]. 
+
+> 0A gloss is a label representing an isolated sign, often used as an intermediate symbolic representation.
+
+Despite this progress, most SLG work still evaluates outputs primarily in the avatar rendering domain, where geometric artifacts, such as mild self-interpenetration or near-contacts, may not be penalized by standard metrics (Sec. I). Our work complements SLG by addressing this gap: we treat SLG as an upstream generator and focus on the missing embodiment layer needed for reliable humanoid execution. 
+
+B. Self-Collision 
+
+Self-collision has long been recognized as a fundamental challenge in articulated human motion synthesis and charac-ter animation [9]. In graphics and vision, collision handling is commonly addressed using geometric penalties, signed dis-tance fields (SDFs), capsule/primitive-based approximations, or volumetric/implicit representations that enable differen-tiable intersection tests and gradient-based correction [6], [26], [27], [28], [29]. In learning-based motion generation, collision artifacts are especially common when objectives prioritize reconstruction or realism without explicit physical constraints, and when the model must resolve one-to-many motion realizations. As noted in Sec. I, such penetrations directly compromise downstream robot execution [30]. Related observations also arise in humanoid retargeting, where imperfect tracking, scal-ing, or embodiment mismatch can introduce self-penetration and physically infeasible configurations [7]. These issues are particularly acute for SL motions, which frequently involve rapid bimanual interactions close to the torso. Motivated by this gap between visually plausible motion and robot-executable motion, we introduce a lightweight collision-mitigation module for SLG outputs using a volumetric self-intersection formulation (SMPL-X-based) that projects motions toward physically plausible configurations while limiting deviation from the original signing trajectory. 
+
+C. VLM-Guided Humanoid Retargeting 
+
+Humanoid signing has been explored as an assistive capa-bility in human–robot interaction, but deploying sign motions on physical robots remains challenging due to embodiment constraints and the need for reliable motion transfer from human/avatar representations [2]. A key technical bottle-neck is the gap between human/avatar motion and robot-executable motion: humanoid robots must satisfy kinematic limits, joint couplings, link geometry, collision constraints, and reachable workspace, and therefore require dedicated retargeting and control mechanisms. Recent work has begun integrating these components into end-to-end sign-language-centered pipelines. For instance, SignBot [2] includes motion retargeting to robot kinematics and reports simulation and real-robot experiments across multiple robots/datasets. In parallel, the broader robotics community has started lever-aging vision–language models (VLMs) as perceptual and commonsense critics for embodied behavior. Recent methods show that VLMs can evaluate rendered or camera observa-tions, detect failure modes that are difficult to specify as analytic costs, and provide corrective guidance for planning or control [31], [32]. In the context of humanoid motion, such approaches suggest a practical mechanism to refine motions toward better alignment with high-level intent while respect-ing embodiment constraints [8]. However, directly adopt-ing language-to-humanoid motion pipelines is non-trivial for sign language. Many VLM-guided motion refinement approaches assume access to motion-centric text supervision or detailed motion descriptions [8], whereas standard SL datasets typically provide spoken-language sentences paired with signing motion without explicit action descriptions (e.g., “raise right hand to chest and rotate wrist”). This mismatch motivates VLM-guided retargeting formulations that rely on 
+
+visual feedback rather than motion-description supervision. Our work follows this emerging direction by using a VLM to critique rendered humanoid signing motion and propose targeted task-space corrections, enabling refinement under robot feasibility constraints. III. M ETHOD 
+
+A. Problem Definition and Overview 
+
+Given a generated signing motion represented as an SMPL-X axis–angle pose sequence x(0) ∈ RT ×132 , our goal is to produce a humanoid joint trajectory q1: T that (i) is fea-sible under the robot’s kinematic and geometric constraints (e.g., joint limits and collision checking) and (ii) preserves the communicative intent of the original signing motion. Our pipeline consists of two stages aligned with these objectives: (1) collision mitigation in the SMPL-X domain to remove hand–hand and hand–torso interpenetrations that commonly arise in SLG outputs; and (2) humanoid retargeting using an IK backbone augmented with a VLM-guided refinement loop that iteratively corrects perceptually salient embodiment mismatches via interpretable task-space control primitives. This separation is intentional: collision mitigation addresses a systematic physical failure mode inherited from SLG, while VLM-guided refinement targets residual semantic/geometric discrepancies introduced by embodiment differences and IK approximation. 
+
+B. Self-Collision Mitigation via VolumetricSMPL-X 
+
+As discussed in Sec. I, self-penetrations are a common artifact of generators trained without explicit geometric constraints. To obtain robot-executable motion, we explic-itly penalize self-intersections using VolumetricSMPL-X [9], which augments SMPL/SMPL-X with differentiable signed-distance-field (SDF) queries and collision-related losses. 
+
+Volumetric body model. Given a pose sequence x ∈
+
+RT ×132 , we instantiate an SMPL-X model and attach vol-umetric functionality using VolumetricSMPL-X [9]. This enables evaluating a differentiable self-collision objective, which penalizes surface points that penetrate the volume of other body parts: 
+
+Lcol (x) = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+X
+
+> v∈V t
+
+max  0, −f  v; xt
+
+ 2, (1) where f (· ; xt) denotes the differentiable signed-distance field induced by VolumetricSMPL-X for the body posed at frame t, and Vt is the set of query points sampled on the posed body surface, with each point evaluated against the SDF of the body parts it does not belong to. Negative signed distances correspond to interpenetration, so the loss is zero for collision-free configurations and grows quadrat-ically with penetration depth, providing smooth gradients for correction. We use the loss implementation provided by VolumetricSMPL-X [9]. 
+
+Test-time collision correction by constrained optimiza-tion. We apply collision correction as a lightweight post-processing step on generated sequences. Starting from the generator output x(0) , we optimize a corrected sequence x
+
+using Adam [33] while restricting updates to a subset of pose dimensions. This masking prevents global drift and keeps unaffected joints unchanged: 
+
+xeff = x(0) + M ⊙ (x − x(0) ), (2) where M ∈ { 0, 1}T ×132 is a binary mask selecting optimiz-able dimensions. We minimize a weighted sum of (i) volumetric self-collision, (ii) a closeness prior to preserve the original motion, and (iii) a temporal smoothness term based on acceleration: 
+
+min  
+
+> x
+
+λcol Lcol (xeff ) + λclose ∥xeff −x(0) ∥22 + λsmooth ∥∆2xeff ∥22,
+
+(3) where ∆2xt = xt+1 − 2xt + xt−1 denotes discrete acceler-ation. 
+
+C. IK Retargeting with VLM-Guided Refinement 
+
+Figure 1 summarizes our retargeting pipeline, which con-sists of (1) shape optimization to align the SMPL-X body to the target robot embodiment, (2) IK-based retargeting to obtain a feasible joint trajectory, and (3) VLM-guided refinement in a closed loop. 
+
+Shape optimization (SMPL-X to robot embodiment). 
+
+A major source of retargeting error is the mismatch between the human body shape assumed by SMPL-X and the physical dimensions of the target robot (e.g., link lengths and joint locations). To reduce this mismatch, we perform a shape fitting step that aligns an SMPL-X template to the robot’s kinematic structure using T-pose correspondences. Let Jrob ∈
+
+RK×3 denote a set of robot joint locations in a canonical T-pose (e.g., shoulders, elbows, wrists), and let Jsmplx (β) ∈
+
+RK×3 denote the corresponding SMPL-X joints produced by the model as a function of SMPL-X shape parameters 
+
+β (with all pose parameters fixed to the canonical SMPL-X T-pose). We optimize β to match these joints by minimizing: 
+
+min  
+
+> β
+
+Lshape (β) = 
+
+> K
+
+X
+
+> k=1
+
+wk Jsmplx  
+
+> k
+
+(β) − Jrob 
+
+> k
+> 22
+
++ λβ ∥β∥22,
+
+(4) where wk are optional joint weights (e.g., emphasizing upper-body joints relevant to signing) and λβ regularizes the shape parameters. We solve Eq. (4) using the Adam optimizer. Figure 1(b) visualizes the alignment effect. 
+
+IK-based retargeting. After shape alignment, we retar-get the SMPL-X motion to the robot by solving inverse T-poses     
+
+> Shape
+> Optimization
+> Vision -Language
+> Model (VLM)
+> IK -Based
+> Retargeting
+> VLM -Refinement VLM -Judgment (a) Pipeline overview.
+> (b) Shape optimization (SMPL-X vs. robot joints).
+
+Fig. 1: Overview of the proposed pipeline VLM-guided retargeting. (a) A generated SMPL-X signing sequence is first corrected by an offline volumetric self-collision mit-igation stage, then retargeted to the humanoid with IK. The resulting robot-rendered motion is compared against the reference SMPL-X motion by a vision–language model (VLM), which identifies embodiment-specific failures and proposes interpretable task-space correction primitives (e.g., wrist position or yaw adjustments), after which IK is re-solved. (b) Shape optimization used to align the SMPL-X template to the target robot embodiment before motion retargeting. kinematics (IK) over time. Given per-frame SMPL-X targets (e.g., wrist positions and orientations in the aligned body frame), IK computes a robot joint trajectory q1: T that best satisfies these targets while respecting joint limits, and we additionally perform robot-geometry collision checking (and other constraints when available, e.g., velocity limits). This produces a physically feasible motion, but it can still deviate from the intended signing due to embodiment differences and IK approximation errors. 
+
+VLM-guided refinement loop. To further close the se-mantic and geometric gap, we introduce a VLM-based refinement loop that iteratively edits the retargeted motion. At each iteration, we render (i) a reference video from the original SMPL-X motion (ground truth in our pipeline) and (ii) a robot-rendered video produced by IK retargeting. We provide both videos (or corresponding frame sequences) to a vision–language model (VLM) for comparison , and the VLM acts as a judgment agent that assesses whether the robot motion matches the reference motion sufficiently. 
+
+Control primitives for interpretable edits. Directly ask-ing the VLM to edit robot joint angles is ineffective, because the mapping from joint configurations to perceived motion is non-intuitive. Instead, we define a small set of control primitives that operate in task space on the end-effectors (wrists), allowing the VLM to propose interpretable adjust-ments while the IK solver maintains feasibility. Unless stated otherwise, offsets are defined in a fixed robot coordinate frame (e.g., the robot base frame or a torso-aligned frame), and applied to the target wrist trajectories before re-solving IK. We separate primitives into (i) position primitives and (ii) orientation primitives:  
+
+> •
+
+Position primitives :
+
+– move left up : move the left wrist position by 
+
++10 cm along the robot’s +y direction. 
+
+– move left down , move right up ,
+
+move right down , move left in ,
+
+move left out , etc.  
+
+> •
+
+Orientation primitives :
+
+– left yaw in : rotate the left wrist yaw inward by 
+
++20 ◦.
+
+– left yaw out , right yaw in ,
+
+right yaw out , etc. A single refinement step is represented as a structured action list (e.g., JSON-like), which the VLM can compose by selecting multiple primitives: 
+
+"primitives positions" : [ "move left up" ],
+
+"primitives orientation" : [ "left yaw in" ].
+
+(5) 
+
+Iterative refinement procedure. Given the primitive ac-tions from Eq. (5), we apply the corresponding task-space offsets to the target wrist trajectories, re-run IK retargeting to obtain an updated robot motion, and render a new video. This updated video is then fed back to the VLM judgment agent for re-evaluation. We repeat this process until the judg-ment agent confirms that the retargeted motion sufficiently aligns with the reference SMPL-X motion, or a maximum number of refinement rounds is reached. In practice, this loop provides a practical interface for VLM-driven motion correction while maintaining robot feasibility through the IK solver. 
+
+Deployment scope: offline pre-computation. The full pipeline, including collision mitigation and the VLM refine-ment loop, is designed as an offline pre-processing stage rather than a real-time controller. Given the inference latency of current VLMs and the iterative render–critique–re-solve structure of the loop, we envision the pipeline being run once per sentence or per sign inventory to produce validated, robot-specific joint trajectories; at interaction time, the robot executes these pre-computed trajectories with a conventional real-time controller. VLM latency therefore does not lie on the live human–robot interaction path. Enabling online refinement, e.g., through learned approximations of the critic, is left to future work (Sec. VI). IV. E XPERIMENTS 
+
+A. Experimental Setup 
+
+We conduct experiments on the widely used SL bench-mark dataset CSL-Daily [34], a large-scale Chinese Sign Language dataset with paired spoken-language sentences and sign videos from daily conversations (18K training, 1K validation, 2K test). For all experiments, we represent signing as SMPL-X pose sequences and use the curated preprocessing released by [24], which provides SMPL-X motion features with 6D rotations and 10 shape parameters. For collision mitigation, we optimize the generated SMPL-X pose parameters at test time using VolumetricSMPL-X [9] and minimize Eq. 3 with Adam (learning rate 1 × 10 −2,500 steps). The collision-mitigation stage is applied offline to each generated sequence before retargeting (cf. Sec. III-C). Unless stated otherwise, we optimize hand pose parameters, set λcol =50 , and use regularization weights λclose =1 × 10 −4
+
+and λsmooth =1 × 10 −4; we report an ablation over these regularizers in Table II. All results are computed on the same evaluation protocol described in Sec. V-A, and runtimes are reported per sequence. For VLM-based refinement, we use GPT-5.2 as the vision-language model with a fixed cri-tique prompt to compare rendered humanoid motions against the SMPL-X reference and propose corrective task-space primitives. In all experiments, we perform two refinement iterations; empirically, we observed that two rounds were often sufficient to correct the main visible embodiment-induced deviations. 
+
+B. Evaluation Metrics 
+
+We evaluate collision mitigation using the following met-rics computed for each generated pose sequence. Collision energy (Lcol ) is the VolumetricSMPL-X self-intersection loss (Eq. 1); we report its Before and After values aggregated across sequences (mean/median). Improved sequences (%) 
+
+(Succ. ) denotes the fraction of sequences for which the final collision energy is lower than the initial one, i.e., Lafter col <
+
+Lbefore col . Collision reduction (%) (Red. ) is computed per sequence as Lbefore col −L after col   
+
+> |L before col |+ϵ
+
+× 100 (with a small ϵ for numerical stability), and we report its median across sequences. To quantify motion preservation, we report Pose MSE , the mean-squared difference between the corrected and original pose parameters, 1
+
+> T
+
+PTt=1 ∥xt − x(0)  
+
+> t
+
+∥22. To quantify temporal smoothness, we report ∆Accel MSE , the change in mean squared acceleration before vs. after correction, where ac-celeration is the discrete second-order difference ∆2xt =
+
+xt+1 − 2xt + xt−1; lower values indicate less added jitter. TABLE I: Collision mitigation results. Lower is better for collision energy and distortion metrics; runtime is reported per sequence.                 
+
+> Metric Before After Collision energy (mean) 3.52 0.94 Collision energy (median) 0.82 0.71 Improved sequences (%) 8/9 (88.9%) Collision reduction (median) 21.66% Collision reduction (mean) 31.93% Pose MSE vs. original (median) 6.80 ×10 −4
+> ∆Accel MSE (median) +5.71 ×10 −3
+> Runtime per sequence (mean) 521.7 s Self -collision corrected Generated
+
+Fig. 2: Qualitative results for self-collision correction. 
+
+Left: raw generated pose exhibiting hand–hand interpene-tration (zoomed inset). Right: result after VolumetricSMPL-X-based optimization, which reduces self-collision while preserving the overall signing configuration. Finally, Time (s) reports the wall-clock runtime per sequence for the optimization procedure (averaged over sequences). V. R ESULTS AND DISCUSSION 
+
+A. Quantitative Results 
+
+Table I reports quantitative results for our collision mit-igation module. We report collision energy before/after op-timization, the fraction of sequences that improve (final <
+
+initial), the median collision reduction percentage, and distor-tion/smoothness proxies (pose MSE relative to the original motion and the change in acceleration MSE). Runtime is reported per sequence. The mean runtime of 521.7 s per sequence reflects the offline nature of this stage (Sec. III-C). Our goal in this paper is to establish that collision mitigation materially improves the quality of motions before retargeting to a humanoid. 
+
+B. Qualitative Analysis 
+
+Self-Collision Correction 
+
+Figure 2 illustrates the effect of our volumetric self-collision correction on a representative generated sequence. The left panel shows the raw generated signing pose, where the hands exhibit clear interpenetration during a bimanual interaction (highlighted in the zoomed inset). Such artifacts are common in SLG because many signs require fast, tightly coupled hand–hand or hand–body motions, while pose-space generators typically do not enforce volumetric consistency. After applying our VolumetricSMPL-X-based optimiza-tion (right panel), the penetration is substantially reduced He is my classmate. 
+
+> IK -Based Retargeting VLM -Based
+> Retargeting
+> Ground truth
+
+Fig. 3: Qualitative comparison of humanoid retargeting for the sentence “He is my classmate.” Top: reference SMPL-X motion. Middle: IK-only retargeting, which is kinematically feasible but exhibits embodiment-induced de-viation, including hand drift away from the intended signing region and mismatched wrist orientation relative to the refer-ence motion. Bottom: VLM-refined retargeting after applying corrective task-space primitives, yielding a humanoid motion that more closely matches the reference sign realization. while the overall signing configuration is preserved. The correction primarily adjusts local relative hand placement and wrist orientation to remove self-intersection, rather than introducing large global changes in upper-body posture. This qualitative behavior is consistent with our quantitative results (Table I), which show collision reduction with lim-ited trajectory distortion. Reducing such interpenetrations is particularly important for downstream humanoid execution, where they can lead to infeasible IK targets and unsafe motions. 
+
+VLM-Based Retargeting 
+
+Figure 3 visualizes the effect of our VLM-based retarget-ing refinement on a representative example. We compare the reference SMPL-X motion (top row) with the robot motion produced by IK-only retargeting (middle row) and our VLM-refined retargeting (bottom row). The VLM-based refinement yields motions that are perceptually closer to the reference: hand placement relative to the torso remains within the intended signing space, wrist orientations better match the reference configuration, and the resulting motion evolution more closely follows the reference sequence. In contrast, IK-only retargeting often produces kinemati-cally feasible motions that exhibit systematic embodiment-induced deviations, such as end-effector offsets (hands drift-ing away from the target region) and orientation discrepan-cies that affect the perceived sign realization. By iteratively comparing the robot-rendered motion against the SMPL-X reference and applying interpretable control-primitive edits, our method reduces these mismatches without requiring motion-description supervision. We emphasize that robot experiments are shown on representative sequences; we com-plement these visual results with the quantitative collision-mitigation evaluation in Table I. 
+
+C. Ablation Study 
+
+Table II ablates the effect of regularization terms in the collision mitigation objective. Adding a closeness prior encourages minimal deviation from the original signing trajectory, while the smoothness term penalizes excessive acceleration to reduce jitter. Since each run was executed on the available set of sequences at the time of evaluation, we report N for transparency. 
+
+D. Sensitivity to Control-Primitive Design 
+
+The refinement loop depends on two design choices: the primitive vocabulary and the per-primitive step sizes ( 10 cm for position, 20 ◦ for yaw). In our experiments, we found the vocabulary coverage to matter more than the exact magnitudes: since every proposed edit is followed by re-solving IK under joint limits and collision checking, small inaccuracies in step size are partially absorbed by the solver, whereas failure modes outside the expressible edit space (e.g., torso lean or timing errors) cannot be corrected at all. Step sizes trade convergence speed against overshoot: coarser steps correct visible offsets in fewer VLM rounds but risk oscillating around the target, while finer steps require more iterations and thus more VLM queries. Because primitives are defined in task space, the same vocabulary transfers across robot embodiments without redesign. A systematic sensitivity study over vocabulary granularity and step sizes is an important direction for future work. 
+
+E. Limitations and Future Work 
+
+The evidence supporting the VLM-guided refinement is currently qualitative and limited to representative sequences, and the collision-mitigation runtime is high (Table I). These limitations do not affect the intended offline usage of the pipeline (Sec. III-C), but they bound the strength of the claims made in this paper, and we plan to address them in future work. Specifically, we will (i) quantify the ben-efit of VLM-guided refinement against a strong IK-only baseline using end-effector trajectory error in signing space and wrist-orientation error, (ii) scale the evaluation to a substantially larger set of sequences, and (iii) reduce the collision-mitigation runtime through learned approximations of the volumetric optimization. VI. C ONCLUSIONS 
+
+We studied the gap between sign language generation (SLG) and humanoid execution. Although recent SLG mod-els can generate dense 3D body representations such as SMPL-X, the resulting motions often contain self-collisions that are problematic for humanoid retargeting. To ad-dress this, we proposed a two-stage framework: an offline collision-mitigation module based on VolumetricSMPL-X that reduces self-intersection while staying close to the original trajectory, and an IK-based retargeting pipeline TABLE II: Ablation of regularization terms. “Succ.” denotes the percentage of sequences with reduced collision energy (final 
+
+< initial), and “Red.” denotes the median collision reduction (%). 
+
+Setting N Succ. (%) ↑ Red. (%) ↑ Pose MSE ↓ ∆Accel MSE ↓ Time (s) ↓
+
+Collision only 8 62.5 18.98 6.05 × 10 −4 +4.47 × 10 −3 324.7 + Closeness 9 88.9 21.66 6.80 × 10 −4 +5.71 × 10 −3 521.7 + Closeness + Smoothness 10 60.0 24.40 5.08 × 10 −4 +2.59 × 10 −3 362.2 
+
+augmented with a vision–language model (VLM) that refines embodiment-induced errors through interpretable task-space corrections. Quantitative experiments on CSL-Daily SMPL-X sequences show reduced self-collision energy with limited distortion, while qualitative retargeting results demonstrate that VLM-guided refinement improves IK-only retargeting. Future work will investigate learned approximations or reduced-step refinement to enable online processing, a quan-titative evaluation of the VLM-guided refinement against strong IK-only baselines, and validation on a physical hu-manoid platform. ACKNOWLEDGMENT 
+
+AI Assistant Disclosure: We used large language model assistants (e.g., GPT-4 and Claude) to support this work in three ways: (i) debugging and refactoring code, (ii) improv-ing writing clarity (grammar, wording, and organization), and (iii) serving as the vision–language model (VLM) component in our retargeting refinement loop, where the model compares rendered motions and suggests high-level control-primitive adjustments. All experimental design choices, method devel-opment, results, analyses, and scientific contributions are the authors’ original work, and the final manuscript was reviewed and verified by the authors. REFERENCES [1] K. Yin, A. Moryossef, J. Hochgesang, Y. Goldberg, and M. Alikhani, “Including signed languages in natural language processing,” in Pro-ceedings of the 59th Annual Meeting of the Association for Compu-tational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) , pp. 7347– 7360, 2021. [2] G. Qiao, S. Lin, R. Zuo, Z. Wu, K. Jia, and G. Liu, “Signbot: Learn-ing human-to-humanoid sign language interaction,” arXiv preprint arXiv:2505.24266 , 2025. [3] N. Khan, S. Tan, and K. Nakadai, “Towards online sign language expression for real-time human-robot interaction,” in 2025 34th IEEE International Conference on Robot and Human Interactive Communi-cation (RO-MAN) , pp. 1123–1128, IEEE, 2025. [4] S. Tan, N. Khan, Z. An, Y. Ando, R. Kawakami, and K. Nakadai, “A review of deep learning-based approaches to sign language process-ing,” Advanced Robotics , vol. 38, no. 23, pp. 1649–1667, 2024. [5] N. Khan, B. Wu, S. Tan, C. T. Ishi, and K. Nakadai, “Signflow: End-to-end sign language generation for one-to-many modeling using conditional flow matching,” in Proceedings of the 27th International Conference on Multimodal Interaction , pp. 173–180, 2025. [6] G. Pavlakos, V. Choutas, N. Ghorbani, T. Bolkart, A. A. Osman, D. Tzionas, and M. J. Black, “Expressive body capture: 3d hands, face, and body from a single image,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pp. 10975– 10985, 2019. [7] J. P. Araujo, Y. Ze, P. Xu, J. Wu, and C. K. Liu, “Retargeting matters: General motion retargeting for humanoid motion tracking,” 
+
+arXiv preprint arXiv:2510.02252 , 2025. [8] Z. Jiang, Y. Xie, J. Li, Y. Yuan, Y. Zhu, and Y. Zhu, “Harmon: Whole-body motion generation of humanoid robots from language descriptions,” arXiv preprint arXiv:2410.12773 , 2024. [9] M. Mihajlovic, S. Zhang, G. Li, K. Zhao, L. Muller, and S. Tang, “Volumetricsmpl: A neural volumetric body model for efficient in-teractions, contacts, and collisions,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , pp. 5060–5070, 2025. [10] W. Huang, W. Pan, Z. Zhao, and Q. Tian, “Towards fast and high-quality sign language production,” in Proceedings of the 29th ACM International Conference on Multimedia , pp. 3172–3181, 2021. [11] B. Saunders, N. C. Camgoz, and R. Bowden, “Signing at scale: Learning to co-articulate signs for large-scale photo-realistic sign language production,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 5141–5151, 2022. [12] S. Tang, R. Hong, D. Guo, and M. Wang, “Gloss semantic-enhanced network with online back-translation for sign language production,” in 
+
+Proceedings of the 30th ACM International Conference on Multimedia ,pp. 5630–5638, 2022. [13] P. Xie, Q. Zhang, P. Taiying, H. Tang, Y. Du, and Z. Li, “G2p-ddm: Generating sign pose sequence from gloss sequence with discrete diffusion model,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 38, pp. 6234–6242, 2024. [14] H. Walsh, B. Saunders, and R. Bowden, “Select and reorder: A novel approach for neural sign language production,” in Proceedings of the 2024 Joint International Conference on Computational Lin-guistics, Language Resources and Evaluation (LREC-COLING 2024) ,pp. 14531–14542, 2024. [15] S. Tang, F. Xue, J. Wu, S. Wang, and R. Hong, “Gloss-driven conditional diffusion models for sign language production,” ACM Transactions on Multimedia Computing, Communications and Appli-cations , vol. 21, no. 4, pp. 1–17, 2025. [16] R. Zuo, F. Wei, Z. Chen, B. Mak, J. Yang, and X. Tong, “A simple baseline for spoken language to sign language translation with 3d avatars,” in European Conference on Computer Vision , pp. 36–54, Springer, 2024. [17] P. Xie, T. Peng, Y. Du, and Q. Zhang, “Sign language production with latent motion transformer,” in 2024 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , pp. 3012–3022, IEEE Computer Society, 2024. [18] H. Zhang, R. Shalev-Arkushin, V. Baltatzis, C. Gillis, G. Laput, R. Kushalnagar, L. C. Quandt, L. Findlater, A. Bedri, and C. Lea, “Towards ai-driven sign language generation with non-manual mark-ers,” in Proceedings of the 2025 CHI Conference on Human Factors in Computing Systems , pp. 1–26, 2025. [19] B. Saunders, N. C. Camgoz, and R. Bowden, “Progressive transformers for end-to-end sign language production,” in European Conference on Computer Vision , pp. 687–705, Springer, 2020. [20] A. Yin, H. Li, K. Shen, S. Tang, and Y. Zhuang, “T2s-gpt: Dynamic vector quantization for autoregressive sign language production from text,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 3345– 3356, 2024. [21] B. Saunders, N. C. Camgoz, and R. Bowden, “Continuous 3d multi-channel sign language production via progressive transformers and mixture density networks,” International journal of computer vision ,vol. 129, no. 7, pp. 2113–2135, 2021. [22] N. Khan, B. Wu, C. T. Ishi, and K. Nakadai, “Multigau: Real time sign language generation using multimodal gated attention,” in International Conference on Industrial, Engineering and Other Applications of Applied Intelligent Systems , pp. 149–160, Springer, 2025. [23] N. Khan, “End to end text to sign language generation using multigau,” in 2025 IEEE International Conference on Multimedia and Expo (ICME) , pp. 1–6, IEEE, 2025. [24] R. Zuo, R. A. Potamias, E. Ververas, J. Deng, and S. Zafeiriou, “Signs as tokens: A retrieval-enhanced multilingual sign language generator,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , pp. 23806–23816, 2025. [25] V. Baltatzis, R. A. Potamias, E. Ververas, G. Sun, J. Deng, and S. Zafeiriou, “Neural sign actors: A diffusion model for 3d sign language production from text,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 1985– 1995, 2024. [26] M. Fieraru, M. Zanfir, T. Szente, E. Bazavan, V. Olaru, and C. Smin-chisescu, “Remips: Physically consistent 3d reconstruction of multiple interacting people under weak supervision,” Advances in Neural Information Processing Systems , vol. 34, pp. 19385–19397, 2021. [27] M. Mihajlovic, S. Saito, A. Bansal, M. Zollhoefer, and S. Tang, “Coap: Compositional articulated occupancy of people,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pp. 13201–13210, 2022. [28] A. Davydov, M. Engilberge, M. Salzmann, and P. Fua, “Cloaf: Collision-aware human flow,” in Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pp. 1176–1185, 2024. [29] M. Macklin, K. Erleben, M. M¨ uller, N. Chentanez, S. Jeschke, and Z. Corse, “Local optimization for robust signed distance field colli-sion,” Proceedings of the ACM on Computer Graphics and Interactive Techniques , vol. 3, no. 1, pp. 1–17, 2020. [30] M. Koptev, N. Figueroa, and A. Billard, “Real-time self-collision avoidance in joint space for humanoid robots,” IEEE Robotics and Automation Letters , vol. 6, no. 2, pp. 1240–1247, 2021. [31] W. Zhao, J. Chen, Z. Meng, D. Mao, R. Song, and W. Zhang, “Vlmpc: Vision-language model predictive control for robotic manipulation,” 
+
+arXiv preprint arXiv:2407.09829 , 2024. [32] J. Duan, W. Pumacay, N. Kumar, Y. R. Wang, S. Tian, W. Yuan, R. Krishna, D. Fox, A. Mandlekar, and Y. Guo, “Aha: A vision-language-model for detecting and reasoning over failures in robotic manipulation,” arXiv preprint arXiv:2410.00371 , 2024. [33] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimiza-tion,” arXiv preprint arXiv:1412.6980 , 2014. [34] H. Zhou, W. Zhou, W. Qi, J. Pu, and H. Li, “Improving sign language translation with monolingual data by sign back-translation,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pp. 1316–1325, 2021.
