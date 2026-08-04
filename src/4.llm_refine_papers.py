@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List
 
-from llm import DeepSeekClient, resolve_max_output_tokens
+from llm import DeepSeekClient, is_non_retryable_llm_error, resolve_max_output_tokens
 from subscription_plan import build_pipeline_inputs
 
 SCRIPT_DIR = os.path.dirname(__file__)
@@ -613,6 +613,9 @@ def recover_filter_results(
             raw_results = runner(batch_docs, attempt, retry_note)
             return validate_filter_results(batch_docs, raw_results)
         except Exception as exc:
+            if is_non_retryable_llm_error(exc):
+                log(f"[ERROR] filter {debug_tag} stopped on non-retryable LLM error: {exc}")
+                raise
             last_error = exc
             log(f"[WARN] filter {debug_tag} attempt {attempt}/{max_attempts} invalid: {exc}")
             if isinstance(exc, FilterOutputTruncatedError) and len(batch_docs) > 1:
@@ -851,6 +854,7 @@ def process_file(
     max_workers = max(1, filter_concurrency)
     total_batches = len(batches)
     failed_docs: List[Dict[str, str]] = []
+    fatal_llm_error: Exception | None = None
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         for idx, batch in enumerate(batches, start=1):
             log(f"[INFO] filter batch {idx}/{total_batches} dispatch docs={len(batch)}")
@@ -869,12 +873,33 @@ def process_file(
             try:
                 _, batch_docs, results = future.result()
             except Exception as exc:
+                if is_non_retryable_llm_error(exc):
+                    fatal_llm_error = exc
+                    log(
+                        f"[ERROR] filter batch {idx}/{total_batches} hit a non-retryable "
+                        f"LLM error; cancelling queued batches: {exc}"
+                    )
+                    for queued in pending:
+                        if queued is not future:
+                            queued.cancel()
+                    break
                 log(f"[WARN] filter batch {idx}/{total_batches} failed: {exc}")
                 failed_docs.extend(batch)
                 continue
             log(f"[INFO] filter batch {idx}/{total_batches} docs={len(batch_docs)} completed")
             for item in results:
                 merge_filter_result(merged, item, requirement_by_index)
+
+    if fatal_llm_error is not None:
+        data.pop("llm_ranked", None)
+        data.pop("llm_ranked_at", None)
+        log(
+            "[WARN] LLM refine unavailable because of credentials/balance/quota; "
+            "saved the unrefined input so Step 5 can use carryover recommendations."
+        )
+        save_json(data, output_path)
+        group_end()
+        return
 
     missing_docs = [doc for doc in docs if _norm_text(doc.get("id")) not in merged]
     if failed_docs or missing_docs:
@@ -905,6 +930,16 @@ def process_file(
                     debug_tag=f"recover_{doc_id}",
                 )
             except Exception as exc:
+                if is_non_retryable_llm_error(exc):
+                    data.pop("llm_ranked", None)
+                    data.pop("llm_ranked_at", None)
+                    log(
+                        f"[ERROR] single-doc recovery hit a non-retryable LLM error at {doc_id}; "
+                        "stop all remaining recovery and use carryover recommendations."
+                    )
+                    save_json(data, output_path)
+                    group_end()
+                    return
                 log(f"[WARN] single-doc recovery failed for {doc_id}: {exc}")
                 continue
             for item in recovered_results:

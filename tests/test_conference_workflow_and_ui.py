@@ -20,6 +20,24 @@ class ConferenceWorkflowAndUiTest(unittest.TestCase):
         self.assertIn("requirements-paper-media.txt", text)
         self.assertIn("PaperCropper smoke OK", text)
 
+    def test_daily_workflow_keeps_stagger_outside_main_job_and_bounds_retrieval(self):
+        root = pathlib.Path(__file__).resolve().parents[1]
+        workflow_path = root / ".github" / "workflows" / "daily-paper-reader.yml"
+        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8")) or {}
+        jobs = workflow.get("jobs") or {}
+        stagger = jobs.get("stagger") or {}
+        run_job = jobs.get("run") or {}
+
+        self.assertEqual(stagger.get("timeout-minutes"), 65)
+        self.assertEqual(run_job.get("timeout-minutes"), 120)
+        self.assertEqual(run_job.get("needs"), "stagger")
+        self.assertIn("needs.stagger.result", str(run_job.get("if") or ""))
+        self.assertTrue(any(step.get("name") == "Random delay to spread scheduled runs" for step in stagger.get("steps") or []))
+        self.assertFalse(any(step.get("name") == "Random delay to spread scheduled runs" for step in run_job.get("steps") or []))
+        self.assertEqual((run_job.get("env") or {}).get("DPR_SUPABASE_BM25_MAX_SECONDS"), "900")
+        self.assertEqual((run_job.get("env") or {}).get("DPR_SUPABASE_RPC_RETRIES"), "0")
+        self.assertEqual((run_job.get("env") or {}).get("DPR_SUPABASE_VECTOR_MAX_SECONDS"), "900")
+
     def test_conference_retrieval_workflow_dispatches_pipeline(self):
         root = pathlib.Path(__file__).resolve().parents[1]
         workflow_path = root / ".github" / "workflows" / "conference-paper-retrieval.yml"

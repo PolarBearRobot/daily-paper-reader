@@ -34,7 +34,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  stagger:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Random delay to spread scheduled runs
+        run: |
+          DELAY=$(shuf -i 0-3599 -n 1)
+          echo "Sleeping ${DELAY}s (≈$((DELAY/60))min) to stagger fork runs over 1 hour …"
+          sleep "$DELAY"
+
   run:
+    needs: stagger
+    if: ${{ always() && (needs.stagger.result == 'success' || needs.stagger.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -57,6 +70,9 @@ jobs:
       MKL_THREADING_LAYER: GNU
       DPR_RERANK_GLOBAL_POOL_LIMIT: "120"
       DPR_RERANK_GUARANTEED_PER_LANE: "2"
+      DPR_SUPABASE_BM25_MAX_SECONDS: "900"
+      DPR_SUPABASE_RPC_RETRIES: "0"
+      DPR_SUPABASE_VECTOR_MAX_SECONDS: "900"
       DPR_EMBED_API_TIMEOUT: "60"
       DPR_EMBED_API_URL: ${{ secrets.DPR_EMBED_API_URL || 'https://zwwen.online/embed' }}
       DPR_EMBED_API_KEY: ${{ secrets.DPR_EMBED_API_KEY }}
@@ -67,13 +83,6 @@ jobs:
       PYTHONUNBUFFERED: "1"
 
     steps:
-      - name: Random delay to spread scheduled runs
-        if: github.event_name == 'schedule'
-        run: |
-          DELAY=$(shuf -i 0-3599 -n 1)
-          echo "Sleeping ${DELAY}s (≈$((DELAY/60))min) to stagger fork runs over 1 hour …"
-          sleep $DELAY
-
       - name: Checkout
         uses: actions/checkout@v5
         with:

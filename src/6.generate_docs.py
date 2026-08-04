@@ -7,6 +7,7 @@ import json
 import math
 import os
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 import tempfile
@@ -18,7 +19,7 @@ from typing import Any, Dict, List, Set, Tuple
 
 import fitz  # PyMuPDF
 import requests
-from llm import DeepSeekClient
+from llm import DeepSeekClient, is_non_retryable_llm_error
 
 SCRIPT_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
@@ -64,6 +65,26 @@ def create_llm_client() -> DeepSeekClient | None:
 LLM_CLIENT = create_llm_client()
 
 DEFAULT_DOCS_CONCURRENCY = 4
+LLM_RUN_CIRCUIT_OPEN = threading.Event()
+LLM_RUN_CIRCUIT_LOCK = threading.Lock()
+
+
+def reset_llm_run_circuit() -> None:
+    """Create a fresh circuit state for each Step 6 invocation."""
+    with LLM_RUN_CIRCUIT_LOCK:
+        LLM_RUN_CIRCUIT_OPEN.clear()
+
+
+def trip_llm_run_circuit(exc: Exception) -> bool:
+    """Stop later calls after a fatal error; already-admitted workers may finish."""
+    if not is_non_retryable_llm_error(exc):
+        return False
+    with LLM_RUN_CIRCUIT_LOCK:
+        first_failure = not LLM_RUN_CIRCUIT_OPEN.is_set()
+        LLM_RUN_CIRCUIT_OPEN.set()
+    if first_failure:
+        log(f"[WARN] Step 6 LLM 熔断已开启，后续论文将直接使用降级内容：{exc}")
+    return True
 
 
 def call_llm_text(
@@ -73,13 +94,19 @@ def call_llm_text(
     max_tokens: int,
     response_format: Dict[str, Any] | None = None,
 ) -> str:
+    if LLM_RUN_CIRCUIT_OPEN.is_set():
+        return ""
     client.kwargs.update(
         {
             "temperature": float(temperature),
             "max_tokens": int(max_tokens),
         }
     )
-    resp = client.chat(messages=messages, response_format=response_format)
+    try:
+        resp = client.chat(messages=messages, response_format=response_format)
+    except Exception as exc:
+        trip_llm_run_circuit(exc)
+        raise
     return (resp.get("content") or "").strip()
 
 
@@ -91,19 +118,25 @@ def call_llm_structured_json(
     temperature: float,
     max_tokens: int,
 ) -> Dict[str, Any] | None:
+    if LLM_RUN_CIRCUIT_OPEN.is_set():
+        return None
     client.kwargs.update(
         {
             "temperature": float(temperature),
             "max_tokens": int(max_tokens),
         }
     )
-    resp = client.chat_structured(
-        messages=messages,
-        schema_name=schema_name,
-        schema=schema,
-        strict=True,
-        allow_json_object_fallback=True,
-    )
+    try:
+        resp = client.chat_structured(
+            messages=messages,
+            schema_name=schema_name,
+            schema=schema,
+            strict=True,
+            allow_json_object_fallback=True,
+        )
+    except Exception as exc:
+        trip_llm_run_circuit(exc)
+        raise
     if resp.get("refusal"):
         log(f"[WARN] Structured output refusal: {resp.get('refusal')}")
         return None
@@ -614,6 +647,9 @@ def generate_deep_summary(
             if "（完）" in merged:
                 return merged
         except Exception as e:
+            if is_non_retryable_llm_error(e):
+                log(f"[WARN] 精读总结遇到不可重试的 LLM 错误，停止重试：{e}")
+                break
             log(f"[WARN] 精读总结失败（第 {attempt} 次）：{e}")
             time.sleep(2 * attempt)
     return last or None
@@ -696,15 +732,8 @@ def generate_glance_overview(
                 ]
             )
         except Exception as e:
-            # 额度不足等“硬失败”不必重试，直接降级
-            msg = str(e)
-            if (
-                "insufficient_user_quota" in msg
-                or "额度不足" in msg
-                or "insufficient quota" in msg
-                or ("403" in msg and "Forbidden" in msg)
-            ):
-                log(f"[WARN] 速览生成失败（额度不足，停止重试）：{e}")
+            if is_non_retryable_llm_error(e):
+                log(f"[WARN] 速览生成遇到不可重试的 LLM 错误，停止重试：{e}")
                 break
             log(f"[WARN] 速览生成失败（第 {attempt} 次）：{e}")
             time.sleep(2 * attempt)
@@ -2760,6 +2789,7 @@ def write_day_meta_index_json(
 
 
 def main() -> None:
+    reset_llm_run_circuit()
     parser = argparse.ArgumentParser(description="Step 6: generate docs for deep/quick sections.")
     parser.add_argument("--date", type=str, default=TODAY_STR, help="date string YYYYMMDD.")
     parser.add_argument("--mode", type=str, default=None, help="mode for recommend file.")

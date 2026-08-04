@@ -1,7 +1,11 @@
 import importlib.util
+import json
+import os
 import pathlib
 import sys
+import tempfile
 import unittest
+from unittest.mock import MagicMock, patch
 
 
 def _load_module(module_name: str, path: pathlib.Path):
@@ -134,6 +138,131 @@ class LlmRefineRecoveryTest(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0][1], 1)
         self.assertEqual(calls[0][2], "")
+
+    def test_recover_filter_results_does_not_retry_balance_error(self):
+        docs = [{"id": "p-1", "content": "doc1"}]
+        calls = []
+        response = MagicMock()
+        response.status_code = 402
+        response.json.return_value = {"error": {"message": "Insufficient Balance"}}
+        error = Exception("402 Client Error: Payment Required")
+        error.response = response
+
+        def runner(batch_docs, attempt, retry_note):
+            calls.append((batch_docs, attempt, retry_note))
+            raise error
+
+        with self.assertRaises(Exception) as ctx:
+            self.mod.recover_filter_results(docs, runner, max_attempts=3, debug_tag="billing")
+
+        self.assertIs(ctx.exception, error)
+        self.assertEqual(len(calls), 1)
+
+    def test_process_file_saves_unrefined_fallback_on_balance_error(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_path = pathlib.Path(tmpdir) / "input.json"
+            output_path = pathlib.Path(tmpdir) / "output.json"
+            payload = {
+                "papers": [{"id": "p-1", "title": "Paper", "abstract": "Abstract"}],
+                "queries": [
+                    {
+                        "paper_tag": "query:test",
+                        "ranked": [{"paper_id": "p-1", "star_rating": 5}],
+                    }
+                ],
+                "llm_ranked": [{"paper_id": "stale"}],
+            }
+            input_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            response = MagicMock()
+            response.status_code = 402
+            response.json.return_value = {"error": {"message": "Insufficient Balance"}}
+            error = Exception("402 Client Error: Payment Required")
+            error.response = response
+
+            with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "depleted-key"}, clear=False), patch.object(
+                self.mod,
+                "build_user_requirements",
+                return_value=[{"id": "req-1", "query": "test", "tag": "query:test"}],
+            ), patch.object(self.mod, "_filter_batch", side_effect=error) as mock_filter:
+                self.mod.process_file(
+                    input_path=str(input_path),
+                    output_path=str(output_path),
+                    config_path=None,
+                    min_star=4,
+                    batch_size=10,
+                    max_chars=850,
+                    filter_model="deepseek-v4-flash",
+                    max_output_tokens=1024,
+                    filter_concurrency=1,
+                )
+
+            saved = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertNotIn("llm_ranked", saved)
+            self.assertNotIn("llm_ranked_at", saved)
+            self.assertEqual(saved["papers"], payload["papers"])
+            self.assertEqual(mock_filter.call_count, 1)
+
+    def test_process_file_stops_missing_doc_recovery_on_balance_error(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_path = pathlib.Path(tmpdir) / "input.json"
+            output_path = pathlib.Path(tmpdir) / "output.json"
+            payload = {
+                "papers": [
+                    {"id": "p-1", "title": "Paper 1", "abstract": "A"},
+                    {"id": "p-2", "title": "Paper 2", "abstract": "B"},
+                ],
+                "queries": [
+                    {
+                        "paper_tag": "query:test",
+                        "ranked": [
+                            {"paper_id": "p-1", "star_rating": 5},
+                            {"paper_id": "p-2", "star_rating": 5},
+                        ],
+                    }
+                ],
+            }
+            input_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            response = MagicMock()
+            response.status_code = 402
+            response.json.return_value = {"error": {"message": "Insufficient Balance"}}
+            billing_error = Exception("402 Client Error: Payment Required")
+            billing_error.response = response
+            recovery_calls = []
+
+            def recovery_runner(_docs, _attempt, _retry_note):
+                recovery_calls.append(1)
+                raise billing_error
+
+            with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "depleted-key"}, clear=False), patch.object(
+                self.mod,
+                "build_user_requirements",
+                return_value=[{"id": "req-1", "query": "test", "tag": "query:test"}],
+            ), patch.object(
+                self.mod,
+                "_filter_batch",
+                side_effect=RuntimeError("temporary batch failure"),
+            ), patch.object(
+                self.mod,
+                "_make_filter_runner",
+                return_value=recovery_runner,
+            ):
+                self.mod.process_file(
+                    input_path=str(input_path),
+                    output_path=str(output_path),
+                    config_path=None,
+                    min_star=4,
+                    batch_size=10,
+                    max_chars=850,
+                    filter_model="deepseek-v4-flash",
+                    max_output_tokens=1024,
+                    filter_concurrency=1,
+                )
+
+            saved = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertNotIn("llm_ranked", saved)
+            self.assertEqual(len(recovery_calls), 1)
 
     def test_call_filter_repeats_user_prompt_with_separator(self):
         captured = {}

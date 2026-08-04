@@ -21,6 +21,7 @@ def _load_module():
                 pass
 
         llm_stub.DeepSeekClient = DummyDeepSeekClient
+        llm_stub.is_non_retryable_llm_error = lambda _exc: False
         sys.modules["llm"] = llm_stub
 
     src_path = ROOT / "src" / "6.generate_docs.py"

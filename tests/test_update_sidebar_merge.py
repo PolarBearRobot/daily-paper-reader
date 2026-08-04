@@ -21,6 +21,7 @@ def _load_module():
 
         llm_stub.DeepSeekClient = DummyDeepSeekClient
         llm_stub.resolve_max_output_tokens = lambda default=393216: default
+        llm_stub.is_non_retryable_llm_error = lambda _exc: False
         sys.modules["llm"] = llm_stub
 
     src_path = root / "src" / "6.generate_docs.py"

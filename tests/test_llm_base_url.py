@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from llm import LLMClient
+from llm import LLMClient, is_non_retryable_llm_error
 
 
 class LlmBaseUrlTest(unittest.TestCase):
@@ -51,6 +51,33 @@ class LlmBaseUrlTest(unittest.TestCase):
             base_url="https://api.deepseek.com,https://fallback.invalid",
         )
 
+        with self.assertRaises(Exception):
+            client.chat([{"role": "user", "content": "hello"}])
+
+        self.assertEqual(mock_post.call_count, 1)
+
+    @patch("llm.requests.post")
+    def test_chat_balance_error_fails_without_retrying(self, mock_post):
+        resp = MagicMock()
+        resp.status_code = 402
+        resp.json.return_value = {
+            "error": {
+                "message": "Insufficient Balance",
+                "type": "billing_error",
+            }
+        }
+        err = Exception("402 Client Error: Payment Required")
+        err.response = resp
+        resp.raise_for_status.side_effect = err
+        mock_post.return_value = resp
+
+        client = LLMClient(
+            api_key="depleted-key",
+            model="deepseek-v4-flash",
+            base_url="https://api.deepseek.com",
+        )
+
+        self.assertTrue(is_non_retryable_llm_error(err))
         with self.assertRaises(Exception):
             client.chat([{"role": "user", "content": "hello"}])
 

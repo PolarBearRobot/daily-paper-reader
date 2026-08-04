@@ -11,6 +11,7 @@ import json
 import math
 import os
 import re
+import time
 from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Any, Iterable
@@ -49,6 +50,7 @@ DATE_RE_DAY = re.compile(r"^\d{8}$")
 DATE_RE_RANGE = re.compile(r"^\d{8}-\d{8}$")
 SUPABASE_TIME_FIELDS = ("published",)
 SUPABASE_BM25_SHARD_DAYS = 7
+DEFAULT_SUPABASE_BM25_MAX_SECONDS = 15 * 60
 
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9]+|[\u4e00-\u9fff]")
@@ -61,6 +63,36 @@ DEFAULT_OR_SOFT_WEIGHT = 0.3
 def log(message: str) -> None:
   ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
   print(f"[{ts}] {message}", flush=True)
+
+
+def resolve_supabase_bm25_max_seconds(
+  default: float = DEFAULT_SUPABASE_BM25_MAX_SECONDS,
+) -> float:
+  raw = str(os.getenv("DPR_SUPABASE_BM25_MAX_SECONDS") or "").strip()
+  if not raw:
+    return max(float(default), 0.0)
+  try:
+    return max(float(raw), 0.0)
+  except Exception:
+    log(
+      "[WARN] DPR_SUPABASE_BM25_MAX_SECONDS 非法，"
+      f"使用默认值 {float(default):.0f}s。"
+    )
+    return max(float(default), 0.0)
+
+
+def _empty_supabase_bm25_query_result(q: dict, mode: str) -> dict:
+  return {
+    "type": q.get("type"),
+    "tag": q.get("tag"),
+    "paper_tag": q.get("paper_tag"),
+    "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
+    "query_text": _query_text_for_supabase_bm25(q),
+    "logic_cn": q.get("logic_cn") or "",
+    "boolean_expr": q.get("boolean_expr") or "",
+    "bm25_mode": mode,
+    "sim_scores": {},
+  }
 
 
 def resolve_supabase_recall_window(config: Dict[str, Any], end_dt: datetime | None = None) -> tuple[datetime, datetime]:
@@ -373,7 +405,12 @@ def _query_supabase_bm25_window(
   min_shard_days: int = 1,
   depth: int = 0,
   filter_sources: List[str] | None = None,
+  deadline_monotonic: float | None = None,
 ) -> tuple[list[list[Dict[str, Any]]], int, list[str]]:
+  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
+  if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+    return ([], 0, [f"depth={depth} window={window} phase budget exhausted"])
+
   rows, msg = match_papers_by_bm25(
     url=url,
     api_key=api_key,
@@ -386,7 +423,6 @@ def _query_supabase_bm25_window(
     time_fields=time_fields,
     filter_sources=filter_sources,
   )
-  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
   log(
     "[Supabase BM25] "
     f"depth={depth} "
@@ -439,6 +475,11 @@ def _query_supabase_bm25_window(
   success_count = 0
   failure_messages: list[str] = []
   for sub_start, sub_end in sub_shards:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      failure_messages.append(
+        f"depth={depth + 1} window={sub_start.isoformat()} ~ {sub_end.isoformat()} phase budget exhausted"
+      )
+      break
     sub_rows, sub_success, sub_failures = _query_supabase_bm25_window(
       url=url,
       api_key=api_key,
@@ -453,6 +494,7 @@ def _query_supabase_bm25_window(
       min_shard_days=safe_min_shard_days,
       depth=depth + 1,
       filter_sources=filter_sources,
+      deadline_monotonic=deadline_monotonic,
     )
     rows_per_shard.extend(sub_rows)
     success_count += sub_success
@@ -475,10 +517,13 @@ def query_supabase_bm25_with_shards(
   time_fields: tuple[str, ...],
   shard_days: int = SUPABASE_BM25_SHARD_DAYS,
   filter_sources: List[str] | None = None,
+  deadline_monotonic: float | None = None,
 ) -> tuple[list[Dict[str, Any]], str]:
   safe_start = _normalize_utc_datetime(start_dt)
   safe_end = _normalize_utc_datetime(end_dt)
   if safe_start is None or safe_end is None or safe_end <= safe_start:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      return ([], "rpc 查询跳过：Supabase BM25 阶段预算耗尽")
     return match_papers_by_bm25(
       url=url,
       api_key=api_key,
@@ -505,6 +550,11 @@ def query_supabase_bm25_with_shards(
   failure_messages: list[str] = []
 
   for shard_start, shard_end in shards:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      failure_messages.append(
+        f"window={shard_start.isoformat()} ~ {shard_end.isoformat()} phase budget exhausted"
+      )
+      break
     sub_rows, sub_success, sub_failures = _query_supabase_bm25_window(
       url=url,
       api_key=api_key,
@@ -517,6 +567,7 @@ def query_supabase_bm25_with_shards(
       time_fields=time_fields,
       shard_days=max(int(shard_days or 1), 1),
       filter_sources=filter_sources,
+      deadline_monotonic=deadline_monotonic,
     )
     rows_per_shard.extend(sub_rows)
     success_count += sub_success
@@ -536,6 +587,8 @@ def query_supabase_bm25_with_shards(
   )
   if failure_messages:
     summary += f" | partial_failures={len(failure_messages)}"
+  if any("budget exhausted" in item.lower() for item in failure_messages):
+    summary += " | phase budget exhausted"
   return (merged_rows, summary)
 
 
@@ -648,6 +701,8 @@ def rank_papers_for_queries_via_supabase(
   end_dt: datetime | None = None,
   time_fields: tuple[str, ...] = SUPABASE_TIME_FIELDS,
   query_filter_sources: bool = False,
+  max_seconds: float | None = None,
+  deadline_monotonic: float | None = None,
 ) -> dict:
   if not queries:
     return {"queries": [], "papers": {}, "total_hits": 0}
@@ -662,8 +717,37 @@ def rank_papers_for_queries_via_supabase(
   id_to_paper: Dict[str, Paper] = {}
   results_per_query: List[dict] = []
   total_hits = 0
+  budget_exhausted = False
+  started_at = time.monotonic()
+  if deadline_monotonic is None:
+    budget_seconds = (
+      resolve_supabase_bm25_max_seconds()
+      if max_seconds is None
+      else max(float(max_seconds), 0.0)
+    )
+    deadline_monotonic = started_at + budget_seconds if budget_seconds > 0 else None
+  else:
+    budget_seconds = max(deadline_monotonic - started_at, 0.0)
 
   for q_idx, q in enumerate(queries, start=1):
+    now_monotonic = time.monotonic()
+    elapsed = now_monotonic - started_at
+    if deadline_monotonic is not None and now_monotonic >= deadline_monotonic:
+      budget_exhausted = True
+      remaining_queries = queries[q_idx - 1:]
+      log(
+        "[WARN] Supabase BM25 阶段预算耗尽："
+        f"elapsed={elapsed:.1f}s budget={budget_seconds:.1f}s "
+        f"remaining_queries={len(remaining_queries)}；"
+        "剩余查询写入空 BM25 结果，由向量召回/RRF 继续处理。"
+      )
+      results_per_query.extend(
+        _empty_supabase_bm25_query_result(item, "supabase_budget_exhausted")
+        for item in remaining_queries
+        if _query_text_for_supabase_bm25(item)
+      )
+      break
+
     q_text = _query_text_for_supabase_bm25(q)
     paper_tag = str(q.get("paper_tag") or "").strip()
     if not q_text:
@@ -694,8 +778,12 @@ def rank_papers_for_queries_via_supabase(
       end_dt=end_dt,
       time_fields=time_fields,
       filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
+      deadline_monotonic=deadline_monotonic,
     )
     log(f"[Supabase BM25] {msg} | tag={q.get('tag') or ''}")
+    query_budget_exhausted = "budget exhausted" in msg.lower() or "预算耗尽" in msg
+    if query_budget_exhausted:
+      budget_exhausted = True
 
     sim_scores: Dict[str, Dict[str, float | int]] = {}
     for rank_idx, row in enumerate(rows, start=1):
@@ -730,7 +818,7 @@ def rank_papers_for_queries_via_supabase(
         "query_text": q_text,
         "logic_cn": q.get("logic_cn") or "",
         "boolean_expr": q.get("boolean_expr") or "",
-        "bm25_mode": "supabase",
+        "bm25_mode": "supabase_budget_exhausted" if query_budget_exhausted else "supabase",
         "sim_scores": sim_scores,
       }
     )
@@ -739,6 +827,8 @@ def rank_papers_for_queries_via_supabase(
     "queries": results_per_query,
     "papers": id_to_paper,
     "total_hits": total_hits,
+    "degraded": budget_exhausted,
+    "budget_exhausted": budget_exhausted,
   }
 
 
@@ -999,6 +1089,13 @@ def main() -> None:
   )
 
   args = parser.parse_args()
+  supabase_phase_budget_seconds = resolve_supabase_bm25_max_seconds()
+  supabase_phase_started_at = time.monotonic()
+  supabase_phase_deadline = (
+    supabase_phase_started_at + supabase_phase_budget_seconds
+    if supabase_phase_budget_seconds > 0
+    else None
+  )
 
   config = load_config()
   supabase_conf = get_supabase_read_config(config)
@@ -1076,6 +1173,7 @@ def main() -> None:
         start_dt=sb_start_dt,
         end_dt=sb_end_dt,
         time_fields=SUPABASE_TIME_FIELDS,
+        deadline_monotonic=supabase_phase_deadline,
       )
       total_hits = int(result_sb.get("total_hits") or 0)
       if total_hits > 0:
@@ -1115,10 +1213,14 @@ def main() -> None:
         end_dt=sb_end_dt,
         time_fields=SUPABASE_TIME_FIELDS,
         query_filter_sources=True,
+        deadline_monotonic=supabase_phase_deadline,
       )
       total_hits = int(result_sb.get("total_hits") or 0)
       if total_hits > 0:
         log(f"[INFO] Multi-source BM25 命中 {total_hits} 条。")
+        return result_sb
+      if bool(result_sb.get("degraded")):
+        log("[WARN] Multi-source BM25 已按阶段预算降级，保留空查询结果。")
         return result_sb
       log("[WARN] Multi-source BM25 未命中。")
       return None
@@ -1136,7 +1238,8 @@ def main() -> None:
     arxiv_queries = query_groups.get(ARXIV_SOURCE_KEY) or []
     arxiv_supabase_result = run_supabase_rank_for_source(output_path, ARXIV_SOURCE_KEY, arxiv_queries)
     arxiv_hits = int((arxiv_supabase_result or {}).get("total_hits") or 0)
-    if arxiv_supabase_result and arxiv_hits > 0:
+    arxiv_degraded = bool((arxiv_supabase_result or {}).get("degraded"))
+    if arxiv_supabase_result and (arxiv_hits > 0 or arxiv_degraded):
       merged_results.append(arxiv_supabase_result)
 
     for source_key, source_queries in query_groups.items():
@@ -1146,7 +1249,7 @@ def main() -> None:
       if result_sb:
         merged_results.append(result_sb)
 
-    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0
+    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0 and not arxiv_degraded
     if need_local_arxiv:
       papers = load_paper_pool(input_path)
       if not papers:

@@ -39,6 +39,44 @@ GLOBAL_TIME_SECONDS: float = 0.0
 DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
 
+def _llm_error_text(exc: Exception) -> str:
+    """Collect provider error details without assuming a specific response schema."""
+    parts = [str(exc or "")]
+    response = getattr(exc, "response", None)
+    if response is not None:
+        try:
+            parts.append(json.dumps(response.json(), ensure_ascii=False))
+        except Exception:
+            try:
+                parts.append(str(response.text or ""))
+            except Exception:
+                pass
+    return " ".join(part for part in parts if part).lower()
+
+
+def is_non_retryable_llm_error(exc: Exception) -> bool:
+    """Return whether retrying the same credentials cannot recover the request."""
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None)
+    if status_code in (401, 402, 403):
+        return True
+
+    message = _llm_error_text(exc)
+    return any(token in message for token in (
+        "authentication fails",
+        "invalid api key",
+        "authorization required",
+        "unauthorized",
+        "payment required",
+        "insufficient balance",
+        "insufficient_user_quota",
+        "insufficient quota",
+        "quota exceeded",
+        "额度不足",
+        "余额不足",
+    ))
+
+
 def reset_global_tokens():
     """重置本次实验的全局 token 统计。"""
     GLOBAL_TOKENS['prompt'] = 0
@@ -647,6 +685,19 @@ class LLMClient:
                 if self._is_authentication_error(e):
                     print(
                         "LLM 鉴权失败：当前 API Key 无效或无权限，请在本地配置中更新 DeepSeek API Key 后重试。"
+                    )
+                    if hasattr(e, "response") and e.response is not None:
+                        try:
+                            print("错误详情(JSON):", e.response.json())
+                        except ValueError:
+                            try:
+                                print("错误详情(TEXT):", e.response.text[:500])
+                            except Exception:
+                                pass
+                    raise
+                if is_non_retryable_llm_error(e):
+                    print(
+                        "LLM 请求因余额、额度或权限问题被拒绝；使用相同凭据重试无法恢复，停止重试。"
                     )
                     if hasattr(e, "response") and e.response is not None:
                         try:

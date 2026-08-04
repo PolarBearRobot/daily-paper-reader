@@ -11,6 +11,7 @@ import json
 import os
 import math
 import hashlib
+import time
 from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Any, Optional, Callable
@@ -45,6 +46,7 @@ DATE_RE_DAY = re.compile(r"^\d{8}$")
 DATE_RE_RANGE = re.compile(r"^\d{8}-\d{8}$")
 SUPABASE_TIME_FIELDS = ("published",)
 SUPABASE_VECTOR_SHARD_DAYS = 7
+DEFAULT_SUPABASE_VECTOR_MAX_SECONDS = 15 * 60
 EMBEDDING_CACHE_VERSION = 1
 EMBEDDING_CACHE_FIELD = "embedding_cache"
 LEGACY_EMBEDDING_CACHE_KEY = "embedding_cache"
@@ -52,6 +54,34 @@ LEGACY_EMBEDDING_CACHE_KEY = "embedding_cache"
 def log(message: str) -> None:
   ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
   print(f"[{ts}] {message}", flush=True)
+
+
+def resolve_supabase_vector_max_seconds(
+  default: float = DEFAULT_SUPABASE_VECTOR_MAX_SECONDS,
+) -> float:
+  raw = str(os.getenv("DPR_SUPABASE_VECTOR_MAX_SECONDS") or "").strip()
+  if not raw:
+    return max(float(default), 0.0)
+  try:
+    return max(float(raw), 0.0)
+  except Exception:
+    log(
+      "[WARN] DPR_SUPABASE_VECTOR_MAX_SECONDS 非法，"
+      f"使用默认值 {float(default):.0f}s。"
+    )
+    return max(float(default), 0.0)
+
+
+def _empty_supabase_vector_query_result(q: dict, status: str) -> dict:
+  return {
+    "type": q.get("type"),
+    "tag": q.get("tag"),
+    "paper_tag": q.get("paper_tag"),
+    "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
+    "query_text": str(q.get("query_text") or "").strip(),
+    "vector_status": status,
+    "sim_scores": {},
+  }
 
 
 def multi_source_rpc_enabled() -> bool:
@@ -611,7 +641,12 @@ def _query_supabase_vector_window(
   depth: int = 0,
   rpc_mode: str = "exact",
   filter_sources: List[str] | None = None,
+  deadline_monotonic: float | None = None,
 ) -> tuple[list[list[Dict[str, Any]]], int, list[str]]:
+  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
+  if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+    return ([], 0, [f"depth={depth} window={window} phase budget exhausted"])
+
   rows, msg = match_papers_by_embedding(
     url=url,
     api_key=api_key,
@@ -624,7 +659,6 @@ def _query_supabase_vector_window(
     time_fields=time_fields,
     filter_sources=filter_sources,
   )
-  window = f"{start_dt.isoformat()} ~ {end_dt.isoformat()}"
   log(
     f"[Supabase Vector:{rpc_mode}] "
     f"depth={depth} "
@@ -677,6 +711,11 @@ def _query_supabase_vector_window(
   success_count = 0
   failure_messages: list[str] = []
   for sub_start, sub_end in sub_shards:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      failure_messages.append(
+        f"depth={depth + 1} window={sub_start.isoformat()} ~ {sub_end.isoformat()} phase budget exhausted"
+      )
+      break
     sub_rows, sub_success, sub_failures = _query_supabase_vector_window(
       url=url,
       api_key=api_key,
@@ -692,6 +731,7 @@ def _query_supabase_vector_window(
       depth=depth + 1,
       rpc_mode=rpc_mode,
       filter_sources=filter_sources,
+      deadline_monotonic=deadline_monotonic,
     )
     rows_per_shard.extend(sub_rows)
     success_count += sub_success
@@ -716,10 +756,13 @@ def query_supabase_vector_with_shards(
   shard_days: int = SUPABASE_VECTOR_SHARD_DAYS,
   rpc_mode: str = "exact",
   filter_sources: List[str] | None = None,
+  deadline_monotonic: float | None = None,
 ) -> tuple[list[Dict[str, Any]], str]:
   safe_start = _normalize_utc_datetime(start_dt)
   safe_end = _normalize_utc_datetime(end_dt)
   if safe_start is None or safe_end is None or safe_end <= safe_start:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      return ([], "rpc 查询跳过：Supabase Vector 阶段预算耗尽")
     return match_papers_by_embedding(
       url=url,
       api_key=api_key,
@@ -746,6 +789,11 @@ def query_supabase_vector_with_shards(
   failure_messages: list[str] = []
 
   for shard_start, shard_end in shards:
+    if deadline_monotonic is not None and time.monotonic() >= deadline_monotonic:
+      failure_messages.append(
+        f"window={shard_start.isoformat()} ~ {shard_end.isoformat()} phase budget exhausted"
+      )
+      break
     sub_rows, sub_success, sub_failures = _query_supabase_vector_window(
       url=url,
       api_key=api_key,
@@ -759,6 +807,7 @@ def query_supabase_vector_with_shards(
       shard_days=max(int(shard_days or 1), 1),
       rpc_mode=rpc_mode,
       filter_sources=filter_sources,
+      deadline_monotonic=deadline_monotonic,
     )
     rows_per_shard.extend(sub_rows)
     success_count += sub_success
@@ -778,6 +827,8 @@ def query_supabase_vector_with_shards(
   )
   if failure_messages:
     summary += f" | partial_failures={len(failure_messages)}"
+  if any("budget exhausted" in item.lower() for item in failure_messages):
+    summary += " | phase budget exhausted"
   return (merged_rows, summary)
 
 
@@ -957,6 +1008,8 @@ def rank_papers_for_queries_via_supabase(
   rpc_name_override: str | None = None,
   rpc_mode: str = "ann",
   query_filter_sources: bool = False,
+  max_seconds: float | None = None,
+  deadline_monotonic: float | None = None,
 ) -> dict:
   if not queries:
     return {"queries": [], "papers": {}, "total_hits": 0}
@@ -994,8 +1047,39 @@ def rank_papers_for_queries_via_supabase(
   results_per_query: List[dict] = []
   total_hits = 0
   non_empty_queries = 0
+  degraded = False
+  budget_exhausted = False
+  started_at = time.monotonic()
+  if deadline_monotonic is None:
+    budget_seconds = (
+      resolve_supabase_vector_max_seconds()
+      if max_seconds is None
+      else max(float(max_seconds), 0.0)
+    )
+    deadline_monotonic = started_at + budget_seconds if budget_seconds > 0 else None
+  else:
+    budget_seconds = max(deadline_monotonic - started_at, 0.0)
 
   for idx, q in enumerate(queries):
+    now_monotonic = time.monotonic()
+    elapsed = now_monotonic - started_at
+    if deadline_monotonic is not None and now_monotonic >= deadline_monotonic:
+      degraded = True
+      budget_exhausted = True
+      remaining_queries = queries[idx:]
+      log(
+        f"[WARN] Supabase Vector:{rpc_mode} 阶段预算耗尽："
+        f"elapsed={elapsed:.1f}s budget={budget_seconds:.1f}s "
+        f"remaining_queries={len(remaining_queries)}；"
+        "剩余查询写入空向量结果，由 RRF 使用已有召回继续处理。"
+      )
+      results_per_query.extend(
+        _empty_supabase_vector_query_result(item, "budget_exhausted")
+        for item in remaining_queries
+        if str(item.get("query_text") or "").strip()
+      )
+      break
+
     q_text = str(q.get("query_text") or "").strip()
     paper_tag = str(q.get("paper_tag") or "").strip()
     if not q_text:
@@ -1031,6 +1115,7 @@ def rank_papers_for_queries_via_supabase(
         time_fields=time_fields,
         rpc_mode=rpc_mode,
         filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
+        deadline_monotonic=deadline_monotonic,
       )
     else:
       rows, msg = match_papers_by_embedding(
@@ -1046,10 +1131,24 @@ def rank_papers_for_queries_via_supabase(
         filter_sources=normalize_source_list(q.get("paper_sources")) if query_filter_sources else None,
       )
     log(f"[Supabase Vector:{rpc_mode}] {msg} | tag={q.get('tag') or ''}")
+    query_budget_exhausted = "budget exhausted" in msg.lower() or "预算耗尽" in msg
+    if query_budget_exhausted:
+      degraded = True
+      budget_exhausted = True
 
-    # 语句超时（57014）是服务端配置限制，后续批次也会超时，直接跳过
+    # 语句超时（57014）是服务端配置限制，后续批次也会超时，保留查询槽位后降级。
     if not rows and "57014" in msg:
-      log(f"[Supabase Vector:{rpc_mode}] 检测到数据库语句超时，跳过剩余批次。")
+      degraded = True
+      remaining_queries = queries[idx:]
+      log(
+        f"[Supabase Vector:{rpc_mode}] 检测到数据库语句超时，"
+        f"剩余 {len(remaining_queries)} 个查询写入空向量结果。"
+      )
+      results_per_query.extend(
+        _empty_supabase_vector_query_result(item, "statement_timeout")
+        for item in remaining_queries
+        if str(item.get("query_text") or "").strip()
+      )
       break
 
     sim_scores: Dict[str, Dict[str, float | int]] = {}
@@ -1083,6 +1182,7 @@ def rank_papers_for_queries_via_supabase(
         "paper_tag": q.get("paper_tag"),
         "paper_sources": q.get("paper_sources") or [q.get("active_source") or ARXIV_SOURCE_KEY],
         "query_text": q_text,
+        **({"vector_status": "budget_exhausted"} if query_budget_exhausted else {}),
         "sim_scores": sim_scores,
       }
     )
@@ -1094,6 +1194,8 @@ def rank_papers_for_queries_via_supabase(
     "papers": id_to_paper,
     "total_hits": total_hits,
     "non_empty_queries": non_empty_queries,
+    "degraded": degraded,
+    "budget_exhausted": budget_exhausted,
   }
 
 
@@ -1200,6 +1302,13 @@ def main() -> None:
   )
 
   args = parser.parse_args()
+  supabase_phase_budget_seconds = resolve_supabase_vector_max_seconds()
+  supabase_phase_started_at = time.monotonic()
+  supabase_phase_deadline = (
+    supabase_phase_started_at + supabase_phase_budget_seconds
+    if supabase_phase_budget_seconds > 0
+    else None
+  )
 
   config = load_config()
   pipeline_inputs = build_pipeline_inputs(config)
@@ -1330,6 +1439,7 @@ def main() -> None:
         time_fields=SUPABASE_TIME_FIELDS,
         rpc_name_override=rpc_name,
         rpc_mode=mode,
+        deadline_monotonic=supabase_phase_deadline,
       )
       total_hits = int(result_sb.get("total_hits") or 0)
       non_empty_queries = int(result_sb.get("non_empty_queries") or 0)
@@ -1337,6 +1447,12 @@ def main() -> None:
       avg_hits_per_query = (float(total_hits) / float(query_total)) if query_total > 0 else 0.0
 
       if total_hits <= 0:
+        if bool(result_sb.get("degraded")):
+          log(
+            f"[WARN] Supabase 向量召回已降级（mode={mode} rpc={rpc_name}），"
+            "保留空查询结果并跳过本地模型回退。"
+          )
+          return result_sb
         log(f"[WARN] Supabase 向量召回无命中（mode={mode} rpc={rpc_name}）。")
         return None
 
@@ -1383,10 +1499,14 @@ def main() -> None:
         rpc_name_override=str(multi_source_backend.get("vector_rpc_exact") or multi_source_backend.get("vector_rpc") or "").strip(),
         rpc_mode="exact",
         query_filter_sources=True,
+        deadline_monotonic=supabase_phase_deadline,
       )
       total_hits = int(result_sb.get("total_hits") or 0)
       if total_hits > 0:
         log(f"[INFO] Multi-source 向量召回命中 {total_hits} 条。")
+        return result_sb
+      if bool(result_sb.get("degraded")):
+        log("[WARN] Multi-source 向量召回已降级，保留空查询结果。")
         return result_sb
       log("[WARN] Multi-source 向量召回未命中。")
       return None
@@ -1408,7 +1528,8 @@ def main() -> None:
       top_k=args.top_k,
     )
     arxiv_hits = int((arxiv_supabase_result or {}).get("total_hits") or 0)
-    if arxiv_supabase_result and arxiv_hits > 0:
+    arxiv_degraded = bool((arxiv_supabase_result or {}).get("degraded"))
+    if arxiv_supabase_result and (arxiv_hits > 0 or arxiv_degraded):
       merged_results.append(arxiv_supabase_result)
 
     for source_key, source_queries in query_groups.items():
@@ -1423,7 +1544,7 @@ def main() -> None:
       if result_sb:
         merged_results.append(result_sb)
 
-    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0
+    need_local_arxiv = bool(arxiv_queries) and arxiv_hits <= 0 and not arxiv_degraded
     if need_local_arxiv:
       papers = load_paper_pool(input_path)
       if not papers:

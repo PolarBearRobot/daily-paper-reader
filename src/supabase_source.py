@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import timedelta, timezone, datetime
 from typing import Any, Dict, List, Tuple
 from urllib.parse import quote
+import os
 import re
 import requests
 import time
@@ -22,6 +23,16 @@ _DEFAULT_SUPABASE_RETRY_WAIT_SECONDS = 1.0
 
 # PostgreSQL error code for "canceling statement due to statement timeout"
 _PG_STATEMENT_TIMEOUT_CODE = "57014"
+
+
+def resolve_supabase_rpc_retries(default: int = _DEFAULT_SUPABASE_RETRY) -> int:
+    raw = str(os.getenv("DPR_SUPABASE_RPC_RETRIES") or "").strip()
+    if not raw:
+        return max(int(default), 0)
+    try:
+        return max(int(raw), 0)
+    except Exception:
+        return max(int(default), 0)
 
 
 def _is_statement_timeout(resp: requests.Response) -> bool:
@@ -442,7 +453,7 @@ def count_papers_by_date_range(
             endpoint,
             headers=headers,
             timeout=max(int(timeout or DEFAULT_TIMEOUT), 1),
-            retries=_DEFAULT_SUPABASE_RETRY,
+            retries=resolve_supabase_rpc_retries(),
             retry_wait_seconds=_DEFAULT_SUPABASE_RETRY_WAIT_SECONDS,
             log_prefix="[Supabase Count]",
         )
@@ -524,7 +535,7 @@ def match_papers_by_embedding(
             },
             json=payload,
             timeout=max(int(timeout or DEFAULT_TIMEOUT), 1),
-            retries=_DEFAULT_SUPABASE_RETRY,
+            retries=resolve_supabase_rpc_retries(),
             retry_wait_seconds=_DEFAULT_SUPABASE_RETRY_WAIT_SECONDS,
             log_prefix="[Supabase RPC]",
         )
@@ -621,7 +632,7 @@ def match_papers_by_bm25(
             },
             json=payload,
             timeout=max(int(timeout or DEFAULT_TIMEOUT), 1),
-            retries=_DEFAULT_SUPABASE_RETRY,
+            retries=resolve_supabase_rpc_retries(),
             retry_wait_seconds=_DEFAULT_SUPABASE_RETRY_WAIT_SECONDS,
             log_prefix="[Supabase RPC]",
         )

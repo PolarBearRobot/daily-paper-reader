@@ -13,6 +13,7 @@ vector similarity.
 """
 
 import importlib.util
+import os
 import sys
 import unittest
 from datetime import datetime, timezone
@@ -32,6 +33,7 @@ from supabase_source import (
     count_papers_by_date_range,
     match_papers_by_embedding,
     match_papers_by_bm25,
+    resolve_supabase_rpc_retries,
 )
 
 
@@ -143,6 +145,25 @@ class MatchPapersTimeoutTest(unittest.TestCase):
         )
         self.assertEqual(rows, [])
         self.assertIn("57014", msg)
+
+    @patch("supabase_source._request_with_retries")
+    def test_daily_rpc_retry_override_disables_network_retry_amplification(self, mock_req):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = []
+        mock_req.return_value = resp
+
+        with patch.dict(os.environ, {"DPR_SUPABASE_RPC_RETRIES": "0"}, clear=False):
+            self.assertEqual(resolve_supabase_rpc_retries(), 0)
+            match_papers_by_bm25(
+                url="https://example.supabase.co",
+                api_key="test-key",
+                rpc_name="match_arxiv_papers_bm25",
+                query_text="machine learning",
+                match_count=10,
+            )
+
+        self.assertEqual(mock_req.call_args.kwargs.get("retries"), 0)
 
 
 class BuildDateFilterPayloadTest(unittest.TestCase):
@@ -395,6 +416,67 @@ class SupabaseBm25ShardFallbackTest(unittest.TestCase):
         self.assertIn("keyword:ML", result["papers"]["p3"].tags)
         self.assertIn("keyword:ML", result["papers"]["p4"].tags)
 
+    def test_bm25_budget_preserves_remaining_query_slots(self):
+        queries = [
+            {"type": "keyword", "tag": f"Q{i}", "paper_tag": f"query:q{i}", "query_text": f"query {i}"}
+            for i in range(1, 4)
+        ]
+        first_rows = [
+            {"id": "p1", "title": "Paper", "abstract": "A", "authors": [], "score": 0.9}
+        ]
+
+        with patch.object(
+            self.bm25_mod,
+            "query_supabase_bm25_with_shards",
+            return_value=(first_rows, "rpc 分片查询成功：1 条"),
+        ) as mock_query, patch.object(
+            self.bm25_mod.time,
+            "monotonic",
+            side_effect=[0.0, 0.0, 901.0],
+        ):
+            result = self.bm25_mod.rank_papers_for_queries_via_supabase(
+                queries=queries,
+                top_k=3,
+                supabase_conf={"url": "https://example.supabase.co", "anon_key": "key"},
+                max_seconds=900,
+            )
+
+        self.assertEqual(mock_query.call_count, 1)
+        self.assertEqual(len(result["queries"]), 3)
+        self.assertTrue(result["budget_exhausted"])
+        self.assertEqual(result["queries"][0]["sim_scores"]["p1"]["rank"], 1)
+        self.assertEqual(result["queries"][1]["bm25_mode"], "supabase_budget_exhausted")
+        self.assertEqual(result["queries"][1]["sim_scores"], {})
+        self.assertEqual(result["queries"][2]["sim_scores"], {})
+
+    def test_bm25_recursive_deadline_stops_before_another_rpc(self):
+        start_dt = datetime(2026, 3, 1, tzinfo=timezone.utc)
+        end_dt = datetime(2026, 3, 8, tzinfo=timezone.utc)
+
+        with patch.object(self.bm25_mod, "match_papers_by_bm25") as mock_match, patch.object(
+            self.bm25_mod.time,
+            "monotonic",
+            return_value=10.0,
+        ):
+            rows, success_count, failures = self.bm25_mod._query_supabase_bm25_window(
+                url="https://example.supabase.co",
+                api_key="key",
+                rpc_name="match_arxiv_papers_bm25",
+                query_text="machine learning",
+                match_count=3,
+                schema="public",
+                start_dt=start_dt,
+                end_dt=end_dt,
+                time_fields=("published",),
+                shard_days=7,
+                deadline_monotonic=10.0,
+            )
+
+        mock_match.assert_not_called()
+        self.assertEqual(rows, [])
+        self.assertEqual(success_count, 0)
+        self.assertIn("budget exhausted", failures[0])
+
 
 class SupabaseVectorExactShardFallbackTest(unittest.TestCase):
     @classmethod
@@ -510,6 +592,75 @@ class SupabaseVectorExactShardFallbackTest(unittest.TestCase):
         self.assertIn("keyword:ML", result["papers"]["p1"].tags)
         self.assertIn("keyword:ML", result["papers"]["p3"].tags)
         self.assertIn("keyword:ML", result["papers"]["p4"].tags)
+
+    def test_vector_budget_preserves_remaining_query_slots(self):
+        queries = [
+            {
+                "type": "keyword",
+                "tag": f"Q{i}",
+                "paper_tag": f"query:q{i}",
+                "query_text": f"query {i}",
+                "query_embedding": [0.1, 0.2, 0.3],
+            }
+            for i in range(1, 4)
+        ]
+        first_rows = [
+            {"id": "p1", "title": "Paper", "abstract": "A", "authors": [], "similarity": 0.9}
+        ]
+
+        with patch.object(
+            self.embedding_mod,
+            "query_supabase_vector_with_shards",
+            return_value=(first_rows, "rpc 分片查询成功：1 条"),
+        ) as mock_query, patch.object(
+            self.embedding_mod.time,
+            "monotonic",
+            side_effect=[0.0, 0.0, 901.0],
+        ):
+            result = self.embedding_mod.rank_papers_for_queries_via_supabase(
+                model=None,
+                queries=queries,
+                top_k=3,
+                supabase_conf={"url": "https://example.supabase.co", "anon_key": "key"},
+                rpc_mode="exact",
+                max_seconds=900,
+            )
+
+        self.assertEqual(mock_query.call_count, 1)
+        self.assertEqual(len(result["queries"]), 3)
+        self.assertTrue(result["budget_exhausted"])
+        self.assertEqual(result["queries"][0]["sim_scores"]["p1"]["rank"], 1)
+        self.assertEqual(result["queries"][1]["vector_status"], "budget_exhausted")
+        self.assertEqual(result["queries"][1]["sim_scores"], {})
+        self.assertEqual(result["queries"][2]["sim_scores"], {})
+
+    def test_vector_recursive_deadline_stops_before_another_rpc(self):
+        start_dt = datetime(2026, 3, 1, tzinfo=timezone.utc)
+        end_dt = datetime(2026, 3, 8, tzinfo=timezone.utc)
+
+        with patch.object(self.embedding_mod, "match_papers_by_embedding") as mock_match, patch.object(
+            self.embedding_mod.time,
+            "monotonic",
+            return_value=10.0,
+        ):
+            rows, success_count, failures = self.embedding_mod._query_supabase_vector_window(
+                url="https://example.supabase.co",
+                api_key="key",
+                rpc_name="match_arxiv_papers_exact",
+                query_embedding=[0.1, 0.2, 0.3],
+                match_count=3,
+                schema="public",
+                start_dt=start_dt,
+                end_dt=end_dt,
+                time_fields=("published",),
+                shard_days=7,
+                deadline_monotonic=10.0,
+            )
+
+        mock_match.assert_not_called()
+        self.assertEqual(rows, [])
+        self.assertEqual(success_count, 0)
+        self.assertIn("budget exhausted", failures[0])
 
 
 if __name__ == "__main__":

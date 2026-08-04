@@ -27,6 +27,7 @@ class GenerateDocsMetaParseTest(unittest.TestCase):
 
             llm_stub.DeepSeekClient = DummyDeepSeekClient
             llm_stub.resolve_max_output_tokens = lambda default=393216: default
+            llm_stub.is_non_retryable_llm_error = lambda _exc: False
             sys.modules["llm"] = llm_stub
 
         src_path = root / "src" / "6.generate_docs.py"
@@ -34,6 +35,59 @@ class GenerateDocsMetaParseTest(unittest.TestCase):
         cls.mod = importlib.util.module_from_spec(spec)
         assert spec and spec.loader
         spec.loader.exec_module(cls.mod)
+
+    def setUp(self):
+        self.mod.LLM_RUN_CIRCUIT_OPEN.clear()
+
+    def tearDown(self):
+        self.mod.LLM_RUN_CIRCUIT_OPEN.clear()
+
+    def test_non_retryable_llm_error_opens_run_wide_circuit(self):
+        class FatalClient:
+            def __init__(self):
+                self.kwargs = {}
+                self.calls = 0
+
+            def chat(self, **_kwargs):
+                self.calls += 1
+                raise RuntimeError("HTTP 402 Insufficient Balance")
+
+        client = FatalClient()
+        original_classifier = self.mod.is_non_retryable_llm_error
+        self.mod.is_non_retryable_llm_error = lambda _exc: True
+        try:
+            with self.assertRaisesRegex(RuntimeError, "402"):
+                self.mod.call_llm_text(
+                    client,
+                    [{"role": "user", "content": "test"}],
+                    temperature=0.2,
+                    max_tokens=32,
+                )
+            self.assertTrue(self.mod.LLM_RUN_CIRCUIT_OPEN.is_set())
+            self.assertEqual(
+                self.mod.call_llm_text(
+                    client,
+                    [{"role": "user", "content": "test again"}],
+                    temperature=0.2,
+                    max_tokens=32,
+                ),
+                "",
+            )
+            self.assertIsNone(
+                self.mod.call_llm_structured_json(
+                    client,
+                    [{"role": "user", "content": "structured"}],
+                    schema_name="test",
+                    schema={"type": "object"},
+                    temperature=0.2,
+                    max_tokens=32,
+                )
+            )
+            self.assertEqual(client.calls, 1)
+            self.mod.reset_llm_run_circuit()
+            self.assertFalse(self.mod.LLM_RUN_CIRCUIT_OPEN.is_set())
+        finally:
+            self.mod.is_non_retryable_llm_error = original_classifier
 
     def test_parse_meta_from_front_matter(self):
         md_path = Path("docs/201706/12/1706.03762v1-attention-is-all-you-need.md")
