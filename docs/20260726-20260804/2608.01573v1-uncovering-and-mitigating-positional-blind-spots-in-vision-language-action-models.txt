@@ -1,0 +1,392 @@
+Title: Uncovering and Mitigating Positional Blind Spots in Vision-Language-Action Models
+
+URL Source: https://arxiv.org/pdf/2608.01573v1
+
+Published Time: Tue, 04 Aug 2026 01:41:14 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> 1
+
+# Uncovering and Mitigating Positional Blind Spots in Vision-Language-Action Models 
+
+Dongdong An 
+
+Shanghai Normal University 
+
+Shanghai, China 
+
+Pengjie Zhao 
+
+Shanghai Normal University 
+
+Shanghai, China 
+
+Yihao Huang 
+
+East China Normal University 
+
+Shanghai, China 
+
+Wenbing Tang 
+
+Northwest A&F University 
+
+Yangling, Shaanxi, China 
+
+Ziming He 
+
+Northwest A&F University 
+
+Yangling, Shaanxi, China 
+
+Jiayi Zhu 
+
+Xidian University 
+
+Xi’an, Shaanxi, China 
+
+Jifeng Ning 
+
+Northwest A&F University 
+
+Yangling, Shaanxi, China 
+
+Qin Zhao 
+
+Shanghai Normal University 
+
+Shanghai, China 
+
+Abstract —Recent Vision-Language-Action (VLA) models achieve promising performance in robotic manipulation, typically measured by success rates aggregated over predefined object configurations, an evaluation that implicitly assumes spatially uniform competence across the workspace. However, this assump-tion does not hold: even with the instruction and every other scene factor held fixed, merely relocating a task-irrelevant distractor can sharply raise the failure probability within localized, spatially coherent regions, which we term Positional Blind Spots (PBS). In this paper, we propose a two-stage black-box framework to uncover and mitigate PBS. During the uncovering stage, we grid the workspace and apply a one-sided log-likelihood-ratio test to localize PBS cells with significantly elevated risk. During the mitigation stage, we fine-tune the policy via LoRA on demonstrations collected from these PBS regions, improving competence there while largely preserving performance across the rest of the workspace. We evaluate our framework on five state-of-the-art VLA policies across two benchmarks, and find that PBS are pervasive and spatially concentrated in all of them, with failure rates up to 0.58. Our search strategy achieves an average F1-score of 0.678, outperforming random search and adaptive sampling baselines by 0.268 and 0.178, respectively. Guided by the discovered regions, targeted fine-tuning reduces the overall failure rate by 40.00%–85.19%. 
+
+I. I NTRODUCTION 
+
+Enabling robots to follow natural language instructions from raw visual input has long been a central goal of robotic ma-nipulation, and Vision-Language-Action (VLA) models have emerged as the leading end-to-end approach toward this goal by mapping visual observations and language instructions directly to executable control actions [1], [2]. Built upon pre-trained foundation models and fine-tuned on large-scale robot demonstrations, VLA models integrate perception, reasoning, and action within a unified architecture, and have reported impressive success rates across a wide range of manipulation benchmarks [3], [4]. Beyond manipulation, the VLA paradigm is rapidly extending to broader embodied domains, such as autonomous driving [5], [6] and aerial navigation [7]. In these scenarios, the failure cost is no longer a benchmark statistic: an unexpected error may interrupt the task, damage objects, or even endanger humans. Therefore, reliability has become a prerequisite, rather than an afterthought, for bringing VLA models into the physical world. To assess the reliability of VLA models, existing evaluations mainly rely on predefined benchmarks that report average Original VLA Policy Mitigated VLA Policy 
+
+Fig. 1. Illustration of Positional Blind Spots (PBS) in VLA policies and PBS-guided mitigation. The heatmaps visualize failure rates conditioned on distractor positions, revealing localized positional vulnerabilities. 
+
+success rates over fixed tasks and environments [3], [8], [9]. Recent studies further investigate model robustness under various input variations, such as changes in object appearance, language instructions, or scene configurations [10]–[13]. How-ever, these evaluations largely overlook a fundamental factor in embodied tasks: object position. Since deployed objects can appear anywhere in the workspace rather than at the positions covered by training or evaluation, this gap raises a fundamental question left unanswered: does a VLA model’s competence hold uniformly across the workspace, or collapse in specific regions, a phenomenon we term Positional Blind Spots (PBS) .It raises a question that can PBS be systematically dis-covered. Identifying such spatial failures is challenging due to the continuous nature and large search space of the robot workspace. Unlike conventional testing where the input space can often be enumerated or discretized, the possible object positions in embodied tasks form a continuous space with infinitely many possible configurations. Meanwhile, PBS may only occupy a small and localized portion of the workspace, making them difficult to reveal through sparse or uniform sampling. Moreover, evaluating a VLA policy typically re-quires executing complete task rollouts and only provides binary success or failure feedback, without gradients, confi-dence scores, or internal representations to guide the search. Consequently, exhaustive evaluation over fine-grained spatial regions is prohibitively expensive, while limited evaluations may easily miss critical blind spots. This raises a fundamental challenge: how to efficiently explore the continuous workspace under a limited evaluation budget and reliably identify high-risk regions where VLA models exhibit positional failures. In this work, we propose a two-stage framework that un-covers and mitigates PBS in VLA policies without accessing arXiv:2608.01573v1 [cs.RO] 3 Aug 2026 2
+
+their internals. During the uncovering stage, we address the challenge of searching over a continuous spatial space by discretizing the feasible object-placement workspace into a finite set of spatial regions. Specifically, we partition the workspace into a spatial grid, sample rollout points uniformly within each cell, and apply a Log-Likelihood Ratio (LLR) test to identify cells whose failure rates are significantly higher than the overall workspace distribution. These cells are returned as the predicted blind-spot regions. During the mitigation stage, human experts teleoperate the robot arm to collect additional successful demonstrations within these identified regions. The policy is then fine-tuned via LoRA following its original adaptation procedure, without modifying its observation, action, or optimization interface. In this way, the framework uses PBS-guided demonstrations to improve spatial reliability while preserving the original policy interface. We evaluate PBS characterization, search, and mitigation on five representative VLA policies ( π0, π0.5, OpenVLA-OFT, UniVLA, and VLA-Adapter) across two benchmarks (LIBERO and VLA-Arena). Exhaustive spatial evaluation con-firms that PBS are pervasive: after introducing a single task-irrelevant distractor, every evaluated policy exhibits a failure rate ranging from 0.15 to 0.58, with failures spatially concen-trated rather than uniformly distributed across the workspace. Under the same search budget, our search strategy recovers these regions substantially more accurately than random and adaptive sampling baselines, improving the average F1-score by 0.268 and 0.178, respectively. In summary, our main contributions are as follows:  
+
+> •
+
+We identify and formalize Positional Blind Spots (PBS), a previously unexplored spatial vulnerability of VLA policies where the presence of task-irrelevant objects at specific workspace positions induces systematic failures.  
+
+> •
+
+We propose a two-stage black-box framework that uncov-ers PBS through spatial discretization and log-likelihood-ratio filtering, and mitigates them through search-guided policy fine-tuning, without modifying the policy architec-ture or interfaces.  
+
+> •
+
+Through exhaustive spatial evaluations on five VLA poli-cies across two benchmarks, we show that PBS consis-tently emerge across the evaluated settings, with failure rates up to 58%, and that targeted mitigation reduces the overall failure rate by up to 85%. II. R ELATED WORK 
+
+Vision-Language-Action (VLA) models.: VLA models map visual observations and language instructions to robot actions by adapting pretrained vision-language representa-tions with robot demonstrations. RT-2 [14] casts actions as language-like tokens, while OpenVLA [15] scales this paradigm with diverse robot data and efficient downstream adaptation. Recent models adopt diverse action-generation and adaptation mechanisms: π0 [16] uses a flow-matching action expert, π0.5 [17] introduces heterogeneous co-training, OpenVLA-OFT [18] combines continuous actions with action chunking and parallel decoding, UniVLA [19] learns trans-ferable task-centric representations, and VLA-Adapter [20] connects vision-language features to action prediction through a lightweight adapter. Broadly, these models cover distinct design directions in action generation and policy adaptation. 
+
+π0 and OpenVLA-OFT emphasize continuous or chunked action generation, while π0.5, UniVLA, and VLA-Adapter explore heterogeneous co-training, transferable task repre-sentations, and lightweight adaptation, respectively. Despite rapid progress in model architectures and adaptation strategies, ensuring robust and reliable behavior of VLA policies under diverse real-world variations remains an open challenge. In real-world manipulation scenarios, objects and environmental conditions may vary continuously, requiring VLA policies to maintain consistent performance beyond the configurations observed during training. 
+
+Evaluation and enhancement of VLA models.: Bench-marks such as LIBERO [8], VLABench [21], and VLA-Arena [22] assess transfer, semantic and long-horizon ma-nipulation, and robustness under structured task, language, and visual variations. Beyond benchmark-based evaluation, active testing methods further expose failures through scene mutations or semantics-preserving transformations [10], [11], while adversarial studies employ textual, visual, and cross-modal perturbations [12], [13], [23]. However, these ap-proaches either evaluate performance over predefined task distributions, modify multiple factors simultaneously, or in-troduce intentionally crafted perturbations; they do not ex-plicitly isolate the effect of task-irrelevant object relocation on VLA policy competence. Existing enhancement methods rely on additional demonstrations or task adaptation, while safety-oriented studies emphasize alignment [24] and failure interception [25]. Robustness-oriented work has only recently considered physical sensor attacks [26], leaving natural, task-preserving positional variations in manipulation largely un-explored. However, these methods do not directly connect localized positional diagnosis with targeted data collection. Different from existing approaches, our work investigates spatially concentrated positional vulnerabilities through black-box rollouts and uses the discovered regions to guide targeted demonstration collection and policy refinement. III. P RELIMINARIES 
+
+A. Motivation 
+
+We first examine the positional sensitivity of VLA policies through a concrete example. As shown in Figure 2(a), the policy successfully completes the task when a task-irrelevant distractor is placed at one feasible position. However, relocat-ing the same distractor to another feasible position causes the policy to fail. Across the two executions, the task objective, language instruction, task-relevant object configuration, robot initialization, camera view, and distractor attributes remain unchanged. Therefore, the presence of the distractor alone cannot explain the failure; instead, the behavioral difference is associated with the spatial position of the distractor in the workspace. We further examine distractor placements across the feasible workspace to determine whether this positional sensitivity oc-curs only at isolated coordinates or forms spatially structured 3a Object Perturbation Non-PBS Distractor PBS Distractor 
+
+> PBS Region b
+> Distractor Distractor PBS Region Localized Positional Vulnerability High-Risk Cells
+> Fig. 2. Impact of distractor position on VLA task success.
+
+regions. Figure 2(b) shows that positions where the distractor induces elevated failure rates form a localized and spatially co-herent region, with neighboring placements exhibiting similar failure risks. A policy may therefore remain reliable when the distractor is placed in most regions of the workspace while exhibiting substantially higher failure probability when the same distractor is placed within a small subset of positions. Such localized vulnerabilities can be obscured by aggregate task-level success rates, which average performance across low- and high-risk locations, despite their practical relevance when task-irrelevant objects appear at diverse feasible posi-tions during deployment. We term these localized regions of elevated failure proba-bility as Positional Blind Spots (PBS). This observation raises two practical questions: how can PBS be uncovered under a black-box setting with limited rollout budgets, and how can the discovered regions guide targeted policy refinement? The next subsection formalizes this problem. 
+
+B. Problem Definition VLA task execution.: Consider a manipulation task T with language instruction ℓ, a task-relevant target object xtar , and a task-irrelevant distractor object xdis , together with a task-adapted VLA policy πθ . The policy is expected to manipulate 
+
+xtar according to ℓ, while ignoring xdis . Let Ω ⊂ R2 denote the feasible placement region of the task-irrelevant distractor. For each position z ∈ Ω, we initialize the environment by placing the distractor at z, while keeping the task objective, language instruction, task-relevant object configuration, robot initialization, camera configuration, and distractor attributes unchanged. During execution, the policy receives visual obser-vations ot and predicts actions conditioned on the instruction 
+
+ℓ:
+
+at ∼ πθ (· | ot, ℓ ). (1) The generated actions induce a trajectory τ (z). We define the binary execution outcome as Yθ (z) ∈ { 0, 1}, where Yθ (z) = 1 
+
+indicates task failure and Yθ (z) = 0 indicates successful completion. The position-conditioned failure probability is then defined as 
+
+pθ (z) = P (Yθ (z) = 1 | z). (2) Thus, pθ (z) captures the failure risk induced by placing the same distractor at position z, while controlling other task and scene factors. A high value of pθ (z) indicates that the distractor placement at z substantially increases the likelihood of task failure compared with other feasible placements. 
+
+Positional Blind Spots (PBS).: Based on the position-conditioned failure probability pθ (z) of a VLA policy, we define Positional Blind Spots (PBS) as spatial regions where placing the same task-irrelevant distractor leads to substan-tially higher failure risk than the average failure risk over the workspace. Let μ denote a reference distribution over feasible distractor positions, instantiated as the uniform distribution over Ω. The workspace-level failure probability is defined as 
+
+¯pθ = Ez∼μ [pθ (z)] . (3) Given a risk margin δ > 0, we can define the theoretical PBS set as 
+
+Bθ (δ) = {z ∈ Ω | pθ (z) ≥ ¯pθ + δ} . (4) Each spatially connected component of Bθ (δ) corresponds to a Positional Blind Spot (PBS), representing a localized workspace region where the task-irrelevant distractor induces substantially higher failure risk than the average risk over the workspace. This definition characterizes relative excess failure risk and requires no access to policy gradients, confidence scores, attention maps, or other internal model signals. In practice, Bθ (δ) is unknown and must be estimated through black-box rollouts under a limited evaluation budget. 
+
+PBS uncovering and mitigation problem.: Given that the true PBS region Bθ (δ) is unknown, the PBS uncovering problem aims to identify an estimated region bB using only black-box rollout outcomes under a limited evaluation budget 
+
+Q, such that bB closely approximates Bθ (δ) through efficient allocation of rollouts to informative positions. Based on the discovered region ˆB, the PBS mitigation problem aims to collect successful demonstrations at positions within ˆB and adapt the VLA policy to reduce failure risks within PBS regions while preserving performance on non-PBS regions. This formulation decomposes the PBS problem into two stages: identifying spatial regions with elevated failure risks and improving policy performance within those regions. The following methodology instantiates these two stages. IV. M ETHODOLOGY 
+
+A. Overview 
+
+Based on the problem definition, the distractor position is the only scene variable systematically changed, while the target object configuration, task objective, and VLA policy remain fixed. During evaluation, the policy is accessed solely through binary rollout outcomes. As illustrated in Figure 3, our framework consists of two major stages: PBS uncovering and PBS-guided mitigation. In the uncovering stage, we partition the feasible placement region into spatial cells and perform black-box rollouts by uniformly sampling positions within each cell. The collected rollout outcomes are then analyzed using an LLR-based extraction procedure to rank spatial cells according to their failure risk and identify the predicted 4(a) Uncovering Positional Blind Spots 1 Black-Box Spatial Probing LLR-Based PBS Extraction (b) Mitigating Positional Blind Spots Success Failure cutoff LLR Filtering Ranked LLR Predicted Positional Blind Spots PBS-Guided Policy Refinement 2Instruction 
+
+> Black-Box VLA Policy Observation N×N Spatial Cells K Rollouts / cell 3
+> PBS-Guided Demo Set Base VLA Policy LoRA Adapter
+> Refined VLA Policy
+> Fig. 3. Pipeline of the proposed framework for uncovering and mitigating Positional Blind Spots (PBS).
+
+PBS regions. In the mitigation stage, we collect successful demonstrations from the discovered PBS regions and refine the VLA policy through LoRA-based adaptation, yielding a more robust policy against positional failures. 
+
+B. Uncovering Positional Blind Spots 
+
+The uncovering stage identifies spatial regions where the placement of the task-irrelevant distractor object xdis at po-sition z increases the failure risk of manipulating the target object xtar . We consider a black-box setting in which the policy is queried only through complete rollouts, and only binary success or failure outcomes are observed. We formulate this process as a budgeted spatial search based on uniform sampling and statistical risk comparison. Let Ω ⊂ R2 denote the feasible distractor-placement region. We discretize Ω into an N × N uniform grid containing N 2
+
+cells, denoted as {gi}N 2
+
+> i=1
+
+, such that 
+
+Ω =  
+
+> N2
+
+[
+
+> i=1
+
+gi, gi ∩ gj = ∅, ∀i̸ = j. (5) For each cell gi, we uniformly sample K valid positions and execute one rollout at each position, resulting in a total budget of Q = N 2K policy executions. This discretization enables systematic coverage of the placement region while retaining sufficient spatial resolution to localize concentrated failures. All task and scene factors, including the target object configuration, language instruction, and robot initialization, remain fixed except for the distractor position. Let ci denote the number of failures observed in cell gi, and let its empirical failure probability be ˆpi = ci/K , which provides a local estimate of failure risk for subsequent PBS identification. The uniform allocation of rollouts across cells enables com-parable estimation of failure risk across cells, as each cell is evaluated with the same number of trials. However, empirical failure probability alone cannot distinguish a localized posi-tional vulnerability from the policy’s overall failure rate, since cells may exhibit high failure probabilities simply because the policy is generally difficult on the task. We therefore assign each cell an LLR score to measure whether its observed failure rate represents a localized increase relative to the surrounding workspace. For a cell gi, the null hypothesis assumes that its failure probability is equal to that of the remaining workspace, whereas the alternative hypothesis assumes a higher failure probability within the cell. The likelihoods are computed from the observed binomial failure counts, and the LLR score is set to zero when the empirical failure probability within the cell does not exceed that of the remaining workspace. A higher LLR score indicates stronger evidence that the cell corresponds to a localized region with elevated failure risk, and the scores are subsequently used to rank cells for PBS extraction. After computing the LLR score for each cell, we rank all cells in descending order and retain the M highest-scoring cells, where 1 ≤ M ≤ N 2 denotes the number of selected cells. Denoting the ordering by ⟨g(1) , . . . , g (N 2)⟩, the predicted positional blind-spot set is 
+
+ˆB = g(1) , . . . , g (M ) . (6) The selection size M determines the spatial support forwarded to the mitigation stage and is fixed across different policies un-der the same experimental setting. Adjacent selected cells are merged into the same blind-spot region, whereas disconnected cell groups are treated as distinct blind spots. The resulting region ˆB is used to guide targeted demonstration collection in the mitigation stage. 
+
+C. Mitigating Positional Blind Spots 
+
+After identifying PBS, we collect additional demonstrations from these high-risk areas and adapt the VLA policy to reduce positional failures while preserving its behavior over the remaining workspace. The key idea is to augment the policy with successful executions under previously vulnerable distractor configurations, while keeping other task and scene factors unchanged. Let ˆB denote the PBS region discovered by the uncovering stage. We sample Ndemo valid distractor positions zj ∈ ˆB and place the distractor object xdis at each sampled position. For 5
+
+each sampled position, we place the distractor object accord-ingly and teleoperate the robot to execute the target manipula-tion task, collecting a successful demonstration trajectory. Let 
+
+τj (zj ) =  o(j) 
+
+> t
+
+, a (j)
+
+> t
+
+Tj 
+
+> t=0
+
+denote the collected demonstration trajectory. The PBS-guided demonstration dataset is defined as 
+
+DPBS = {τj (zj )}Ndemo  
+
+> j=1
+
+, (7) where each collected trajectory satisfies χ(τj (zj )) = 1 . The task objective, target object configuration, language instruc-tion, and environment configuration remain unchanged, with the distractor position being the only factor different from the original fine-tuning data. These demonstrations provide additional coverage of positional configurations where the policy previously exhibited elevated failure risks. We then fine-tune the policy using the newly collected PBS-guided demonstrations, following its native adaptation procedure. Let θ denote the frozen parameters of the original policy and ϕ denote the trainable LoRA parameters. Using the policy’s original training objective Lnative , the LoRA parameters are optimized as 
+
+ϕ∗ = arg min 
+
+> ϕ
+
+1
+
+Ndemo 
+
+> Ndemo
+
+X
+
+> j=1
+
+Lnative 
+
+ πθ,ϕ ; τj
+
+. (8) Consequently, the mitigated policy is obtained as πmit =
+
+πθ,ϕ ∗ . In particular, we retain the original observation space, action representation, optimization objective, and training hy-perparameters, while updating only the parameters introduced by LoRA adaptation. Overall, the proposed mitigation procedure first identifies PBS through black-box uncovering, then collects PBS-guided demonstrations, and finally adapts the VLA policy using the collected data. This search-guided adaptation focuses the limited demonstration effort on vulnerable positional configu-rations while preserving the original task execution procedure. By avoiding additional supervision over already reliable re-gions, the proposed strategy enables targeted policy refinement with limited demonstration resources. V. EXPERIMENTS 
+
+A. Experiment Setup Models and Benchmarks.: We evaluate five representa-tive VLA models, including π0, π0.5, OpenVLA-OFT, Uni-VLA, and VLA-Adapter, on two manipulation benchmarks: LIBERO [8] and VLA-Arena [22]. On LIBERO, all five models are evaluated using their corresponding LIBERO-adapted checkpoints. On VLA-Arena, we evaluate π0, π0.5,OpenVLA-OFT, and UniVLA using their corresponding VLA-Arena-adapted checkpoints. VLA-Adapter is not included in the VLA-Arena evaluation because a publicly available VLA-Arena-adapted checkpoint is unavailable. 
+
+Evaluation Metrics.: We evaluate positional vulnerability using LLR, Global Moran’s I, and failure rate (FR), which characterize regional risk contrast, spatial autocorrelation, and overall failure frequency, respectively. PBS uncovering per-formance is evaluated using Precision, Recall, F1-score, and Intersection over Union (IoU). To perform exhaustive spatial evaluation, we discretize the feasible distractor-placement workspace using the default distractor footprint as the cell size, yielding a 14 × 14 ground-truth evaluation grid Ggt . For a candidate region A ⊆ G gt , let 
+
+(nin , c in ) and (nout , c out ) denote the rollout and failure counts inside and outside A. The LLR score is computed as 
+
+LLR( A) = I[ˆ pin > ˆpout ] log L(H1; A)
+
+L(H0; A) , (9) where ˆpin = cin /n in and ˆpout = cout /n out . We compute 
+
+LLR i = LLR( {gi}) for each cell, rank positive scores in descending order, and apply Kneedle to identify the reference PBS region. To further characterize the spatial structure of positional vulnerability, we compute Global Moran’s I [27] over cell-wise LLR scores: 
+
+I = |G| 
+
+W
+
+P
+
+> i
+
+P 
+
+> j
+
+wij (xi − ¯x)( xj − ¯x)
+
+P
+
+> i
+
+(xi − ¯x)2 , (10) where xi = LLR i, W = P
+
+> i
+
+P 
+
+> j
+
+wij , and wij denotes the four-neighbor spatial weight. FR is computed as the fraction of failed rollouts over the exhaustive evaluation. For PBS uncovering evaluation, the exhaustive evaluation-derived PBS region is treated as the reference, while ˆB is treated as the predicted region. Precision, Recall, F1-score, and IoU measure the localization accuracy and coverage. 
+
+B. PBS Uncovering and Mitigation Performance 
+
+We first investigate whether task-irrelevant distractors in-duce systematic positional vulnerabilities in VLA policies. As shown by the pre-mitigation results in Table I, all evaluated policies exhibit substantial positional failures, with FR ranging from 0.15 to 0.58 across LIBERO and VLA-Arena. The high LLR values indicate that failures are not uniformly distributed across the workspace but concentrated in specific distractor-placement regions, while the positive Moran’s I values demon-strate clear spatial autocorrelation of these vulnerable regions. Moreover, Figure 4 reveals that different VLA policies exhibit distinct high-risk locations and spatial extents, suggesting that PBS are architecture-dependent rather than solely determined by the task environment. We next evaluate whether PBS-guided mitigation can ef-fectively reduce positional vulnerability. As shown by the post-mitigation results in Table I, PBS-guided fine-tuning consistently improves positional robustness across all evalu-ated settings. Specifically, LLR decreases by 92 .61% –99 .93% ,indicating that the risk contrast between vulnerable and non-vulnerable regions is substantially reduced, while FR de-creases by 40 .00% –85 .19% , demonstrating improved overall task reliability. Moran’s I also decreases for all policies on LIBERO and most policies on VLA-Arena, suggesting that the remaining failures become less spatially concentrated. The only exception is π0.5 on VLA-Arena, where Moran’s 
+
+I slightly increases despite reductions in LLR and FR, indi-cating that a small number of residual failures remain locally correlated. Consistently, Figure 4 shows that the previously concentrated high-LLR regions become substantially weaker after mitigation, confirming that PBS-guided demonstrations 6
+
+Table I. Quantitative results of positional vulnerability before and after PBS-guided mitigation. 
+
+Dataset LIBERO VLA-Arena Stage Pre-Mitigation Post-Mitigation Pre-Mitigation Post-Mitigation Model / Metric LLR ↓ Moran’s I ↓ FR ↓ LLR ↓ Moran’s I ↓ FR ↓ LLR ↓ Moran’s I ↓ FR ↓ LLR ↓ Moran’s I ↓ FR ↓
+
+π0 644.03 0.70 0.27 0.43 0.24 0.04 491.05 0.61 0.49 7.32 0.29 0.16 
+
+π0.5 950.42 0.86 0.31 8.17 0.28 0.16 55.51 0.21 0.36 4.10 0.24 0.10 
+
+OpenVLA-OFT 1954.03 0.75 0.33 80.59 0.31 0.11 631.02 0.66 0.58 5.95 0.27 0.26 
+
+UniVLA 445.10 0.49 0.15 1.25 0.29 0.09 969.56 0.45 0.24 6.74 0.21 0.07 
+
+VLA-Adapter 776.31 0.55 0.36 8.58 0.22 0.15 – – – – – –LLR 644.03                              
+
+> Moran 0.7
+> FR 0.27
+> LLR 0.43
+> Moran 0.24
+> FR 0.04
+> LLR 950.42
+> Moran 0.86
+> FR 0.31
+> LLR 8.17
+> Moran 0.28
+> FR 0.16
+> LLR 1954.03
+> Moran 0.75
+> FR 0.33
+> LLR 80.59
+> Moran 0.31
+> FR 0.11
+> LLR 445.1
+> Moran 0.49
+> FR 0.15
+> LLR 1.25
+> Moran 0.29
+> FR 0.09
+> LLR 776.31
+> Moran 0.55
+> FR 0.36
+> LLR 8.58
+> Moran 0.22
+> FR 0.15
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Original Mitigated
+
+π0 π0.5 OpenVLA-oft UniVLA VLA-Adapter 
+
+Fig. 4. Visualization of cell-wise LLR distributions before and after PBS-guided mitigation. 
+
+effectively target vulnerable positional configurations and im-prove positional robustness. 
+
+C. Comparison with Existing Search Strategies 
+
+In this section, we compare our method with two baseline sampling strategies under the same evaluation budget. Specif-ically, Full-Region Random Sampling draws uniformly over the workspace, while Two-Stage Adaptive Sampling runs five rollouts per cell, then assigns the rest to the top-10 cells. All methods operate on the same 7 × 7 search grid with a shared budget of 980 policy executions and return seven cells as the predicted PBS region. As shown in Table II, our method consistently outperforms both baselines across all evaluated policies. On average, our method achieves Precision, Recall, F1-score, and IoU of 0.636 , 0.824 , 0.678 , and 0.528 ,respectively, improving F1-score by 0.268 over Random Sam-pling and by 0.178 over Adaptive Search. The higher recall demonstrates that uniform cell-wise allocation provides more reliable risk estimation over the workspace and reduces the likelihood of missing localized high-risk regions. In contrast, Random Sampling may suffer from insufficient observations for individual cells, while Adaptive Search may prematurely focus on regions with high initial but unreliable risk estimates. By maintaining balanced exploration across candidate regions, our method achieves more accurate PBS localization under limited rollout budgets. Overall, these results demonstrate that our approach effectively uncovers PBS using only 980 rollouts, requiring only one tenth of the executions used by exhaustive evaluation. 
+
+D. Ablation and Generalization Analysis Effect of search granularity.: We investigate the effect of search granularity on PBS uncovering using π0.5 on LIBERO by varying the workspace discretization resolution. Specifi-cally, we divide the workspace into an N × N grid and select the highest-ranked cells according to one-sided LLR scores. We test N ∈ { 4, 5, 6, 7, 8} with K = 20 executions per cell, resulting in a budget of Q = 20 N 2. As shown in Table III, 
+
+N = 7 achieves the best overall localization performance across all metrics. Coarser grids provide insufficient spatial resolution and may merge neighboring but distinct vulnerable regions, whereas finer grids require substantially more rollouts to estimate cell-wise risks without consistent performance gains. Therefore, we adopt N = 7 as the default configuration for PBS uncovering. 
+
+Effect of mitigation rounds.: Table IV summarizes the effect of mitigation rounds on positional robustness using π0.5
+
+on LIBERO. The first mitigation round substantially reduces all metrics, decreasing LLR from 950 .42 to 8.17 , Moran’s 
+
+I from 0.86 to 0.28 , and FR from 0.31 to 0.16 . Further rounds continue to reduce LLR but provide limited and non-monotonic improvements in Moran’s I and FR. These results 7
+
+Table II. PBS uncovering performance of different sampling strategies under the same rollout budget. 
+
+Model Method Prec. ↑ Rec. ↑ F1 ↑ IoU ↑
+
+π0
+
+Random 0.50 0.70 0.58 0.41 Adaptive 0.61 0.74 0.67 0.50 Ours 0.64 0.78 0.71 0.55 
+
+π0.5
+
+Random 0.47 0.68 0.56 0.38 Adaptive 0.50 0.73 0.59 0.42 Ours 0.75 0.95 0.84 0.72 
+
+OpenVLA-OFT Random 0.43 0.35 0.39 0.24 Adaptive 0.71 0.59 0.65 0.48 Ours 0.93 0.63 0.75 0.60 
+
+UniVLA Random 0.07 0.25 0.11 0.06 Adaptive 0.14 0.50 0.22 0.13 Ours 0.29 1.00 0.44 0.29 
+
+VLA-Adapter Random 0.36 0.47 0.41 0.26 Adaptive 0.32 0.43 0.37 0.23 Ours 0.57 0.76 0.65 0.48 
+
+Average Random 0.366 0.490 0.410 0.270 Adaptive 0.456 0.598 0.500 0.352 Ours 0.636 0.824 0.678 0.528 
+
+Table III. Effect of search configuration on PBS uncovering. 
+
+Metric / N 4 5 6 7 8Precision ↑ 0.38 0.48 0.58 0.75 0.55 Recall ↑ 0.84 0.86 0.86 0.95 0.62 F1-score ↑ 0.52 0.62 0.69 0.84 0.58 IoU ↑ 0.35 0.45 0.53 0.72 0.41 
+
+Table IV. Effect of mitigation rounds on positional robustness. 
+
+Metric / r 0 1 2 3LLR ↓ 950.42 8.17 3.47 2.64 
+
+Moran’s I ↓ 0.86 0.28 0.21 0.22 FR ↓ 0.31 0.16 0.08 0.10 
+
+show that most positional vulnerabilities can be corrected through a single targeted adaptation, and we therefore adopt one mitigation round as a practical trade-off between robust-ness and adaptation cost. 
+
+Generalization across adaptation strategies.: Table V shows the positional robustness of π0.5 checkpoints adapted on different datasets. The three existing adaptation strategies exhibit high positional vulnerability, with an average LLR of 515 .09 , Moran’s I of 0.60 , and FR of 0.33 . The PBS-guided checkpoint reduces LLR to 8.17 and FR to 0.16 while maintaining a low Moran’s I of 0.28 , showing the benefit of targeted positional supervision. Although the VLA-Arena-adapted checkpoint achieves the lowest Moran’s I among ex-isting adaptation checkpoints, its higher FR than the LIBERO-adapted checkpoint shows that lower spatial autocorrelation does not necessarily imply fewer failures. 
+
+Generalization across benchmarks.: We evaluate the original and PBS-guided fine-tuned π0.5 policies on unseen benchmarks using success rate (SR) and normalized soft in-struction score (IS). Table VI shows improved performance on VLA-Arena and higher VLABench IS after PBS-guided fine-
+
+Table V. Generalization of π0.5 under different adaptations. 
+
+Metric LIBERO VLA-Arena VLABench Average Ours LLR ↓ 950.42 55.51 539.34 515.09 8.17 
+
+Moran’s I ↓ 0.86 0.21 0.73 0.60 0.28 FR ↓ 0.31 0.36 0.33 0.33 0.16 
+
+Table VI. Cross-benchmark generalization of fine-tuned VLA. 
+
+Benchmark VLABench VLA-Arena Policy / Metric SR ↑ IS ↑ SR ↑ IS ↑
+
+Original 0.00 0.28 0.04 0.43 Fine-tuned 0.00 0.32 0.14 0.60 
+
+tuning, indicating that the proposed mitigation can generalize beyond the original LIBERO benchmark. VI. C ONCLUSION 
+
+In this work, we identify Positional Blind Spots (PBS), localized regions where relocating a task-irrelevant distractor systematically increases failure risk in VLA policies. We pro-pose a two-stage framework that uncovers PBS through spatial probing and LLR-based analysis, and mitigates them using PBS-guided demonstrations and LoRA adaptation. Experi-ments on five VLA policies across two benchmarks demon-strate that our framework accurately localizes PBS regions and effectively reduces positional vulnerability. REFERENCES [1] Y. Ma, Z. Song, Y. Zhuang, J. Hao, and I. King, “A survey on vision– language–action models for embodied ai,” IEEE Transactions on Neural Networks and Learning Systems , 2026. [2] H. Li, S. Yang, Y. Chen, X. Chen, X. Yang, Y. Tian, H. Wang, T. Wang, D. Lin, F. Zhao et al. , “Towards efficient and robust manipulation via multi-frame vision-language-action modeling,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 40, no. 22, 2026, pp. 18 388–18 396. [3] B. Zhang, J. Li, J. Shen, Y. Zhang, Y. Cai, Y. Chen, J. Dai, J. Ji, and Y. Yang, “Vla-arena: An open-source framework for benchmarking vision-language-action models,” arXiv preprint arXiv:2512.22539 , 2025. [4] S. Xu, Y. Wang, C. Xia, D. Zhu, T. Huang, and C. Xu, “Vla-cache: Efficient vision-language-action manipulation via adaptive token caching,” Advances in Neural Information Processing Systems , vol. 38, pp. 164 448–164 473, 2026. [5] Z. Yang, Y. Chai, X. Jia, Q. Li, Y. Shao, X. Zhu, H. Su, and J. Yan, “Drivemoe: Mixture-of-experts for vision-language-action model in end-to-end autonomous driving,” in Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition , 2026, pp. 10 678– 10 688. [6] S. Jiang, Z. Huang, K. Qian, Z. Luo, T. Zhu, Y. Zhong, Y. Tang, M. Kong, Y. Wang, S. Jiao et al. , “A survey on vision-language-action models for autonomous driving,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2025, pp. 4524–4536. [7] J. Chen, H. Li, Z. Tang, X. Li, W. Wu, and S. Liu, “Aerialvla: A vision-language-action model for aerial navigation with online dialogue,” in 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , vol. 40, no. 22, 2026, pp. 18 161–18 169. [8] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone, “Libero: Benchmarking knowledge transfer for lifelong robot learning,” Advances in Neural Information Processing Systems , vol. 36, pp. 44 776–44 791, 2023. [9] J. Fan, W. Xu, O. Sokolsky, I. Lee, and F. Kong, “Safevla-bench: A benchmark for the success-safety gap in vision-language-action models,” 
+
+arXiv preprint arXiv:2606.00773 , 2026. 8
+
+[10] Z. Wang, Z. Zhou, J. Song, Y. Huang, Z. Shu, and L. Ma, “Vlatest: Testing and evaluating vision-language-action models for robotic ma-nipulation,” Proceedings of the ACM on Software Engineering , vol. 2, no. FSE, pp. 1615–1638, 2025. [11] P. Valle, S. Segura, S. Ali, and A. Arrieta, “Metamorphic testing of vision-language action-enabled robots,” arXiv preprint arXiv:2602.22579 , 2026. [12] T. Wang, C. Han, J. Liang, W. Yang, D. Liu, L. X. Zhang, Q. Wang, J. Luo, and R. Tang, “Exploring the adversarial vulnerabilities of vision-language-action models in robotics,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2025, pp. 6948–6958. [13] Y. Yan, Y. Xie, Y. Zhang, L. Lyu, H. Wang, and Y. Jin, “When alignment fails: Multimodal adversarial attacks on vision-language-action models,” 
+
+arXiv preprint arXiv:2511.16203 , 2025. [14] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid et al. , “Rt-2: Vision-language-action models transfer web knowledge to robotic control,” in Conference on Robot Learning . PMLR, 2023, pp. 2165–2183. [15] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. P. Foster, P. R. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn, “Openvla: An open-source vision-language-action model,” in Proceedings of The 8th Conference on Robot Learning , ser. Proceedings of Machine Learning Research, P. Agrawal, O. Kroemer, and W. Burgard, Eds., vol. 270. PMLR, 06–09 Nov 2025, pp. 2679–2713. [Online]. Available: https://proceedings.mlr.press/v270/kim25c.html [16] K. Black, N. Brown, D. Driess, A. Esmail, M. R. Equi, C. Finn, N. Fusai, and L. Groom, “ π0: A vision-language-action flow model for general robot control,” in Proceedings of Robotics: Science and Systems ,LosAngeles, CA, USA, June 2025. [17] B. Kevin, B. Noah, D. James, D. Karan, D. Danny, E. Adnan, E. Michael, F. Chelsea, F. Niccolo et al. , “ π0. 5 a vision-language-action model with open-world generalization,” arXiv preprint arXiv:2504.16054 , 2025. [18] M. J. Kim, C. Finn, and P. Liang, “Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success,” in Proceedings of Robotics: Science and Systems , LosAngeles, CA, USA, June 2025. [19] Q. Bu, Y. Yang, J. Cai, S. Gao, G. Ren, M. Yao, P. Luo, and H. Li, “Learning to Act Anywhere with Task-centric Latent Actions,” in 
+
+Proceedings of Robotics: Science and Systems , LosAngeles, CA, USA, June 2025. [20] Y. Wang, P. Ding, L. Li, C. Cui, Z. Ge, X. Tong, W. Song, H. Zhao, W. Zhao, P. Hou, and e. al, “VLA-Adapter: An Effective Paradigm for Tiny-Scale Vision-Language-Action Model,” 
+
+Proceedings of the AAAI Conference on Artificial Intelligence ,vol. 40, no. 22, pp. 18 638–18 646, Mar. 2026. [Online]. Available: https://ojs.aaai.org/index.php/AAAI/article/view/38931 [21] S. Zhang, Z. Xu, P. Liu, X. Yu, Y. Li, Q. Gao, Z. Fei, Z. Yin, Z. Wu, Y.-G. Jiang, and X. Qiu, “Vlabench: A large-scale benchmark for language-conditioned robotics manipulation with long-horizon reasoning tasks,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , October 2025, pp. 11 142–11 152. [22] B. Zhang, J. Li, J. Shen, Y. Zhang, Y. Cai, Y. Chen, J. Dai, J. Ji, and Y. Yang, “VLA-arena: An open-source framework for benchmarking vision-language-action models,” in Forty-third International Conference on Machine Learning , 2026. [Online]. Available: https://openreview.net/forum?id=qjeCH95rbF [23] E. K. Jones, A. Robey, A. Zou, Z. Ravichandran, G. J. Pappas, H. Hassani, M. Fredrikson, and J. Z. Kolter, “Adversarial attacks on robotic vision language action models,” in RSS 2025 Workshop on Reliable Robotics: Safety and Security in the Face of Generative AI ,2025. [Online]. Available: https://openreview.net/forum?id=a8rkUEN0qt [24] B. Zhang, Y. Zhang, J. Ji, Y. Lei, J. Dai, Y. Chen, and Y. Yang, “SafeVLA: Towards safety alignment of vision-language-action model via constrained learning,” in The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2025. [Online]. Available: https://openreview.net/forum?id=dt940loCBT [25] Q. Gu, Y. Ju, S. Sun, I. Gilitschenski, H. Nishimura, M. Itkina, and F. Shkurti, “Safe: Multitask failure detection for vision-language-action models,” in Advances in Neural Information Processing Systems , D. Belgrave, C. Zhang, H. Lin, R. Pascanu, P. Koniusz, M. Ghassemi, and N. Chen, Eds., vol. 38. Curran Associates, Inc., 2025, pp. 40 041–40 076. [Online]. Available: https://proceedings.neurips.cc/paper files/paper/ 2025/file/392d0d05e2f514063e6ce6f8b370834c-Paper-Conference.pdf [26] X. Lu, J. Chen, S. Xiao, Z. Jin, Z. Chen, H. Yu, B. Qian, R. Zhou, X. Ji, and W. Xu, “Phantom menace: Exploring and enhancing the robustness of VLA models against physical sensor attacks,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 40, no. 42, 2026, pp. 35 689–35 697. [27] R. Burgert, Y. Xu, W. Xian, O. Pilarski, P. Clausen, M. He, L. Ma, Y. Deng, L. Li, M. Mousavi, M. Ryoo, P. Debevec, and N. Yu, “Go-with-the-flow: Motion-controllable video diffusion models using real-time warped noise,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2025, pp. 13–23.

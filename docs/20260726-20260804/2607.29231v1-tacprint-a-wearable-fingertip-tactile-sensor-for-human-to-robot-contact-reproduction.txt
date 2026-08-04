@@ -1,0 +1,511 @@
+Title: TacPrint: A Wearable Fingertip Tactile Sensor for Human-to-Robot Contact Reproduction
+
+URL Source: https://arxiv.org/pdf/2607.29231v1
+
+Published Time: Mon, 03 Aug 2026 00:42:43 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> 1
+
+# TacPrint: A Wearable Fingertip Tactile Sensor for Human-to-Robot Contact Reproduction 
+
+Yongxi Liu 1, Chaofan Zhang 1, Xingyu Zhang 1, Xiangyin Bao 1, Boyue Zhang 1, Shaowei Cui 1,2,3,* , and Shuo Wang 1
+
+> 1
+
+Institute of Automation, Chinese Academy of Sciences 
+
+> 2
+
+Imprintx Robotics 
+
+> 3
+
+Beijing Academy of Artificial Intelligence 
+
+Abstract —Human-centric data collection is emerging as asignificant paradigm for robot skill acquisition, but seamlessly integrating low-cost, scalable tactile sensing systems that capture fine-grained fingertip interactions without compromising natural operation remains a key challenge. This reduces the reliability of human-to-robot transfer in contact-rich tasks. In this work, we present TacPrint, a wearable fingertip tactile sensor, where protrusions on the inner surface of the silicone skin are aligned one-to-one with 24 capacitive taxels to enable localized capacitive responses. A real-to-sim-to-real pipeline estimates a 35 × 26 
+
+contact-depth map from 24-channel capacitive signals. Against simulation-generated labels, the model achieved a contact-region RMSE of 0.223 ± 0.161 mm, a weighted-centroid error of 
+
+1.213 ±2.379 pixels, and an IoU of 0.829 ±0.169 . With measured capacitive inputs, the network-predicted depth evaluated at the guide-calibrated contact center showed a mean absolute error of 
+
+0.085 ± 0.057 mm across all 40 controlled trials, while the mean contact-position error was 0.250 ± 0.208 mm across the 37 trials whose reference contact regions were not truncated by the sensing boundary. In human-to-robot replay, tactile-guided compensation increased grasping and wiping success rates from 0% to 91.67% and 90%, respectively. In closed-loop grasping, dense-depth feedback achieved success rates of 87.5% over all tested positions and 85% under edge-contact conditions, compared with 67.5% and 45% for raw-taxel feedback. 
+
+Index Terms —Force and Tactile Sensing, Learning from Demonstration, Dexterous Manipulation. 
+
+I. I NTRODUCTION 
+
+# HIgh-quality data is central to intelligent robotic ma-nipulation, as the performance of skill learning and transfer is fundamentally bounded by the fidelity of the demon-strations collected. To obtain such data, various collection paradigms have been developed, ranging from teleoperation and kinesthetic teaching [1]–[5] to motion-capture-based and other demonstration-driven approaches [6]–[12]. Among them, human-centric data collection has emerged as a promising direction because it enables natural and efficient acquisition of manipulation behaviors, especially for dexterous, contact-rich tasks. However, current human-centric pipelines still predominantly focus on vision and kinematics and therefore lack precise tactile acquisition of the contact states critical to manipulation. To bridge this gap, a range of tactile sensors has been developed to recover contact geometry and local interaction patterns, including several vision-based or capacitive high-resolution tactile sensing systems [13]–[18]. These devices  
+
+> *Corresponding author: shaowei.cui@ia.ac.cn
+
+# 图1    
+
+> Fig. 1. TacPrint is a compact, low-cost wearable fingertip sensor that estimates a35 ×26 contact-depth map from 24-channel capacitive signals.
+
+demonstrate the ability to capture fine-grained contact infor-mation, including shape, deformation, and depth. For human-centric data collection, however, tactile sensing should ideally be embedded in a form factor that can be worn directly on the fingers during natural demonstrations. Motivated by this need, prior studies have explored wearable tactile fin-gertips [19]–[22], which show that rich contact information can, in principle, be acquired in a wearable manner. However, existing solutions still struggle to simultaneously provide com-pact wearability, an informative local contact representation, adaptable mounting for human fingertips and selected robotic hands, and low-cost scalable deployment. Achieving a balance between sensing richness and practical usability therefore remains challenging. We present TacPrint, a compact wearable fingertip sensor that adds 7.8 mm of fingertip thickness and costs approx-imately $50. An adjustable Velcro strap accommodates the tested range of human fingertip dimensions, while customiz-able connectors enable installation on selected robotic hands. Its taxel-aligned silicone protrusions provide localized and structured contact transduction. To recover dense contact-depth information from sparse measurements, we map short temporal sequences of 24-channel capacitive measurements to 35 × 26 depth maps. We conducted three complementary evaluations: compar-ing configuration-referenced depth and contact location from simulation-generated labels with controlled physical contacts to examine the label-generation procedure; comparing net-work predictions from measured capacitive inputs with the arXiv:2607.29231v1 [cs.RO] 31 Jul 2026 2
+
+corresponding physical contact configurations to assess re-construction accuracy; and applying the reconstructed contact information obtained during wearable use to robot replay and closed-loop grasp adjustment to evaluate its task-level utility. The contributions of this study are summarized as follows: 1) We present TacPrint, a compact and low-cost wearable fingertip sensor with adjustable human mounting, cus-tomizable robotic connectors, and taxel-aligned silicone protrusions for localized contact transduction. 2) We develop a tactile-to-depth learning pipeline that estimates a 35 × 26 contact-depth map from 24-channel capacitive signals, and evaluate its depth and contact-location consistency using simulation-generated labels and controlled physical configurations. 3) We demonstrate tactile-guided human-to-robot replay and closed-loop contact-position-aware grasping. Tactile compensation increased grasping and wiping success rates to 91.67% and 90%, while dense-depth feedback achieved 87.5% overall and 85% edge-contact grasping success, compared with 67.5% and 45% for raw-taxel feedback. II. R ELATED WORKS 
+
+A. Data Collection 
+
+Data collection for robotic manipulation has increasingly shifted toward human-centric paradigms that better preserve natural hand-object interaction during demonstrations. Sys-tems such as UMI [6] and FreeTacMan [7] support intuitive data acquisition, but still require the operator to hold handheld grippers. Solutions such as DexCap [8], ARCap [9], and DART [10] eliminate the need for external devices and directly capture human fingertip motion, making the collection process more natural. DexUMI [11] and DexViTac [12] further enrich this setting by acquiring tactile information together with hand motion, improving demonstration fidelity while main-taining the advantages of human-centric collection for skill transfer. Nevertheless, precise acquisition of local fingertip contact states remains insufficient, which motivates the need for wearable tactile sensing in contact-rich manipulation. 
+
+B. Wearable Tactile Fingertips 
+
+Wearable tactile sensing at the fingertip has emerged as a promising direction to enrich human-centric manipulation data with local contact information. ThimbleSense [19] introduced a fingertip-wearable thimble equipped with a force/torque sensor, enabling the measurement of contact forces and esti-mation of contact locations for grasp analysis. FingerTac [21] further explored a more anthropomorphic and interchangeable design by distributing Hall-effect sensing elements over the palmar and lateral fingertip surfaces, allowing both human and robotic hands to capture distributed three-axis tactile signals. TacCap [22] more recently proposed a lightweight FBG-based tactile thimble for seamless human-to-robot skill transfer, emphasizing portability, durability, and cross-platform deployment on both human and robotic fingertips. Together, these works motivate a wearable tactile interface that combines (b)  
+
+> 26
+> 20
+> 1.9
+> 2.5
+> 5.1
+> 7.8 16
+> (a)
+> (d) (c)
+> Adjust as needed
+> Connect to TacPrint
+> Fig. 2. Structure design of TacPrint. (a) TacPrint components: a silicone skin, a 24-channel capacitive sensing unit, and a 3D-printed support. (b) Size parameters of the silicone skin. (c) Two views of TacPrint worn on a human fingertip. (d) Connector and representative TacPrint installations on three robotic hands. The connector can be customized for the target mounting interface.
+
+compact structure, informative local sensing, adjustable human mounting, connector-based robotic installation, and low-cost deployment. III. M ETHODS 
+
+A. Structure Design 
+
+TacPrint comprises a silicone skin, a 24-channel capacitive sensing unit, and a 3D-printed support, as shown in Fig. 2(a). The silicone skin, made of Mold Star 20T with a Shore hardness of 20A, contains a 6 × 4 array of 24 hemispherical protrusions aligned one-to-one with the capacitive taxels [16]. Each protrusion has a radius of 0.7 mm, with row and column spacings of 1.9 and 2.5 mm, respectively, as shown in Fig. 2(b). The silicone was fabricated by mixing Parts A and B at a 1:1 ratio by weight, vacuum-degassing the mixture, and curing it at room temperature for 40 min. The mold and support had a nominal printing accuracy of 0.1 mm; the corresponding mold–support dimensional mismatch is conser-vatively bounded at 0.2 mm, while bonding-induced variation was not separately quantified. The capacitive sensing unit is the 24-channel standard edition of Model 2 from SNIOW Technology. An adjustable Velcro strap, shown in Fig. 2(c), enables rapid attachment without imposing a predefined cavity size. Across 12 participants with fingertip widths of 14–18 mm and circumferences of 45–58 mm, the mean stability and comfort scores were 4.76 and 4.87 out of 5, respectively. 3Data          
+
+> Acquisition
+> Depth Labels
+> 𝒀 𝑡 ∈ℝ35 ×26
+> Result
+> Projection
+> Object
+> Selection
+> &
+> Contact
+> Configuration
+> Loss
+> ℒ(෡𝒀 𝑡 ,෩𝒀 𝑡 )
+> ෡𝒀 𝑡
+> ෩𝒀 𝑡
+> Tactile Reading
+> 𝒙 𝑡 ∈ℝ24 Simulation
+> Spatial
+> Decoder
+> 𝒉 𝑡
+> LSTM
+> Encoder
+> 𝑭 𝑡
+> (0)
+> Normed. Labels
+> Pred
+> 1) 2)
+> 3)
+> …
+> Temporal Window
+> 𝑿 𝑡 ∈ℝT×24
+
+…              
+
+> 𝑇 =9
+> 1) Tactile Acquisition
+> 2) Depth Labels Generation
+> 3) Temporal Learning
+> Tactile -to -Depth
+> Learning Pipeline
+> Interpolated
+> Height Field
+> Fig. 3. Overview of the tactile-to-depth learning pipeline. Controlled physi-cal indentations provide synchronized 24-channel capacitive sequences; the matched nominal contact configurations are reproduced in TacFlex/Isaac Gym/Flex to generate 35 ×26 depth labels; and an LSTM-based temporal encoder and spatial decoder estimate the dense contact-depth map.
+
+Across 57 repeated triangular-indenter trials, centroid-aligned IoU yielded participant-level means of 0.827–0.904 and an overall participant-level mean of 0.861 ±0.022 . No pronounced participant-dependent degradation was observed within the tested range. For robotic installation, the connector combines a TacPrint-matching upper section with a customizable lower mount-ing interface, while a rear Velcro strap provides additional retention. Representative installations on the LinkerHand O20, Tesollo DG-2F-M, and Tesollo DG-5F-S are shown in Fig. 2(d); installation requires sufficient fingertip space and a suitable attachment interface. 
+
+B. Tactile-to-Depth Learning Pipeline 
+
+The proposed pipeline estimates a dense fingertip depth map from TacPrint’s low-dimensional tactile response, as shown in Fig. 3. At time step t, a fixed-length tactile window Xt ∈
+
+RT ×24 is mapped to a predicted depth map ˆYt ∈ R35 ×26 :
+
+ˆYt = F(Xt; Θ) , (1) where Θ denotes the trainable parameters. The pipeline com-prises tactile acquisition, simulation-based label generation, and temporal learning. 
+
+1) Tactile Acquisition: TacPrint is fixed relative to an XYZ computer numerical control (CNC) linear guide, and the coordinate frame of its active sensing area is registered to the guide coordinate frame before data collection. The CAD geometry and mounting orientation of each rigid indenter define its geometry and orientation relative to the sensor. The unindented state is used as the nominal zero-depth reference, the prescribed guide displacement along the indentation di-rection defines the nominal indentation depth, and the regis-tered in-plane guide coordinates define the nominal contact location. These quantities jointly specify the nominal contact configuration associated with each measured 24-channel ca-pacitive sequence. During each episode, the guide executes an approach, pressing, holding, and release sequence. The synchronized measurements are subsequently organized into fixed-length inputs for temporal learning. 
+
+2) Simulation-Generated Depth Labels: Simulation-generated depth labels are obtained by reproducing each nominal contact configuration, defined by the corresponding indenter geometry, relative pose, contact location, and indentation depth. The pipeline is based on TacFlex [23], with Isaac Gym/Flex as the physics backend. The measured capacitive sequence and simulated label are paired frame by frame according to this prescribed configuration. Here, calibration denotes configuration-level correspondence between the physical and simulated contacts rather than independent full-field deformation calibration. The TacPrint elastomer is discretized using a tetrahedral volumetric mesh and modeled as a Neo-Hookean material with E = 0 .30 MPa and ν = 0 .47 . The indenter–elastomer friction coefficient is set to 0.20. These parameters are fixed for all simulated contacts and are treated as literature-and benchmark-based effective parameters rather than batch-specific constitutive parameters identified from the fabricated silicone skin. Uncertainty in the material parameters, friction, boundary constraints, fabrication, and bonding may therefore affect the simulated contact boundary and peripheral deforma-tion. Accordingly, the physical consistency of the simulation-generated labels is further examined using controlled contact experiments. The simulated deformation field is rasterized into a 35 × 26 
+
+depth map, providing dense supervision constrained by the measured contact configuration. Configuration-level consis-tency was evaluated using 78 depth trials and 40 contact-position trials. The mean contact-center depth error was 
+
+0.110 ±0.016 mm. Across all 40 position trials, the mean errors were 0.338 ± 0.227 , 0.279 ± 0.201 , and 0.265 ± 0.186 mm at segmentation thresholds of 0.3, 0.4, and 0.5 mm, respectively. Although 0.5 mm gave a slightly lower mean error, 0.4 mm yielded lower median and 95th-percentile errors and was there-fore used as the representative threshold. At the representative 0.4-mm threshold, the error was additionally evaluated on the 37 trials whose simulated reference contact regions were not truncated by the sensing boundary, yielding 0.247 ±0.159 mm. These results evaluate the configuration-level consistency of the simulation-generated labels rather than the trained network. Before training, each depth map is clipped to the valid indentation range and normalized using a fixed global scale: 
+
+˜Yt = clip( Yt, 0, D max )
+
+Dmax 
+
+, (2) where Dmax = 3 mm. Unlike sample-wise normalization, this fixed scaling preserves the relative depth magnitudes across different contacts. 
+
+3) Temporal Learning: Let xn ∈ R24 denote the capacitive measurement at frame n. For an odd window length T =2K + 1 , the input Xt ∈ RT ×24 centered at frame t is 
+
+Xt = xπ(t−K), . . . , xπ(t+K)
+
+T ,π(n) = min(max( n, 1) , N ) . (3) where N is the episode length and π(·) replicates boundary frames. We use T = 9 and K = 4 .4
+
+The sequence is encoded by a single-layer unidirectional LSTM: 
+
+(hτ , cτ ) = LSTMCell  Xt[τ, :] , hτ −1, cτ −1
+
+,
+
+zt = hT . (4) where the hidden dimension is 256 and zt represents the local temporal context of the target frame. The encoded feature is mapped to the depth prediction by 
+
+ˆYt = Dθ (zt), ˆYt ∈ R35 ×26 , (5) where Dθ consists of a linear projection, reshaping to a 
+
+32 × 9 × 7 feature map, two transposed-convolution layers, and convolutional refinement. Training uses a foreground-weighted combination of squared and absolute errors: 
+
+etij = ˆYt(i, j ) − ˜Yt(i, j ),wtij = 1 + ( γ − 1) 1{ ˜Yt(i,j )>δ },
+
+Lt = 1
+
+HW 
+
+X
+
+> i,j
+
+wtij 
+
+λe 2 
+
+> tij
+
++ (1 − λ)|etij | .
+
+(6) Here, 1{·} is the indicator function, and the summation is taken over all H × W pixels. We set λ = 0 .5, δ = 0 .3, and γ = 2 .The network is trained for 50 epochs using AdamW with a learning rate of 10 −3, weight decay of 10 −4, and batch size of 32. IV. E XPERIMENTS 
+
+A. Design and Setup 
+
+The primary goal of our experiments is to evaluate TacPrint at three levels: contact-depth estimation, tactile-informed human-to-robot replay, and the closed-loop use of spatial con-tact information. Specifically, we aim to answer the following questions: 
+
+Q1: Can TacPrint estimate informative contact-depth repre-sentations from sparse capacitive measurements with consis-tent depth and location under controlled physical indentation? 
+
+Q2: Can tactile information collected by TacPrint during human demonstrations improve downstream robot replay in contact-rich manipulation tasks? 
+
+Q3: Does the estimated dense-depth representation provide more reliable contact-position feedback for robotic grasp ad-justment than contact-only sensing or direct raw-taxel local-ization? To answer these questions, experiments are divided into three parts. Exp. 1 evaluates the contact characterization capability of TacPrint. Exp. 2 evaluates its utility in tactile-informed human-centric data collection and robot replay. 
+
+Exp. 3 evaluates the contribution of the estimated dense-depth representation to closed-loop contact-position adjustment and grasping. 
+
+Exp. 1: Contact characterization. 
+
+Exp. 1 combines prediction-to-label evaluation, configuration-referenced physical evaluation, and a qualitative continuous-contact demonstration. Predictions on the test set are compared with simulation-generated labels in depth, contact location, and contact-region overlap. In the 新增流程图                     
+
+> Fingertip Pose
+> 𝒑 𝑖
+> 𝑣 𝑡
+> Normal
+> 𝒏 𝑖 𝑡
+> Depth
+> 𝑑 𝑖 𝑡
+> Tactile -guided
+> compensation
+> Δ𝒑 𝑖 𝑡 =𝛼 𝑖 𝑑 𝑖 𝑡 𝒏 𝑖 𝑡
+> Adjusted target
+> 𝒑 𝑖
+> 𝑎𝑑𝑗 𝑡 =𝒑 𝑖
+> 𝑣 (𝑡 )+Δ𝒑 𝑖 𝑡
+> IK
+> Tactile Info
+> 𝒒 𝑖 𝑡
+> +
+> Direct
+> Replay
+> Tactile -Guided Compensation Replay
+> Fig. 4. Pipeline for tactile-guided compensation. Direct replay uses vision-captured fingertip positions for IK solving, whereas tactile-guided compensa-tion replay uses tactile-adjusted fingertip positions.
+
+complementary physical evaluation, the same 40 controlled indentation trials are used to evaluate two quantities. First, the predicted depth at the guide-calibrated contact center is obtained by bilinear interpolation and compared with the nominal indentation depth in all 40 trials. Second, contact position is estimated from the geometric centroid of the predicted region above the 0.4-mm threshold. The primary position statistic includes 37 trials whose reference contact regions remain fully within the sensing area. Three trials are excluded from this statistic because their reference contact regions touch the sensing boundary and are therefore spatially truncated. This exclusion is determined from the reference regions rather than the network predictions. 
+
+Exp. 2: Human-centric data collection and robot replay. 
+
+Exp. 2 includes grasping an apple, mango, and peach, as well as holding an eraser during two back-and-forth whiteboard-wiping passes. TacPrint is worn on the operator’s thumb, index finger, and middle finger. A small cube is mounted above each instrumented fingertip, with AprilTags attached to five outward-facing surfaces so that the fingertip pose can be recovered whenever at least one tag is visible. The demonstrations are replayed using a RealMan RM65-B arm and a LinkerHand O20, with TacPrint providing normal-direction tactile compensation. Direct and tactile-compensated replay are compared using task success rate. 
+
+Exp. 3: Contact-position-aware grasping. 
+
+As shown in Fig. 5, a RealMan RM65-B arm and a Tesollo DG-2F-M gripper equipped with two TacPrint sensors grasp an orange model placed at eight lateral positions. Each position is tested five times under each feedback strategy, yielding 40 trials per strategy. Pos. 1, Pos. 2, Pos. 7, and Pos. 8 are additionally analyzed as edge-contact conditions, yielding 20 edge-contact trials per strategy. Three feedback strategies are compared using a quasi-spherical orange model. For this object, the predefined ±2 mm grasping band represents contact near its largest-diameter section, where opposing contacts provide more stable support during lifting. Contact only triggers grasping and lifting once valid contact is detected, without lateral adjustment. Raw-taxel control estimates the contact center from the normalized 6 × 4
+
+taxel array, whereas dense-depth control extracts pixels above 0.4 mm from the estimated 35 × 26 depth map and calculates 5Initial 
+
+position  Initial 
+
+position 
+
+Lift 
+
+Contact  Taxel 
+
+Info 
+
+Adjust RM65 -B 
+
+> DG -2F-M
+> TacPrint Position 1Position8
+
+Offset 
+
+<2mm  Offset 
+
+＞2mm 
+
+Lift 
+
+Initial 
+
+position 
+
+Lift 
+
+Recons. 
+
+Info 
+
+Adjust 
+
+Offset 
+
+<2mm  Offset 
+
+＞2mm 
+
+> Object
+> …
+
+Binary Contact  Raw -taxel  controid  Reconstructed depth 
+
+> Initial Position
+
+(d) 
+
+(b)    
+
+> Arm move
+> direction
+> Arm lift
+> direction
+> Reconstructed depth (mm) Normalized taxel response
+
+Fig. 5. Setup of the contact-position-aware grasping experiment. (a) Robotic platform equipped with two TacPrint sensors, with the lateral adjustment and lifting directions indicated by arrows. (b) Eight initial object positions relative to the two TacPrint sensors, ordered from Pos. 1 to Pos. 8 from right to left. 
+
+their centroid. For the latter two strategies, tactile observations are averaged over a 5-s window. The centered nine-frame input introduces a four-frame latency of approximately 0.13 s at a 30-Hz sensing rate. When both fingertips provide valid estimates, their lateral offsets are transformed into the same gripper coordinate direction and averaged; otherwise, the valid fingertip estimate is used. If the fused contact center lies outside the target band, the arm moves laterally toward the band and repeats the tactile measurement. No preset upper limit is imposed on the number of adjustments; the adjust-ment loop terminates when the estimated center enters the band. Because the hand uses separate joint configurations for contact-center estimation and lifting, with a larger fingertip separation in the lifting configuration, an off-center contact accepted during estimation may slip or fail to form a stable grasp after the configuration switch. The object is then lifted by 50 mm and held for 5 s, and the trial succeeds if it remains grasped throughout the holding period. 
+
+B. Tactile-Guided Compensation 
+
+Because visually tracked fingertip poses do not explicitly encode the local contact deformation in the human demonstra-tion, the replay target is corrected along the fingertip normal, as shown in Fig. 4. A scalar depth signal di(t) is computed as the mean of the 10 largest values in the estimated tactile depth map, expressed in millimeters, and the corrected target is defined as 
+
+padj  
+
+> i
+
+(t) = pvi (t) + αidi(t)ni(t), (7) where pvi (t) and padj  
+
+> i
+
+(t) are the visual and compensated fingertip positions in meters, respectively, and ni(t) is the unit normal pointing toward the object. The finger-dependent gain 
+
+αi, expressed in m/mm , converts tactile depth into a normal displacement; the gain vectors reported below follow thumb– index–middle order. It was empirically selected as the smallest value that enabled repeatable contact recovery in preliminary trials. The compensated positions are then used as inverse-kinematics targets, introducing only a local correction along the contact normal. 
+
+C. Results and Analysis 
+
+Exp. 1: Depth-map estimation performance. 图4            
+
+> Sensor Sim Pred Error Sensor Sim Pred Error
+> Sensor Value Depth (mm) Error (mm)
+> 1.0 0. 80.6 0.4 0.2 0.0 3.0 2. 01. 51. 00.5 0.0 2.5 0.4 0.2 0.0 -0. 2-0.4
+
+Fig. 6. Representative depth-map prediction results on test samples. For each sample, the sensor signals, simulation-generated depth label, predicted depth map, and error map are shown. 图6 真实 接触 及 点云 
+
+# • 两个连续过程。一个尖面 一个平面 
+
+Fig. 7. TacPrint outputs during contact with a water bottle on two different surfaces. The thumb and index finger, each wearing a TacPrint, simultaneously press and release the flat surface and the edge of a water bottle, respectively. The resulting contact point-cloud sequences capture the characteristic contact patterns of the two surface types. 
+
+Exp. 1 evaluates depth-map estimation from 24-channel capacitive inputs. As shown in Fig. 6, the predictions generally agree with the simulation-generated labels in contact position and depth distribution, with most discrepancies occurring near contact boundaries and local peaks. A continuous-contact demonstration on a water bottle is shown in Fig. 7. Prediction agreement is evaluated using pixel-wise RMSE, peak-depth error, contact-region RMSE, depth-weighted cen-troid error, and intersection over union (IoU). Let Dpred and 
+
+Dsim denote the predicted depth map and the corresponding simulation-generated label in millimeters, respectively, and let 
+
+P denote the total number of pixels. A pixel is considered in contact when its depth exceeds τ = 0 .1 mm, giving the contact masks M q = {i | Dqi > τ }, where q ∈ { pred , sim }.The global and contact-region depth errors are defined as 
+
+RMSE pix =
+
+vuut 1
+
+P
+
+> P
+
+X
+
+> i=1
+
+
+
+Dpred  
+
+> i
+
+− Dsim 
+
+> i
+
+2
+
+,
+
+RMSE con =
+
+s 1
+
+|M sim |
+
+X 
+
+> i∈Msim
+
+
+
+Dpred  
+
+> i
+
+− Dsim 
+
+> i
+
+2
+
+.
+
+(8) The peak-depth error is 
+
+epeak = max( Dpred ) − max( Dsim ) . (9) 6
+
+TABLE I PREDICTION AGREEMENT WITH SIMULATION -GENERATED DEPTH LABELS .Category Metric Median P90 Mean ± SD Depth Pixel-wise RMSE (mm) 0.077 0.205 0.101 ± 0.076 
+
+Peak Depth Error (mm) 0.095 0.484 0.188 ± 0.258 
+
+Contact-region RMSE (mm) 0.172 0.446 0.223 ± 0.161 
+
+Position Centroid Error (px) 0.531 2.617 1.213 ± 2.379 
+
+Region IoU 0.883 0.949 0.829 ± 0.169 
+
+Contact localization is evaluated using depth-weighted cen-troids: 
+
+cq =
+
+P  
+
+> i∈Mq
+
+Dqi pi
+
+P  
+
+> i∈Mq
+
+Dqi
+
+, q ∈ { pred , sim },ecent = cpred − csim  
+
+> 2
+
+,
+
+(10) where pi denotes the pixel coordinate. Finally, the contact-region overlap is measured by 
+
+IoU = |M pred ∩ M sim ||M pred ∪ M sim | . (11) Table I shows agreement with the simulation-generated labels in depth, localization, and contact-region overlap, in-cluding a contact-region RMSE of 0.223 ± 0.161 mm, a weighted-centroid error of 1.213 ± 2.379 pixels, and an IoU of 0.829 ± 0.169 .With measured capacitive sequences as network inputs, the predicted depth evaluated at the guide-calibrated contact center showed a mean absolute error of 0.085 ± 0.057 mm across all 40 trials. This result evaluates the consistency of the predicted local indentation magnitude with the prescribed physical depth. Contact location was evaluated by comparing the centroid of the thresholded predicted region with the guide-calibrated contact center. For the 37 trials whose reference con-tact regions remained fully within the sensing area, the mean position error was 0.250 ± 0.208 mm, evaluating the local-ization consistency of the predicted contact region. The other three trials were retained for center-depth evaluation because the guide-calibrated center remained measurable, but were excluded from the primary position statistic because boundary truncation can bias an area centroid. For completeness, the position error across all 40 trials was 0.285 ± 0.240 mm. 
+
+Exp. 2: Tactile-informed robot replay. Exp. 2 evaluates whether TacPrint-derived tactile compensation can mitigate the contact mismatch encountered during vision-based robot re-play. We compare direct replay using visually tracked fingertip trajectories [24] with replay augmented by normal-direction tactile compensation. For fruit grasping, the gain vector was αgrasp =[0 .005 , 0.005 , 0.005] m/mm. Direct replay positioned the fin-gertips close to the object surfaces but did not consistently recover sufficient normal contact for stable grasping. Tactile compensation introduced additional inward fingertip displace-ment and increased the success rates from 0% to 95%, 100%, and 80% for the apple, mango, and peach, respectively, yielding an overall success rate of 91.67%, as shown in Fig. 8. 
+
+Fig. 8. Trajectory comparison between direct replay and replay with tactile-guided compensation of the grasping tasks. On the left of each grasping task, the transparent curves denote the direct replay trajectories, the solid curves denote the tactile-compensated trajectories, and the dashed arrows indicate the frame-wise displacement introduced by tactile compensation. On the right of each task, the first photo shows how the human demonstrator performs, the second shows that direct replay fails to complete the grasping task, and the third shows that with tactile compensation, the robot can complete the task. No compensate  With tactile compensate  Thumb  Index  Middle 
+
+# ExpB  图8擦白板 v3 
+
+Fig. 9. Whiteboard-wiping experiments. The first row shows the human demonstration over two back-and-forth wiping passes and the tactile point clouds corresponding to the selected frames. The second row shows the corresponding direct replay, where the robotic hand fails to maintain the grasp and complete the task. The third row shows a replay with adjusted fingertip positions, where the robotic hand stably grasps the eraser and successfully removes the marker traces. The last row compares the fingertip positions before (crosses) and after (circles) tactile compensation, along with the compensated trajectories over several preceding frames. The compensated fingertips move further inward, resulting in a tighter grasp on the object. 
+
+For whiteboard wiping, the gain vector was αwipe =[0 .004 , 0.010 , 0.010] m/mm. During direct replay, the finger-tips did not establish a sufficiently tight grasp, and the eraser was lost during the first wiping stroke. Tactile compensation moved the fingertips further toward the eraser, maintained the grasp through two wiping passes, and increased the task success rate from 0% to 90%, as shown in Fig. 9. 
+
+Exp. 3: Contact-position-aware grasping. 
+
+Each strategy was evaluated in 40 trials, comprising five 7RM 65 -B              
+
+> DG -2F-M
+> TacPrint Position 1Position 8
+> Object
+> Initial
+> Initial
+> Initial
+> Adjust 1
+> Adjust 1
+> Adjust 2
+> …
+> Contact
+> Only
+> Raw -Taxel
+> Control
+> Dense -Depth
+> Control
+> Initial Position
+> (d)
+> Initial
+> position Initial
+> position
+> Lift
+> Contact Taxel
+> Info
+> Adjust
+> Offset
+> <2mm Offset
+> ＞2mm
+> Lift
+> Initial
+> position
+> Lift
+> Recons.
+> Info
+> Adjust
+> Offset
+> <2mm Offset
+> ＞2mm
+> Binary Contact Raw -taxel controid Reconstructed depth
+> (b)
+> Arm move
+> direction
+> Arm lift
+> direction
+> Success
+> Failure
+> Failure
+> Reconstructed depth (mm) Normalized taxel response
+
+Initial Contact  Tactile -Guided Adjustment  Lift               
+
+> No Adjust
+> Target contact band ( ±2mm) Estimated contact center 0.0 0.3 2.0 1.0 0.5 0.0
+> Depth (mm) Taxel (norm.)
+> 0.0 0.3 2.0 1.0 0.5 0.0
+> Depth (mm) Taxel (norm.) Target contact band ( ±2mm) Estimated contact center
+
+Fig. 10. Representative contact-position-aware grasping trials at Pos. 1. Contact only detects valid contact but performs no lateral adjustment and fails to lift the object. Raw-taxel control performs two lateral adjustments but still fails to lift the object. Dense-depth control performs one lateral adjustment and successfully lifts the object. 
+
+Fig. 11. Grasping performance of the three control methods. (a) Success rates over all positions and edge-contact positions, with 95% Wilson confidence intervals. (b) Success rates at each initial position; shaded regions indicate edge-contact positions. 
+
+repetitions at each of the eight initial object positions. Among these, 20 trials corresponded to the four edge-contact positions, namely Pos. 1, Pos. 2, Pos. 7, and Pos. 8. Grasp success rate was used as the primary performance metric. For raw-taxel and dense-depth feedback, the number of lateral adjustments among successful trials was additionally reported to character-ize the correction process. Because no preset adjustment limit was imposed, this number reflects the feedback strategy’s own adjustment and stopping decisions rather than performance under a matched correction budget. Figure 10 presents representative trials at Pos. 1. Contact-only feedback detected contact and immediately executed the grasp, but failed because the contact remained strongly offset. Raw-taxel feedback performed two lateral adjustments but still accepted an unstable grasping configuration. Dense-depth feedback moved the contact toward the predefined band after one adjustment and subsequently completed the lift. As summarized in Fig. 11, contact-only, raw-taxel, and dense-depth feedback successfully completed 15/40, 27/40, and 35/40 trials, corresponding to success rates of 37.5%, 67.5%, and 87.5%, respectively. Over the 20 edge-contact trials, the corresponding results were 4/20, 9/20, and 17/20, yielding success rates of 20%, 45%, and 85%. Among suc-cessful trials, raw-taxel and dense-depth feedback required 
+
+1.07 ± 1.36 and 2.14 ± 1.24 lateral adjustments, respectively; under edge-contact conditions, the corresponding values were 
+
+2.56 ± 1.01 and 2.71 ± 1.21 .Contact-only sensing confirms contact occurrence but can-not determine whether the object lies within a suitable grasping region. Raw-taxel feedback provides coarse spatial information and improves the overall success rate, but the centroid of the sparse taxel responses can be biased toward the interior of the array, causing some off-center contacts to be accepted prematurely. The lower mean adjustment count of raw-taxel feedback therefore should not be interpreted as higher control efficiency: it was calculated only over successful trials and coincided with substantially lower overall and edge-contact success rates. Dense-depth feedback sometimes invoked addi-tional corrections before reaching its stopping condition, but improved the overall success rate by 20 percentage points and the edge-contact success rate by 40 percentage points relative to raw-taxel feedback. The main benefit of the dense repre-sentation is therefore more reliable adjustment and stopping decisions rather than fewer corrective motions. 8
+
+V. C ONCLUSION 
+
+In this work, we presented TacPrint, a compact and low-cost wearable fingertip sensor with adjustable human mounting, taxel-aligned silicone protrusions, and customizable robotic connectors. A real-to-sim-to-real learning pipeline estimates a 
+
+35 ×26 contact-depth map from 24-channel capacitive signals. Against simulation-generated labels, the model achieved a contact-region RMSE of 0.223 ± 0.161 mm, a weighted-centroid error of 1.213 ± 2.379 pixels, and an IoU of 0.829 ±
+
+0.169 . With measured capacitive inputs, the network-predicted depth evaluated at the guide-calibrated contact center showed a mean absolute error of 0.085 ± 0.057 mm across all 40 trials. For the 37 trials whose reference contact regions were not truncated by the sensing boundary, the mean contact-position error was 0.250 ± 0.208 mm. TacPrint supported two downstream robotic applications. Tactile-guided normal compensation increased grasping and whiteboard-wiping success rates from 0% to 91.67% and 90%, respectively. In closed-loop contact-position-aware grasping, dense-depth feedback achieved success rates of 87.5% overall and 85% under edge-contact conditions, exceeding the corre-sponding raw-taxel results of 67.5% and 45%. Although dense-depth feedback did not reduce the mean number of adjustments among successful trials, its substantially higher success rates indicate more reliable contact-position estimation and stopping decisions, particularly near the sensing boundaries. These results support the use of the estimated depth representation for both human-to-robot replay and online grasp adjustment. Limitations: The 24-channel input limits detailed boundary and shape reconstruction, and the predictions may retain characteristics of the training indenters. Moreover, the current physical evaluations validate contact depth and location rather than complete pixel-level deformation of the real elastomer. Residual discrepancies may therefore remain in contact bound-aries and detailed local shapes, which should not be inferred solely from the reported center-depth and position errors. Future work will improve prediction accuracy, robustness across contact objects and wearing conditions, and deployment convenience. REFERENCES [1] T. Z. Zhao, V. Kumar, S. Levine, and C. Finn, “Learning fine-grained bimanual manipulation with low-cost hardware,” 2023. [Online]. Available: https://arxiv.org/abs/2304.13705 [2] Z. Fu, T. Z. Zhao, and C. Finn, “Mobile aloha: Learning bimanual mobile manipulation with low-cost whole-body teleoperation,” 2024. [Online]. Available: https://arxiv.org/abs/2401.02117 [3] P. Wu, Y. Shentu, Z. Yi, X. Lin, and P. Abbeel, “Gello: A general, low-cost, and intuitive teleoperation framework for robot manipulators,” in 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2024, pp. 12 156–12 163. [4] H. Li, Y. Cui, and D. Sadigh, “How to train your robots? the impact of demonstration modality on imitation learning,” 2025. [Online]. Available: https://arxiv.org/abs/2503.07017 [5] Y. Hu, K. Li, and N. Wei, “Learn to grasp objects with dexterous robot manipulator from human demonstration,” in 2022 International Conference on Advanced Robotics and Mechatronics (ICARM) , 2022, pp. 1062–1067. [6] C. Chi, Z. Xu, C. Pan, E. Cousineau, B. Burchfiel, S. Feng, R. Tedrake, and S. Song, “Universal manipulation interface: In-the-wild robot teaching without in-the-wild robots,” 2024. [Online]. Available: https://arxiv.org/abs/2402.10329 [7] L. Wu, C. Yu, J. Ren, L. Chen, Y. Jiang, R. Huang, G. Gu, and H. Li, “Freetacman: Robot-free visuo-tactile data collection system for contact-rich manipulation,” 2026. [Online]. Available: https://arxiv.org/abs/2506.01941 [8] C. Wang, H. Shi, W. Wang, R. Zhang, L. Fei-Fei, and C. K. Liu, “Dexcap: Scalable and portable mocap data collection system for dexterous manipulation,” 2024. [Online]. Available: https://arxiv.org/ abs/2403.07788 [9] S. Chen, C. Wang, K. Nguyen, L. Fei-Fei, and C. K. Liu, “Arcap: Collecting high-quality human demonstrations for robot learning with augmented reality feedback,” 2024. [Online]. Available: https://arxiv.org/abs/2410.08464 [10] Y. Park, J. S. Bhatia, L. Ankile, and P. Agrawal, “Dart: Dexterous augmented reality teleoperation platform for large-scale robot data collection in simulation,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) , 2025, pp. 13 883–13 889. [11] M. Xu, H. Zhang, Y. Hou, Z. Xu, L. Fan, M. Veloso, and S. Song, “Dexumi: Using human hand as the universal manipulation interface for dexterous manipulation,” 2025. [Online]. Available: https://arxiv.org/abs/2505.21864 [12] X. Chen, Y. Pan, M. Li, and X. Ding, “Dexvitac: Collecting human visuo-tactile-kinematic demonstrations for contact-rich dexterous manipulation,” 2026. [Online]. Available: https://arxiv.org/abs/2603. 17851 [13] M. Lambeta, P.-W. Chou, S. Tian, B. Yang, B. Maloon, V. R. Most, D. Stroud, R. Santos, A. Byagowi, G. Kammerer, D. Jayaraman, and R. Calandra, “Digit: A novel design for a low-cost compact high-resolution tactile sensor with application to in-hand manipulation,” IEEE Robotics and Automation Letters , vol. 5, no. 3, pp. 3838–3845, 2020. [14] H. Sun, K. J. Kuchenbecker, and G. Martius, “A soft thumb-sized vision-based sensor with accurate all-round force perception,” Nature Machine Intelligence , vol. 4, pp. 135–145, 2022. [Online]. Available: https://doi.org/10.1038/s42256-021-00439-3 [15] C.-Y. Lin, Z.-X. Lin, S. Wang, and H. Xu, “Dtact: A vision-based tactile sensor that measures high-resolution 3d geometry directly from darkness,” 2023 IEEE International Conference on Robotics and Automation (ICRA) , pp. 10 359–10 366, 2022. [Online]. Available: https://api.semanticscholar.org/CorpusID:252568209 [16] H. Zheng, X. Shi, A. Bao, Y. Jin, and P. Zhao, “Dottip: Enhancing dexterous robotic manipulation with a tactile fingertip featuring curved perceptual morphology,” IEEE Robotics and Automation Letters , vol. 10, no. 1, pp. 772–779, 2025. [17] J. Hu, S. Cui, S. Wang, R. Wang, and Y. Wang, “Active shape reconstruction using a novel visuotactile palm sensor,” 
+
+Biomimetic Intelligence and Robotics , vol. 4, no. 3, p. 100167, 2024. [Online]. Available: https://www.sciencedirect.com/science/article/pii/ S2667379724000251 [18] P. Lin, Y. Huang, W. Li, J. Ma, C. Xiao, and Z. Jiao, “Pp-tac: Paper picking using tactile feedback in dexterous robotic hands,” 2025. [Online]. Available: https://arxiv.org/abs/2504.16649 [19] E. Battaglia, M. Bianchi, A. Altobelli, G. Grioli, M. G. Catalano, A. Se-rio, M. Santello, and A. Bicchi, “Thimblesense: A fingertip-wearable tactile sensor for grasp analysis,” IEEE Transactions on Haptics , vol. 9, no. 1, pp. 121–133, 2016. [20] Y. Lu, D. Kong, G. Yang, R. Wang, G. Pang, H. Luo, H. Yang, and K. Xu, “Machine learning-enabled tactile sensor design for dynamic touch decoding,” Advanced Science , vol. 10, no. 32, p. 2303949, 2023. [Online]. Available: https://advanced.onlinelibrary.wiley.com/doi/ abs/10.1002/advs.202303949 [21] P. Sathe, A. Schmitz, T. P. Tomo, S. Somlor, S. Funabashi, and S. Shigeki, “Fingertac - an interchangeable and wearable tactile sensor for the fingertips of human and robot hands,” in 2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) ,2023, pp. 10 813–10 820. [22] C. Xing, H. Li, Y.-L. Wei, T.-A. Ren, T. Tu, Y. Lin, E. Schumann, W.-S. Zheng, and M. R. Cutkosky, “Taccap: A wearable fbg-based tactile sensor for seamless human-to-robot skill transfer,” 2025. [Online]. Available: https://arxiv.org/abs/2503.01789 [23] C. Zhang, S. Cui, J. Hu, T. Jiang, T. Zhang, R. Wang, and S. Wang, “Tacflex: Multimode tactile imprints simulation for visuotactile sensors with coating patterns,” IEEE Transactions on Robotics , vol. 41, pp. 3965–3985, 2025. [24] I. Guzey, Y. Dai, G. Savva, R. Bhirangi, and L. Pinto, “Bridging the human to robot dexterity gap through object-oriented rewards,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) ,2025, pp. 3344–3351.

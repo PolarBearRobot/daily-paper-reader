@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-07-31</span>
+      <span class="dpr-home-dashboard-kicker">2026-07-26 ~ 2026-08-04</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 34 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 46 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>20</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>32</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>14</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-07-31 07:25:16 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-04 09:05:03 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日精读20篇、速读14篇，聚焦具身智能与视觉运动策略。最值得关注的是满分论文《From Passive Video to Editable Experience》及9分《Ordered Action Tokens》，分别指向物理接地经验合成与动作标记学习。建议普通读者优先跟进具身智能中的世界模型与安全导航方向。</p>
+<p>本期日报共收录46篇论文，精读32篇、速读14篇，机器人学习与实时控制成为焦点。</p>
+<p>最值得精读的是满分论文《Mirror Learning》，以及9分新作《FutureRTC》，前者重交互学习、后者主打预判式动作分块，均指向更稳更快的机器人操控。</p>
+<p>建议优先从上述两篇入手，再顺藤摸瓜啃《PRISM》《P3》《Transformer Transformer》三篇8分速读，快速把握运动控制与策略传播的新思路。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -71,12 +73,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">20 篇</strong>
+    <strong class="dpr-home-dashboard-count">32 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="From Passive Video to Editable Experience: Physically Grounded Experience Synthesis for Embodied Intelligence">From Passive Video to Editable Experience: Physically Grounded Experience Synthesis for Embodied Intelligence</span></li><li><span class="dpr-home-dashboard-paper-title" title="Ordered Action Tokens for Visuomotor Policy Learning">Ordered Action Tokens for Visuomotor Policy Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="FeelWorld: Visuo-Tactile World Model for Hierarchical Contact Prediction and Planning">FeelWorld: Visuo-Tactile World Model for Hierarchical Contact Prediction and Planning</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Mirror Learning">Mirror Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="FutureRTC: Real-Time Robot Execution with Anticipatory-Conditioned Action Chunking">FutureRTC: Real-Time Robot Execution with Anticipatory-Conditioned Action Chunking</span></li><li><span class="dpr-home-dashboard-paper-title" title="Learning Reusable Hybrid Motion Priors for Humanoid Locomotion from Motion Imitation">Learning Reusable Hybrid Motion Priors for Humanoid Locomotion from Motion Imitation</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>10</strong></span><span class="dpr-home-dashboard-tag">data <strong>6</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">robot <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>17</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>5</strong></span><span class="dpr-home-dashboard-tag">robot <strong>5</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -87,9 +89,9 @@
     <strong class="dpr-home-dashboard-count">14 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="KineBench: Benchmarking Embodied World Models via IDM-Free Kinematic Grounding">KineBench: Benchmarking Embodied World Models via IDM-Free Kinematic Grounding</span></li><li><span class="dpr-home-dashboard-paper-title" title="EA-Nav: Learning Safe Visual Navigation Policies with Embodiment Awareness">EA-Nav: Learning Safe Visual Navigation Policies with Embodiment Awareness</span></li><li><span class="dpr-home-dashboard-paper-title" title="ReferTrack: Referring Then Tracking for Embodied Visual Tracking">ReferTrack: Referring Then Tracking for Embodied Visual Tracking</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="PRISM: Polynomial Representations for Interaction-Structured Motor Control">PRISM: Polynomial Representations for Interaction-Structured Motor Control</span></li><li><span class="dpr-home-dashboard-paper-title" title="P3: Probabilistic Policy Propagation for Stable VAE-Based Robot Learning">P3: Probabilistic Policy Propagation for Stable VAE-Based Robot Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design">Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>9</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>7</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
 </section>
 </div>
 

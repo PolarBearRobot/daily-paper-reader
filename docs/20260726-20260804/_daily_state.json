@@ -1,0 +1,745 @@
+{
+  "date": "20260726-20260804",
+  "date_label": "2026-07-26 ~ 2026-08-04",
+  "generated_at": "2026-08-04 09:05:03 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2607.28737v1",
+      "route": "20260726-20260804/2607.28737v1-mirror-learning",
+      "title": "Mirror Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "通过逆动力学将第三人称演示转换为可执行动作数据",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.24008v1",
+      "route": "20260726-20260804/2607.24008v1-futurertc-real-time-robot-execution-with-anticipatory-conditioned-action-chunking",
+      "title": "FutureRTC: Real-Time Robot Execution with Anticipatory-Conditioned Action Chunking",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "处理异步VLA执行中的动作分块与状态修正",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.24083v1",
+      "route": "20260726-20260804/2607.24083v1-learning-reusable-hybrid-motion-priors-for-humanoid-locomotion-from-motion-imitation",
+      "title": "Learning Reusable Hybrid Motion Priors for Humanoid Locomotion from Motion Imitation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将人类动捕片段重定向到人形机器人并蒸馏出可复用混合运动先验，直接对应人类-机器人运动对齐",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.24493v1",
+      "route": "20260726-20260804/2607.24493v1-kai-a-kinematic-aware-interface-for-data-efficient-articulated-object-manipulation",
+      "title": "KAI: A Kinematic-Aware Interface for Data-Efficient Articulated Object Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "用结构化中间表征捕捉铰接物体的运动学结构，提升策略学习的数据效率",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.25516v1",
+      "route": "20260726-20260804/2607.25516v1-a-causality-aware-infer-diagnose-refine-framework-for-test-time-modality-adaptation-in-vla-models",
+      "title": "A Causality-aware Infer-diagnose-refine Framework for Test-time Modality Adaptation in VLA Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过反事实推断-诊断-修正框架诊断VLA模型中的因果关系",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.26513v1",
+      "route": "20260726-20260804/2607.26513v1-explicit-kinematic-guidance-from-analytic-concepts-for-vision-language-action-models",
+      "title": "Explicit Kinematic Guidance from Analytic Concepts for Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为VLA模型提供显式3D运动学概念以增强空间理解",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.26657v1",
+      "route": "20260726-20260804/2607.26657v1-enfold-folding-world-generator-computation-into-predictive-representations-for-efficient-embodied-control",
+      "title": "Enfold: Folding World-Generator Computation into Predictive Representations for Efficient Embodied Control",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从世界生成器计算中获取预测表示以用于具身控制",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.28394v2",
+      "route": "20260726-20260804/2607.28394v2-hand-object-interaction-in-the-age-of-large-foundation-modelsreconstruction-generation-and-embodied-transfer",
+      "title": "Hand-Object Interaction in the Age of Large Foundation Models:Reconstruction, Generation, and Embodied Transfer",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "综述手物交互重建与具身迁移，衔接人手-物体数据与机器人学习",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.28405v1",
+      "route": "20260726-20260804/2607.28405v1-quantwams-calibrating-at-the-right-granularity-for-world-action-models",
+      "title": "QuantWAMs: Calibrating at the Right Granularity for World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "专门针对世界行动模型的训练后量化方法",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.28993v1",
+      "route": "20260726-20260804/2607.28993v1-st-wam-semantic-temporal-world-action-model-for-robust-manipulation-under-visual-distribution-shifts",
+      "title": "ST-WAM: Semantic-Temporal World Action Model for Robust Manipulation under Visual Distribution Shifts",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "语义-时间世界动作模型应对视觉分布偏移",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29231v1",
+      "route": "20260726-20260804/2607.29231v1-tacprint-a-wearable-fingertip-tactile-sensor-for-human-to-robot-contact-reproduction",
+      "title": "TacPrint: A Wearable Fingertip Tactile Sensor for Human-to-Robot Contact Reproduction",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "可穿戴指尖触觉传感器，通过真实-仿真-真实流程再现人体与机器人接触",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29235v1",
+      "route": "20260726-20260804/2607.29235v1-fbfm-a-training-free-asynchronous-feedback-mechanism-for-flow-matching-in-world-action-models-execution",
+      "title": "FBFM: A Training-Free Asynchronous Feedback Mechanism for Flow-Matching in World-Action Models Execution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "世界动作模型执行与细粒度反馈",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29622v1",
+      "route": "20260726-20260804/2607.29622v1-rayvit-ray-conditioned-visual-representations-for-viewpoint-robust-imitation-learning",
+      "title": "RayViT: Ray-Conditioned Visual Representations for Viewpoint-Robust Imitation Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向模仿学习与控制的视角鲁棒视觉表示学习",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.00486v1",
+      "route": "20260726-20260804/2608.00486v1-dreamtraj-generating-6-dof-object-trajectories-by-reading-unrendered-video-diffusion-latents",
+      "title": "DreamTraj: Generating 6-DoF Object Trajectories by Reading Unrendered Video Diffusion Latents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "MOVE数据集与DreamTraj：从人类视频潜变量预测物体6自由度轨迹并配语言指令",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.00547v1",
+      "route": "20260726-20260804/2608.00547v1-disentangling-visuo-tactile-foresight-oracle-guided-interface-discovery-for-world-action-models",
+      "title": "Disentangling Visuo-Tactile Foresight: Oracle-Guided Interface Discovery for World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "研究WAM中未来表征到动作生成接口的有效结构",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.00554v1",
+      "route": "20260726-20260804/2608.00554v1-dexmani-human-derived-manipulability-guidance-for-dexterous-rotation",
+      "title": "DexMani: Human-Derived Manipulability Guidance for Dexterous Rotation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将人类示范作为可操作性演化先验用于灵巧旋转",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.00569v1",
+      "route": "20260726-20260804/2608.00569v1-latency-tolerant-cloud-edge-collaborative-vision-language-action-models-via-emergent-representational-specialization",
+      "title": "Latency-Tolerant Cloud-Edge Collaborative Vision-Language-Action Models via Emergent Representational Specialization",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向延迟容忍机器人控制的云边协同VLA策略",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.00725v1",
+      "route": "20260726-20260804/2608.00725v1-selfwam-a-self-grounded-unified-world-action-model-for-fast-robot-control",
+      "title": "SelfWAM: A Self-Grounded Unified World Action Model for Fast Robot Control",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出自接地统一世界动作模型，联合预测动作、未来RGB帧与机器人自遮挡掩码",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01066v1",
+      "route": "20260726-20260804/2608.01066v1-oc-vla-monocular-geometry-guided-cross-view-consistency-for-viewpoint-robust-robotic-manipulation",
+      "title": "OC-VLA++: Monocular Geometry-Guided Cross-View Consistency for Viewpoint-Robust Robotic Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过几何引导的跨视图一致性和动作等变性扩展 VLA，提升机器人操纵的视角鲁棒性",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01102v1",
+      "route": "20260726-20260804/2608.01102v1-caat-contact-aware-attention-scaling-and-tactile-masking-for-data-efficient-contact-rich-manipulation",
+      "title": "CAAT: Contact-Aware Attention Scaling and Tactile Masking for Data-Efficient Contact-Rich Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过接触感知注意力缩放与触觉掩码提升视觉-触觉跨模态表示学习",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01381v1",
+      "route": "20260726-20260804/2608.01381v1-dreamtrajectory-trajectory-guided-action-generation-with-world-model-alignment-for-mobile-manipulation",
+      "title": "DreamTrajectory: Trajectory-Guided Action Generation with World Model Alignment for Mobile Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过世界模型对齐的轨迹引导动作生成，提升VLA移动操作",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01397v1",
+      "route": "20260726-20260804/2608.01397v1-sg-wam-self-guided-world-modeling-in-geometry-aware-policy-space",
+      "title": "SG-WAM: Self-Guided World Modeling in Geometry-Aware Policy Space",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向世界动作模型的自引导框架，在策略衍生表征空间中学习几何感知动作条件动力学",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01573v1",
+      "route": "20260726-20260804/2608.01573v1-uncovering-and-mitigating-positional-blind-spots-in-vision-language-action-models",
+      "title": "Uncovering and Mitigating Positional Blind Spots in Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "黑盒框架揭示和缓解VLA模型中的位置盲区",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01824v1",
+      "route": "20260726-20260804/2608.01824v1-retouch-empowering-contact-rich-dexterous-manipulation-with-online-refined-tactile-prediction",
+      "title": "ReTouch: Empowering Contact-Rich Dexterous Manipulation with Online-Refined Tactile Prediction",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向灵巧操作的视觉-触觉跨模态表示与闭环动作生成",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01826v1",
+      "route": "20260726-20260804/2608.01826v1-multi-view-unified-camera-fields-geometry-shaped-action-facing-representations-for-rgb-only-multi-camera-vla-policies",
+      "title": "Multi-View Unified Camera Fields: Geometry-Shaped Action-Facing Representations for RGB-Only Multi-Camera VLA Policies",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为VLA策略学习面向动作的潜在表示",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01880v1",
+      "route": "20260726-20260804/2608.01880v1-world-action-models-in-real-time-an-empirical-study-of-smooth-execution-via-asynchronous-deployment",
+      "title": "World Action Models in Real Time: An Empirical Study of Smooth Execution via Asynchronous Deployment",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "世界行动模型部署策略以提升实时机器人控制的平滑性",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02014v1",
+      "route": "20260726-20260804/2608.02014v1-mango-grasp-mahalanobis-fields-over-geometry-oriented-3d-gaussians-for-cross-embodiment-dexterous-grasping",
+      "title": "MANGO-Grasp: Mahalanobis Fields over Geometry-Oriented 3D Gaussians for Cross-Embodiment Dexterous Grasping",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "跨形态灵巧抓取，使用几何导向3D高斯和形态运动学描述符",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02257v1",
+      "route": "20260726-20260804/2608.02257v1-learning-panorama-aware-vla-for-mobile-manipulation-with-whole-body-teleoperation",
+      "title": "Learning Panorama-Aware VLA for Mobile Manipulation with Whole-Body Teleoperation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向移动操作的VLA策略及全身遥操作数据采集",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02326v1",
+      "route": "20260726-20260804/2608.02326v1-chainvla-chaining-vision-language-action-queries-through-a-unified-execution-state-for-long-horizon-manipulation",
+      "title": "ChainVLA: Chaining Vision-Language-Action Queries through a Unified Execution State for Long-Horizon Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过可更新的执行状态与稀疏事件记忆实现长时程VLA操作",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02365v1",
+      "route": "20260726-20260804/2608.02365v1-faster-wam-do-world-action-models-need-deep-action-modules",
+      "title": "Faster-WAM: Do World Action Models Need Deep Action Modules?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "Faster-WAM及Transformer中间件设计用于世界行动模型",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02497v1",
+      "route": "20260726-20260804/2608.02497v1-grounded-semantic-re-binding-for-robust-instruction-generalization-in-vision-language-action-models",
+      "title": "Grounded Semantic Re-Binding for Robust Instruction Generalization in Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "分析VLA模型对指令改写的脆弱性，并提出接地语义重绑定方法",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.02580v1",
+      "route": "20260726-20260804/2608.02580v1-ego2robot-scalable-robot-data-synthesis-from-egocentric-human-data",
+      "title": "Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将第一视角人类视频通过动作重定向和视觉合成转化为机器人训练数据",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.23473v1",
+      "route": "20260726-20260804/2607.23473v1-prism-polynomial-representations-for-interaction-structured-motor-control",
+      "title": "PRISM: Polynomial Representations for Interaction-Structured Motor Control",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向动作学习的策略表示，显式暴露物理交互特征",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.25541v1",
+      "route": "20260726-20260804/2607.25541v1-p3-probabilistic-policy-propagation-for-stable-vae-based-robot-learning",
+      "title": "P3: Probabilistic Policy Propagation for Stable VAE-Based Robot Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "处理随机VAE潜变量与PPO动作损失之间的表示错位",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.25798v1",
+      "route": "20260726-20260804/2607.25798v1-transformer-transformer-a-unified-model-for-motion-conditioned-robot-co-design",
+      "title": "Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于人类演示轨迹的跨具身机器人协同设计",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.26056v1",
+      "route": "20260726-20260804/2607.26056v1-intact-isomorphic-intent-to-action-learning-for-search-free-world-models",
+      "title": "INTACT: Isomorphic Intent-to-Action Learning for Search-Free World Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "无搜索世界模型，通过同构架构直接将意图映射到动作",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.26315v1",
+      "route": "20260726-20260804/2607.26315v1-momo-dial-motion-mode-in-robot-manipulation-with-spatiotemporal-action-tokenization",
+      "title": "MoMo: Dial Motion Mode in Robot Manipulation with Spatiotemporal Action Tokenization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "学习可复用的时空动作分词器和运动模式表示用于行为克隆",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.24296v1",
+      "route": "20260726-20260804/2607.24296v1-pac-dp-pac-bayesian-diffusion-policy-learning",
+      "title": "PAC-DP: PAC-Bayesian Diffusion Policy Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向操作泛化的PAC-Bayes正则化扩散策略",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.25397v1",
+      "route": "20260726-20260804/2607.25397v1-decompose-and-reorganize-planning-with-primitives-and-visuomotor-policies-learned-from-demonstrations",
+      "title": "Decompose and Reorganize: Planning with Primitives and Visuomotor Policies Learned from Demonstrations",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向长时间跨度的灵巧操作规划，结合基元与视觉运动策略",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.25731v1",
+      "route": "20260726-20260804/2607.25731v1-tri-manual-visuomotor-imitation-learning-of-robot-policies",
+      "title": "Tri-Manual Visuomotor Imitation Learning of Robot Policies",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "三臂遥操作数据采集与模仿学习",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.26460v1",
+      "route": "20260726-20260804/2607.26460v1-rlmm-flow-a-flow-based-mobile-manipulation-framework-with-latent-space-reinforcement-learning",
+      "title": "RLMM-Flow: A Flow-based Mobile Manipulation Framework with Latent-Space Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "流策略上的潜空间强化学习后训练",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.27145v1",
+      "route": "20260726-20260804/2607.27145v1-explainable-and-resource-efficient-spatial-reasoning-in-multimodal-llms-for-decision-critical-applications",
+      "title": "Explainable and Resource-Efficient Spatial Reasoning in Multimodal LLMs for Decision-Critical Applications",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向具身决策的可解释细粒度空间推理，提升3D理解",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29009v2",
+      "route": "20260726-20260804/2607.29009v2-d-vlc-decentralized-vision-language-collaboration-for-heterogeneous-embodied-multi-robot-systems-in-unknown-environments",
+      "title": "D-VLC: Decentralized Vision-Language Collaboration for Heterogeneous Embodied Multi-Robot Systems in Unknown Environments",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于视觉语言模型的异构具身多机器人系统去中心化协作",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29285v1",
+      "route": "20260726-20260804/2607.29285v1-tract-temporally-routed-action-chunks-with-chronological-phase-authority-for-contact-rich-manipulation",
+      "title": "TRACT: Temporally Routed Action Chunks with Chronological Phase Authority for Contact-Rich Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将相位结构化动作块分解为当前相位和当前到下一边界，并通过相位特定路径生成接触丰富的机器人动作",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2607.29600v1",
+      "route": "20260726-20260804/2607.29600v1-ham-vln-harnessing-hierarchical-agentic-memory-for-zero-shot-vision-and-language-navigation",
+      "title": "HAM-VLN: Harnessing Hierarchical Agentic Memory for Zero-Shot Vision-and-Language Navigation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向长程零样本导航的分层智能体记忆机制",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    },
+    {
+      "paper_id": "2608.01015v1",
+      "route": "20260726-20260804/2608.01015v1-king-embodiment-aware-kinematic-graph-neural-network-for-unified-motion-representation-of-legged-and-wheeled-robots",
+      "title": "KING: Embodiment-Aware Kinematic Graph Neural Network for Unified Motion Representation of Legged and Wheeled Robots",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过图神经网络实现跨具身的统一运动表示",
+      "first_seen_at": "2026-08-04 09:05:03 UTC",
+      "updated_at": "2026-08-04 09:05:03 UTC"
+    }
+  ]
+}
