@@ -1,0 +1,378 @@
+Title: GenTrack: Physical Alignment for Robot-Native Motion Generation and Zero-Shot Humanoid Tracking
+
+URL Source: https://arxiv.org/pdf/2608.01410v1
+
+Published Time: Tue, 04 Aug 2026 01:52:45 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# GenTrack : Physical Alignment for Robot-Native Motion Generation and Zero-Shot Humanoid Tracking 
+
+# Zeyu Ling 1, Xinyao Yu 1, Renye Yan 2, Jikang Cheng 2,Zhanke Wang 2, Qing Shuai 3, Changqing Zou 1,4 
+
+> 1
+
+Zhejiang University, 
+
+> 2
+
+Peking University, 
+
+> 3
+
+Tencent, 
+
+> 4
+
+Zhejiang Lab 
+
+Abstract 
+
+General-purpose humanoid trackers can execute diverse refer-ences, but their zero-shot coverage depends on large embodied corpora that are costly to extend. Text-to-motion generators offer scalable supervision, yet models trained on human mo-tion or retargeted data inherit a gap between kinematic plausi-bility and robot executability. Existing one-way pipelines fix either the generated corpus or the reward tracker. We introduce 
+
+GenTrack , an online generator–tracker framework that alter-nates execution-grounded, group-relative generator alignment with tracker training on newly generated references; anchor-ing and rehearsal constrain drift. On Unitree G1, we evaluate 
+
+GenTrack with ProtoMotions and SONIC backbones across three zero-shot tracking splits including public AMASS and LAFAN benchmarks, and a private out-of-distribution test set of 1,024 prompt-motion pairs in the wild. The online co-training strategy consistently produces generators that output more robot-executable motions with strong semantic align-ment, and trackers with markedly broader zero-shot cover-age and improved tracking accuracy, especially on out-of-distribution references. These results demonstrate that joint online post-training effectively narrows the executability gap between retargeted references and robot-native motion, ad-vancing zero-shot humanoid control without additional data collection and beyond the limitations of a static reference pool. 
+
+# 1 Introduction 
+
+A general-purpose humanoid controller should execute refer-ence motions beyond its training set without motion-specific optimization or test-time adaptation. Recent generalist track-ers have advanced zero-shot tracking on diverse motion col-lections (Yin et al. 2025; Han et al. 2025; Li et al. 2026c; Luo et al. 2025; Ma et al. 2026; Wang et al. 2026; Li et al. 2026d; Tao et al. 2026; Chen et al. 2026; Qi et al. 2026), yet their best results depend on embodied motion corpora of hundreds of millions to billions of frames (Luo et al. 2025; Qi et al. 2026). Scaling the breadth and quality of tracker supervision has thus become a central practical bottleneck for zero-shot humanoid tracking. Direct physical-robot demonstrations scale poorly: hard-ware rollouts are slow, safety-constrained, and expensive, whereas human motion is abundant. Existing pipelines there-fore acquire motion from mocap, video, or teleoperation, 
+
+Copyright © 2027, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+retarget it to the robot, and train tracking policies in simula-tion (Fu et al. 2024; He et al. 2024a, 2025; NVLabs 2025; Luo et al. 2025; Qi et al. 2026). This enables large robot-space corpora, but the scalable substitute for robot demon-strations remains derived from human motion. Hardware col-lection also undersamples the long-tail action compositions and styles needed by a generalist, so its limitation is both cost and coverage. The limitation is not purely a failure of retargeting. Modern retargeters substantially improve kinematic correspondence and downstream tracking (Araujo et al. 2025), yet expressing a motion in robot coordinates does not certify faithful closed-loop execution. Residual mismatch in contacts, joint continu-ity, self-collision, or fast transitions persists, motivating kin-odynamic and physics-aware refinement (Chen et al. 2025; Zhao et al. 2026). Hence, the scalable data route introduces two coupled bottlenecks: obtaining sufficient embodied cov-erage is costly, and the resulting human-retargeted corpus is only a proxy for the robot’s executable motion distribu-tion (Fig. 2). Crucially, validity is sequence- and controller-dependent: a clip can be well formed frame by frame yet accumulate tracking error or fail at a contact transition under closed-loop dynamics. Pretrained motion generators offer a complementary cov-erage source. Modern text-to-motion models already capture diverse actions, styles, and compositions (Guo et al. 2022; Tevet et al. 2023; Jiang et al. 2023; Zhang et al. 2023a; Chen et al. 2023; Guo et al. 2024), allowing diverse tracker references to be synthesized without additional robot demon-strations. However, a generator reproduces its training distri-bution; when that distribution is human motion or its retar-geted counterpart, sampling more motions merely expands the same proxy without improving execution compatibility. It scales useful supervision only when samples are evaluated in robot space, rather than assumed executable because their representation is robot-native. Existing work connects generation and control in one di-rection while fixing the other: generated motions can be tracked by downstream physics policies (Rempe et al. 2026), frozen generative priors can supervise policy training (Zhang et al. 2025a), and fixed trackers provide physical feedback for generator post-training (Yue et al. 2025; Zhang et al. 2026c). These formulations leave open a central question: can a pretrained generator reduce the embodied data needed arXiv:2608.01410v1 [cs.RO] 2 Aug 2026 Figure 1: Online generator–tracker co-training in robot space. Generated robot-space references expand tracker supervision; their physics executions provide generator-alignment feedback. At evaluation, the tracker executes held-out references. to extend a zero-shot tracker’s coverage while the tracker’s feedback improves the generated distribution? A fixed gen-erated corpus cannot adapt as the tracker improves; one-shot tracker-filtered SFT aligns the generator to a frozen tracker, freezing the reward model and downstream tracker, thus fail-ing to exploit later-executable motions or test whether gen-erator supervision improves the tracker. This motivates a joint online post-training loop where generated supervision and execution-grounded feedback co-evolve from available checkpoints. The limitations are coupled: tracker improve-ments move the execution frontier and make an offline-selected corpus stale, while generator updates expose mo-tions and failure modes absent from the fixed tracker-side pool. We introduce GenTrack , an online generator–tracker framework that closes this loop (Fig. 1). Starting from a pre-trained robot-space motion generator and humanoid tracker, it alternates between synthesizing diverse references, evalu-ating them through closed-loop execution, aligning the gener-ator with group-relative execution rewards, and updating the tracker with a mixture of generated and real retargeted data. Generation expands tracker supervision beyond the available post-training corpus, while execution feedback guides the generator toward robot-compatible motions. Both compo-nents evolve online, so the generated curriculum and its exe-cution feedback co-adapt. Generator collapse and tracker for-getting are constrained by regularizing toward the initial gen-erator, supervised text–motion rehearsal, and real-reference replay. These two branches address physical alignment and tracker coverage without using the current trainee as its own reward judge. We validate GenTrack on two publicly released hu-manoid trackers with distinct pretraining paradigms, Pro-toMotions and SONIC, to test generalization across back-bone designs. For each, we compare the pretrained check-point against equal-budget reference-only continuation, of-fline generator replay, and one-way component updates, isolating the effect of online mutual post-training. Evalua-tion uses three frozen zero-shot tracking splits (LAFAN1-G1, AMASS-test-G1, Wild-G1-clean) and a private out-of-distribution generator test set; a common 30-FPS evaluator measures tracking success and trajectory errors, while official frozen-SONIC IsaacLab rollouts and TMR-G1 assess gen-erator executability and semantic preservation. The online co-training strategy consistently produces generators with higher physical fidelity and trackers with broader zero-shot coverage. The SONIC-aligned branch yields broad tracking accuracy gains while preserving velocity fidelity; the Proto-Motions branch achieves improved out-of-distribution cover-age and key-body accuracy, with split-dependent trade-offs. These improvements are not reproduced by static replay or one-way filtering, indicating that closed-loop mutual adap-tation drives the observed gains. Our contributions are: 
+
+• We identify that the two dominant bottlenecks in scal-ing zero-shot humanoid tracking—the cost of extending embodied supervision and the residual executability gap of retargeted references—are coupled and reinforce each other when addressed separately, motivating their joint treatment through closed-loop co-training. • We propose GenTrack , an online framework that couples a text-to-motion generator and a humanoid tracker in a mutually improving loop: execution-grounded feedback aligns the generator toward robot-compatible motions, while newly generated references expand tracker coverage under controlled drift constraints. 
+
+• Across two distinct tracker backbones, controlled experi-ments show that online co-training improves both gener-ator physical fidelity and tracker zero-shot coverage, with gains not reproduced by static replay or one-way filtering. The evaluation protocol isolates the effect of mutual adap-tation from additional data, optimizer steps, and offline generation. 
+
+# 2 Related Work 
+
+Physical feedback and closed-loop generation. Physics-aware generation reduces foot skating, penetration, unsta-ble contacts, and dynamically infeasible poses. PhysDiff and CLoSD use simulation or a controller loop to im-prove generated motion, while RLPF, Humanoid-R0, and PhysMoDPO optimize motion models from physical feed-back, deployment-oriented rewards, or execution preferences (Yuan et al. 2023; Tevet et al. 2025; Yue et al. 2025; Zhuang et al. 2025; Zhang et al. 2026c). RoboForge and iterative closed-loop synthesis additionally feed optimized or gen-erated motions back into generator/control training (Yuan et al. 2026; Xu et al. 2026). Most closely, PARC alternates character-motion generation with physics-based tracking cor-rection, QuadFM jointly trains a text-conditioned generator and controller for quadrupeds, and Humanoid-DART itera-tively updates a goal-conditioned humanoid trajectory gen-erator and tracker; a complementary humanoid locomotion system fine-tunes the tracker against a frozen generator (Xu et al. 2025; Gao et al. 2026; Debbad et al. 2026; Zhang et al. 2026d). Thus, jointly updating generation and con-trol is not by itself our novelty. GenTrack instead tests whether tracker-derived feedback aligns a broad language-conditioned robot motion generator and whether its online distribution improves unseen-motion tracker generalization, against one-way, frozen-generator, and offline controls. 
+
+Baselines used in our study. For generalist tracking, we compare Any2Track’s cross-embodiment policy, Humanoid-GPT’s language-conditioned controller, the AMP/PPO-based ProtoMotions tracker, and the released SONIC whole-body tracker (Zhang et al. 2025b; Qi et al. 2026; NVLabs 2025; Luo et al. 2025). BeyondMimic is a complementary per-reference specialist rather than a zero-shot generalist (Liao et al. 2025). Matched post-training controls comprise reference-only continuation, replay from the frozen initial generator, and replay from the final online generator. On the generator side, we compare the initial robot-native model with one-way tracker-filtered SFT, FlowGRPO against a frozen strong tracker, and the two bidirectional variants. Sec-tion 4 specifies the matched budgets and evaluation protocol for these baselines. The supplementary material reviews text-to-motion gen-eration, language-conditioned humanoids, retargeting, and tracker-only systems in greater detail. 
+
+# 3 Method 
+
+## Problem formulation 
+
+Motion generation. Let MR denote the space of ref-erence motions for a target robot. A conditional motion generator models a distribution over motion sequences 
+
+q = ( q1, . . . , qT ) ∈ M R given a condition y. We write 
+
+q ∼ pθ (q | y), or equivalently q = Gθ (y, z ) with stochastic input z. The condition may represent language or another motion specification; this work studies text-conditioned gen-eration, where y = c.
+
+Humanoid motion tracking. Given a reference q, atracker πϕ maps the current robot state st and a reference command gt(q) to an action at ∼ πϕ(· | st, g t). The robot dynamics produce a closed-loop trajectory τ = E(πϕ, q).Motion tracking maximizes the expected discounted track-ing return 
+
+Jtrack (ϕ; q) = E
+
+" TX
+
+> t=1
+
+γt−1rtrack (st, qt)
+
+#
+
+. (1) Zero-shot tracking evaluates the same policy on reference motions not observed during training, without motion-specific policy optimization. 
+
+Robot-native parameterization. Each frame uses a de-terministic 38D G1 parameterization: a three-dimensional root channel, continuous 6D pelvis rotation, and 29 actuated joints. Per-clip planar position and heading are canonical-ized; planar motion is stored as displacement while height remains absolute. One-time offline GMD retargeting sup-plies paired initialization data, but no retargeter runs inside the online loop. Supplementary Section B gives preprocess-ing details. 
+
+## Framework overview 
+
+GenTrack couples a pretrained motion generator and an existing humanoid tracker in a bidirectional online training loop (Fig. 3). Starting from a broad-coverage generator Gθ0
+
+trained on large-scale text–motion data and a pretrained hu-manoid tracker πϕ0 , each round samples diverse robot-space references, evaluates them through closed-loop execution, and uses the resulting references and rollouts to update the two models. This sample–execute–update cycle provides the common backbone for both directions of the framework. The two models provide complementary supervision. Structurally valid on-policy generations accumulate as new tracker references, while tracker updates draw equal numbers of public-reference and generated-reference transitions. Con-versely, the tracker from the preceding round executes each generated reference in closed loop; incomplete rollouts, joint and root tracking errors, and unexpected falls form an exe-cution score whose negative provides the group-relative gen-erator reward. The scoring tracker remains fixed within the generator phase and never gates tracker admission. A frozen-generator KL penalty and periodic supervised rehearsal on the original text–motion data limit drift. Alternating these up-dates lets the generated pool and its execution reward evolve rather than fixing both offline. • Reference • Execution 
+
+(a) Shared motion feature space (b) Physical descriptor distributions −8 −6 −4 −2 0 2 4 6        
+
+> PC1 (41.3%)
+> −4
+> −2
+> 0
+> 2
+> 4
+> 6
+> 8
+> PC2 (19.8%)
+> Reference Execution −3 −2 −1 0123
+> Robust-normalized descriptor value
+> Body jerk Foot-skate ratio Peak root speed Root height Foot clearance
+> Reference Execution
+
+Figure 2: Reference–execution gap in diagnostic high-fidelity robot rollouts. (a) Shared PCA of 9,332 paired windows shows broad overlap with systematic local shifts. (b) Mirrored densities over all 10,369 paired windows reveal changes in body jerk, foot skating, root height, and foot clearance, with a smaller change in peak root speed. Subset construction, normalization, and separability diagnostics are reported in the appendix. 
+
+## Generated-reference curriculum for tracker optimization 
+
+Generated references extend an existing tracker without re-quiring a new large tracker-specific reference corpus. Let 
+
+Dbase be a fixed seed reference pool, and let Ptrain be a fixed pool of training prompts. The generator samples robot mo-tions Dgen = {Gθ (ci, z j ) | ci ∈ P train }, and the tracker is trained on 
+
+Dtrack = Dbase ∪ D gen −valid , (2) where Dgen −valid contains generated references that pass reference-only structural checks: decoding must be finite and well formed, and the motion must not require unavail-able scene geometry. We do not gate this pool by rollout completion, velocity, amplitude, or current-trainee difficulty. Instead, every tracker update draws equal numbers of transi-tions from Dbase and the accumulated Dgen −valid , preventing pool growth from changing the source mixture. 
+
+## Execution reward for generator alignment 
+
+Tracker rollouts turn robot execution into a learning sig-nal for text-to-motion generation. At round r, we freeze the tracker from the preceding round, ¯π(r), throughout generator optimization and define 
+
+R(q; ¯ π(r)) = −Sexec (q; ¯ π(r)), (3) where, for completion fraction c, maximum joint error ej ,mean root-trajectory error et, and root-displacement error 
+
+ed,
+
+Sexec = (1 − c) + [ ej ]2 + [ et/0.5] 2 + 0 .5[ ed/0.5] 2 + 2 Ifall ,
+
+(4) and [x]2 = min( x, 2) . The current trainee has zero reward weight, and velocity, amplitude, and binary-success gates are not used by the main protocol. Thus “lagged” denotes a stabi-lized in-branch reward model, not an independent evaluator. 
+
+## Generator optimization 
+
+Given K samples from the same prompt, GenTrack updates the generator with a group-relative FlowGRPO objective. Re-wards are normalized within each prompt group, and sampled trajectories are replayed for multiple clipped policy-ratio up-dates. A frozen-generator KL anchor and periodic supervised flow-matching updates on the original train-only text–motion pairs constrain drift from the pretrained motion distribution (Yue et al. 2025; Liu et al. 2025a). TMR-G1 retrieval and di-versity are held-out metrics and do not enter the reward. The supplement specifies update counts, anchor weights, replay versioning, and matched objective controls. 
+
+## Training schedule 
+
+We realize GenTrack as an orchestrated alternation between the two branches. Each round (1) samples K same-prompt candidates and removes only invalid or scene-dependent ref-erences; (2) scores the survivors with the frozen preceding-round tracker and applies FlowGRPO with the two retention anchors; (3) accumulates structurally valid on-policy gener-ations and updates the tracker with equal public/generated transition counts using its native objective; and (4) exports that tracker for the next round. We log reward variance, policy-ratio movement, retention updates, exported refer-ences, and frozen validation at every boundary. The sup-plement gives initialization and the complete schedule. 
+
+# 4 Experiments 
+
+We evaluate whether online generated references extend zero-shot tracker coverage beyond matched continuation and static replay, and whether closed-loop tracker feedback im-proves generator physical fidelity while preserving semantic quality. Controlled one-way baselines isolate each direction. Fall-only SR (%) ↑ All-trajectory error ↓                                                                                                   
+
+> Method LAFAN1 AMASS-test Wild-G1 MPJPE (mm)
+> Eg
+> (mm) MPJVE (m/s) RootVelErr (m/s)
+> Baselines
+> Any2Track (Zhang et al. 2025b) 100.0 5.1 10.4 320.9 1309.1 0.720 0.632 BeyondMimic (Liao et al. 2025) 87.5 93.0 61.0 99.4 347.6 0.251 0.279 Humanoid-GPT (Qi et al. 2026) 85.0 83.3 71.4 128.1 1134.7 0.689 0.644 ProtoMotions ( T0) (NVLabs 2025) 75.0 81.2 45.9 142.2 789.8 0.320 0.466 SONIC (Luo et al. 2025) 85.0 79.0 47.2 126.2 814.2 0.308 0.423
+> ProtoMotions post-training
+> Ref. only 75.0 80.4 45.7 141.9 786.5 0.321 0.466
+> G0replay 77.5 79.0 46.8 140.0 772.4 0.319 0.461
+> Gfinal replay 77.5 78.3 46.4 140.7 756.2 0.318 0.456
+> GenTrack 75.0 81.2 47.3 139.3 775.4 0.320 0.466
+> SONIC post-training
+> Ref. only 82.5 79.7 45.9 131.8 867.6 0.314 0.436
+> G0replay 85.0 78.3 45.5 133.3 847.6 0.321 0.433
+> Gfinal replay 87.5 76.1 47.8 126.2 841.0 0.314 0.434
+> GenTrack 90.0 79.7 48.0 124.1 807.2 0.308 0.423
+
+Table 1: Zero-shot G1 tracking on three frozen splits under one fall-only protocol; errors pool all valid frames, including failures. Within each backbone, the primary trainable rows share initialization and budget; Final-G replay is an additional offline control. Bold denotes the best primary trainable value per backbone. Metric aggregation, provenance, and run contracts appear in Supplementary Section C.                                                   
+
+> Generator Succ. ↑Ejoint ↓Ekey ↓TMR R@1/2/3 ↑MM-Dist ↓FID ↓Diversity
+> G092.58 0.159 0.410 0.774/0.888/ 0.931 18.293 0.023 36.375 Filtered SFT 96.97 0.149 0.348 0.771/0.886/0.929 18.450 0.028 36.264 Frozen tracker reward 90.92 0.158 0.363 0.767/0.875/0.920 18.612 0.027 36.433
+> GenTrack (ProtoMotions) 93.55 0.160 0.399 0.782/0.889/0.930 18.299 0.020 36.373
+> GenTrack (SONIC) 94.43 0.152 0.325 0.783 /0.890 /0.930 18.302 0.020 36.371
+
+Table 2: Generator post-training on a fixed 1,024-case suite under matched prompts, noise, decoding, and evaluation. Frozen-SONIC rollouts measure physical quality; TMR-G1 measures semantic/distribution preservation. Bold marks the best value per metric (R-Precision componentwise, including ties); Diversity is descriptive. Full definitions appear in Supplementary Section C.1. 
+
+## Experimental Setup 
+
+Protocol and data. All experiments use Unitree G1 and 30-FPS exports. We instantiate GenTrack from fixed Pro-toMotions (NVLabs 2025) and SONIC (Luo et al. 2025) checkpoints; within each backbone, trainable rows share initialization, simulator, optimizer, transition budget, vali-dation, and test manifests. The tracker anchor pool con-tains 13,337 AMASS/LAFAN references. Generator ini-tialization instead uses 357,472 GMD-retargeted G1 pairs from an internal human-motion corpus. These pairs initial-ize and rehearse only the generator; tracker post-training uses the AMASS/LAFAN pool and generator-sampled ref-erences. Evaluation uses frozen LAFAN1-G1, AMASS-test-G1, Wild-G1-clean, and a separate 1,024-prompt generator suite; no test item or metric enters training. External roll-outs receive the same post-hoc processing, and all generator rows share one frozen SONIC executor. Supplementary Sec-tions B and C give filtering, checkpoint provenance, split exclusions, and run contracts. Offline controls also match accepted-motion counts or tracker transitions as applicable; released native success flags are excluded from the common comparison. 
+
+Metrics. We evaluate the tracker baselines introduced in Section 2 by common physical-coverage and motion-fidelity measures, and evaluate generators by frozen-SONIC exe-cutability plus TMR-G1 semantic and distribution measures. Full definitions, body sets, alignment, thresholds, aggrega-tion, and diagnostic-only rules are given in supplementary Section C.1 and Table 4. 
+
+## Main Tracker Post-Training Results 
+
+Table 1 compares external trackers with matched post-training variants. With ProtoMotions, static replay trades AMASS-test SR for LAFAN1/Wild-G1 gains; GenTrack 
+
+recovers AMASS-test, attains the best Wild-G1 SR, and re-duces MPJPE from 142.2 to 139.3 mm, although its Eg
+
+remains above frozen-G0 replay. With SONIC, GenTrack Figure 3: GenTrack pipeline. Starting from a pretrained generator and tracker, GenTrack alternates generator alignment via execution-grounded group-relative reward with tracker training on newly generated references. Both components evolve online; the tracker used for reward scoring is frozen within each generator phase and updated in the following round. raises SR from 85.0/79.0/47.2 to 90.0/79.7/48.0, reduces MPJPE from 126.2 to 124.1 mm and Eg from 814.2 to 807.2 mm, and matches both velocity errors without replaying Wild-G1-clean. Relative to frozen-G0 replay, these changes improve success on all three splits while lowering MPJPE by 9.2 mm and Eg by 40.4 mm. Final-G replay remains below the online SONIC row on every reported measure, showing that the final generated pool alone does not reproduce the online training trajectory. Final-G replay provides an addi-tional offline control; Supplementary Section C gives its run contract and the external-baseline construction. 
+
+## Main Generator Results 
+
+Table 2 evaluates all generators under identical prompts, noise, lengths, and a frozen SONIC evaluator. Tracker-filtered SFT uses a frozen ProtoMotions T0 to filter can-didates for supervised fine-tuning; SONIC is only the com-mon post-hoc evaluator. While SFT achieves high nominal success (96.97), this metric is misleading: it optimizes for conformity to a single, frozen tracker’s biases rather than for genuine physical plausibility. Consequently, SFT’s genera-tions collapse toward low-difficulty motions that T0 already executes well, as evidenced by its degraded semantic met-rics, distributional quality, and higher FID. This highlights a fundamental limitation of one-way filtering: it creates a self-reinforcing loop that sacrifices motion diversity and difficulty for inflated success on a static judge. In contrast, GenTrack (SONIC) demonstrates substan-tial physical improvement without this trade-off. It reduces 
+
+Ekey from 0.410 to 0.325 m—surpassing SFT in key-body fi-delity—while improving R@1/2 to 0.783/0.890, preserving R@3 at 0.930, and lowering FID to 0.020. The ProtoMotions variant yields similar semantic gains. Together, the physical and semantic metrics show that GenTrack improves robot compatibility while preserving generation difficulty and dis-tributional quality relative to tracker-filtered SFT. 
+
+## Ablation Study 
+
+The main tables already separate one-way controls: frozen-
+
+G0 replay helps some splits but regresses AMASS-test, while tracker-filtered SFT improves executability at the cost of se-mantic preservation, confirming that neither static replay nor one-way alignment alone reproduces the full effect of mutual adaptation. Generator-only training with the same execution reward and retention anchors raises frozen-SONIC success from 92.58 to 93.95, reduces Ekey from 0.410 to 0.381, and changes R@1/FID from 0.774/0.023 to 0.783/0.020. The online SONIC branch further improves success and both physical errors, supporting a contribution from bidirectional adaptation beyond generator-only alignment (Supplementary Section D). Among matched objective controls, success-only feedback reaches 93.12 execution success with 0.780 R@1 and 0.021 FID, whereas using the current trainee as sole judge lowers cross-split SR to 74.8/79.6/46.4. Reward-weighted SFT attains 94.10 success and 0.158/0.389 joint/key-body error but degrades R@1/FID to 0.769/0.029. Diffusion-DPO Figure 4: Qualitative effects of bidirectional training. (a) Generator executability. Given the same text prompt and sampling seed, a fixed SONIC tracker fails on the initial generated reference but successfully executes the reference produced by the GenTrack-aligned generator. (b) Tracker generalization. For the same held-out Wild-G1 reference, both the initial tracker and its frozen-G0 replay counterpart fail, whereas the online-trained GenTrack tracker completes the motion. Each row shows the same five uniformly spaced phases from synchronized reference–execution trajectories. For pose readability, every snapshot is independently pelvis-centered and yaw-normalized; this pose-normalized figure does not visualize the Table 1 metric frame, global Eg , or the heading component of MPJPE. is more balanced at 93.36 success, 0.776 R@1, and 0.023 FID, but remains below the full loop on AMASS-test/Wild-G1 coverage and generator success, key-body error, R@1, and FID. Matched anchor-weight controls are reported in the supplement. Together, these controls indicate that the online loop yields benefits beyond its individual components. 
+
+## Qualitative Analysis 
+
+Figure 4 visualizes representative cases under fixed condi-tions: same prompt, noise, and length for the generator; a held-out Wild-G1 reference for the tracker. Generator com-parisons show GenTrack removing failure-inducing arti-facts (e.g., abrupt joint reversals) that cause G0 outputs to fail during execution. Tracker comparisons illustrate recov-ery of difficult phases—deep crouches, rapid turns, con-tact transitions—where the pretrained tracker fails but the jointly updated tracker succeeds. These examples illustrate the mechanisms behind the quantitative results in Tables 1 and 2; selection criteria, counterexamples, and descriptor-space analysis are detailed in Supplementary Section D.2. 
+
+## Diagnostic Scope and Limitations 
+
+Aggregate tracking metrics do not reveal how retargeted references and executed motions differ. Figure 2 char-acterizes this residual gap (which motivates GenTrack )through shared PCA (first two components explain 61.1% of pooled variance) and a motion-grouped classifier (AUC 
+
+0.996 ±0.004 ), confirming the gap is systematic yet the do-mains share substantial structure. Per-descriptor densities lo-calize the mismatch to jerk, skating, root height, and foot clearance. These results show that binary success under-characterizes the gap, while the overlap motivates online adaptation rather than discarding the retargeted corpus. Sup-plementary Section D.2 provides subset construction and normalization details. 
+
+# 5 Conclusion 
+
+We presented GenTrack , a bidirectional generator–tracker loop for simulated Unitree G1. Joint post-training improves five SONIC tracker metrics and matches two velocity er-rors, while ProtoMotions yields trade-offs. Against G0, the SONIC-aligned generator improves all three physical met-rics; against tracker-filtered SFT, it trades success and joint error for key-body fidelity and text/distribution preservation. Together, these results support online co-training as an ef-fective way to improve robot-compatible motion generation and extend zero-shot tracking coverage across two tracker backbones. 
+
+# References 
+
+Araujo, J. P.; Ze, Y.; Xu, P.; Wu, J.; and Liu, C. K. 2025. Re-targeting Matters: General Motion Retargeting for Humanoid Motion Tracking. arXiv preprint arXiv:2510.02252 .Bao, J.; Yang, H.; Xin, Y.; Liu, J.; Xu, Y.; Liang, H.; Han, P.; Ma, X.; Wang, D.; and Zhao, B. 2026. PhyGile: Physics-Prefix Guided Motion Generation for Agile General Hu-manoid Motion Tracking. arXiv preprint arXiv:2603.19305 .Barquero, G.; Escalera, S.; and Palmero, C. 2024. Seam-less Human Motion Composition with Blended Positional Encodings. In CVPR , 457–469. Cao, J.; Chen, Y.; and Tomizuka, M. 2026. CLAW: Compos-able Language-Annotated Whole-Body Motion Generation. 
+
+arXiv preprint arXiv:2604.11251 .Chen, M.; Wang, K.; Zhang, B.; Ma, X.; Yang, Z.; Ren, Y.; Huang, Q.; Zhu, Z.; Wang, Y.; and Su, Z. 2026. HoloMotion-1 Technical Report. arXiv preprint arXiv:2605.15336 .Chen, W.; Xiao, H.; Zhang, E.; Hu, L.; Wang, L.; Liu, M.; and Chen, C. 2024. SATO: Stable Text-to-Motion Framework. 
+
+arXiv preprint arXiv:2405.01461 .Chen, X.; Jiang, B.; Liu, W.; Huang, Z.; Fu, B.; Chen, T.; and Yu, G. 2023. Executing Your Commands via Motion Diffusion in Latent Space. In CVPR , 18000–18010. Chen, X.; Wu, H.; Wu, S.; Zhou, M.; Xiang, D.; Zhang, H.; Zhou, Y.; Gao, Y.; Gu, Y.; and Xu, R. 2025. A Scalable Whole-body Motion Transfer via Implicit Kinodynamic Mo-tion Retargeting. arXiv preprint arXiv:2509.15443 .Cho, H.; Kim, S.-H.; Kang, J.; and Koo, D. 2026. SafeFlow: Real-Time Text-Driven Humanoid Whole-Body Control via Physics-Guided Rectified Flow and Selective Safety Gating. 
+
+arXiv preprint arXiv:2603.23983 .Dai, W.; Chen, L.-H.; Wang, J.; Liu, J.; Dai, B.; and Tang, Y. 2024. MotionLCM: Real-Time Controllable Motion Gener-ation via Latent Consistency Model. In ECCV .Debbad, P.; Thiagarajan, K.; Dhédin, V.; Omar, S.; and Khadiv, M. 2026. Humanoid-DART: Humanoid Loco-Manipulation using Diffusion-guided Augmentation through Relabeling and Tracking. arXiv preprint arXiv:2606.26855 .Fu, Z.; Zhao, Q.; Wu, Q.; Wetzstein, G.; and Finn, C. 2024. HumanPlus: Humanoid Shadowing and Imitation from Hu-mans. arXiv preprint arXiv:2406.10454 .Gao, L.; Yang, F.; Chen, J.; Liu, L.; Zheng, Y.; Cai, Y.; and Li, Z. 2026. QuadFM: Foundational Text-Driven Quadruped Motion Dataset for Generation and Control. arXiv preprint arXiv:2603.24021 .Guo, C.; Mu, Y.; Javed, M. G.; Wang, S.; and Cheng, L. 2024. MoMask: Generative Masked Modeling of 3D Human Motions. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 1900–1910. Guo, C.; Zou, S.; Zuo, X.; Wang, S.; Ji, W.; Li, X.; and Cheng, L. 2022. Generating Diverse and Natural 3D Human Motions from Text. In CVPR .Han, J.; Xie, W.; Zheng, J.; Shi, J.; Zhang, W.; Xiao, T.; and Bai, C. 2025. KungfuBot2: Learning Versatile Motion Skills for Humanoid Whole-Body Control. arXiv preprint arXiv:2509.16638 .Harithas, S.; Kwak, S.; Katara, P.; Deolasee, S.; Kalaria, D.; Sridhar, S.; Vemprala, S.; Kapoor, A.; and Huang, J. C.-K. 2026. DreamControl-v2: Simpler and Scalable Au-tonomous Humanoid Skills via Trainable Guided Diffusion Priors. arXiv preprint arXiv:2604.00202 .Harvey, F. G.; Yurick, M.; Nowrouzezahrai, D.; and Pal, C. 2020. Robust Motion In-Betweening. ACM Transactions on Graphics .He, T.; Gao, J.; Xiao, W.; Zhang, Y.; Wang, Z.; Wang, J.; Luo, Z.; He, G.; Sobanbabu, N.; Pan, C.; Yi, Z.; Qu, G.; Kitani, K.; Hodgins, J.; Fan, L.; Zhu, Y.; Liu, C.; and Shi, G. 2025. ASAP: Aligning Simulation and Real-World Physics for Learning Agile Humanoid Whole-Body Skills. arXiv preprint arXiv:2502.01143 .He, T.; Luo, Z.; He, X.; Xiao, W.; Zhang, C.; Zhang, W.; Kitani, K.; Liu, C.; and Shi, G. 2024a. OmniH2O: Universal and Dexterous Human-to-Humanoid Whole-Body Teleoper-ation and Learning. arXiv preprint arXiv:2406.08858 .He, T.; Luo, Z.; Xiao, W.; Zhang, C.; Kitani, K.; Liu, C.; and Shi, G. 2024b. Learning Human-to-Humanoid Real-Time Whole-Body Teleoperation. arXiv preprint arXiv:2403.04436 .Huang, T.; Yuan, F.; Gu, J.; Fang, S.; Zhang, X.; Wang, Y.; Gao, W.; and Zhang, S. 2026. Human2Humanoid: Physics-Aware Cross-Morphology Motion Retargeting for Humanoid Robots. arXiv preprint arXiv:2606.03476 .Jiang, B.; Chen, X.; Liu, W.; Yu, J.; Yu, G.; and Chen, T. 2023. MotionGPT: Human Motion as a Foreign Language. In NeurIPS .Li, B.; Zhang, R.; Liang, H.; Zhang, J.; Zhang, J.; Chen, X.; and Wang, J. 2026a. MIND: Multi-Scale Intent Diffusion for Text-Driven Physics-Based Humanoid Control. arXiv preprint arXiv:2605.26006 .Li, P.; Zhuang, Z.; Gao, Y.; Dong, Y.; Li, S.; Jiang, C.; Dou, S.; Xi, Z.; Zhou, E.; Huang, J.; Li, H.; Gong, J.; Ma, X.; Gui, T.; Wu, Z.; Zhang, Q.; Huang, X.; Jiang, Y.-G.; and Qiu, X. 2026b. FRoM-W1: Towards General Humanoid Whole-Body Control with Language Instructions. arXiv preprint arXiv:2601.12799 .Li, Y.; Luo, Z.; Zhang, T.; Dai, C.; Kanervisto, A.; Tirinzoni, A.; Weng, H.; Kitani, K.; Guzek, M.; Touati, A.; Lazaric, A.; Pirotta, M.; and Shi, G. 2026c. BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Us-ing Unsupervised Reinforcement Learning. In International Conference on Learning Representations .Li, Y.; Zhi, P.; Wang, Y.; Liu, T.; Yan, S.; Liu, W.; Wang, X.; Jia, B.; and Huang, S. 2026d. OmniTrack: General Motion Tracking via Physics-Consistent Reference. arXiv preprint arXiv:2602.23832 .Li, Z.; Chi, C.; Wei, Y.; Zhu, B.; Peng, Y.; Huang, T.; Wang, P.; Wang, Z.; Zhang, S.; and Xu, C. 2026e. From Language to Locomotion: Retargeting-Free Humanoid Control via Mo-tion Latent Guidance. ICLR .Liao, Q.; Truong, T. E.; Huang, X.; Gao, Y.; Tevet, G.; Sreenath, K.; and Liu, C. K. 2025. BeyondMimic: From Motion Tracking to Versatile Humanoid Control via Guided Diffusion. arXiv preprint arXiv:2508.08241 .Liu, J.; Liu, G.; Liang, J.; Li, Y.; Liu, J.; Wang, X.; Wan, P.; Zhang, D.; and Ouyang, W. 2025a. Flow-GRPO: Train-ing Flow Matching Models via Online RL. arXiv preprint arXiv:2505.05470 .Liu, Z.; Ji, K.; Yang, K.; Fan, Y.; Yu, J.; Shi, Y.; and Wang, J. 2025b. Commanding Humanoid by Free-Form Language: A Large Language Action Model with Unified Motion Vo-cabulary. arXiv preprint arXiv:2511.22963 .Lu, S.; Chen, L.-H.; Zeng, A.; Lin, J.; Zhang, R.; Zhang, L.; and Shum, H.-Y. 2024. HumanTOMATO: Text-Aligned Whole-Body Motion Generation. In ICML .Luo, Z.; Yuan, Y.; Wang, T.; Li, C.; Castañeda, F.; Chen, S.; Cao, Z.-A.; Li, J.; Minor, D.; Ben, Q.; Park, J.; Sami, D.; Wang, Z.; Da, X.; Ding, R.; Hogg, C.; Song, L.; Lim, E.; Jeong, E.; He, T.; Xue, H.; Xiao, W.; Yuen, S.; Kautz, J.; Chang, Y.; Iqbal, U.; Fan, L.; and Zhu, Y. 2025. SONIC: Supersizing Motion Tracking for Natural Humanoid Whole-Body Control. arXiv preprint arXiv:2511.07820 .Ma, Y.; Yu, H.; Xie, J.; Lv, C.; Luo, Q.; Zhang, C.; Yin, Y.; Xing, B.; Ren, X.; and Zheng, D. 2026. Robust and Generalized Humanoid Motion Tracking. arXiv preprint arXiv:2601.23080 .Mahmood, N.; Ghorbani, N.; Troje, N. F.; Pons-Moll, G.; and Black, M. J. 2019. AMASS: Archive of Motion Cap-ture as Surface Shapes. In Proceedings of the IEEE/CVF International Conference on Computer Vision .NVLabs. 2025. ProtoMotions: GPU-Accelerated Simulation and Learning for Humanoids. https://github.com/NVlabs/ ProtoMotions. Pinyoanuntapong, E.; Wang, P.; Lee, M.; and Chen, C. 2024. MMM: Generative Masked Motion Model. In CVPR .Plappert, M.; Mandery, C.; and Asfour, T. 2016. The KIT Motion-Language Dataset. In Big Data .Qi, Z.; Chen, X.; Liu, D.; Lin, C.; Lian, Y.; Liang, S.; Zhang, Z.; Guan, Y.; Wang, J.; Zhang, W.; Yu, X.; Wang, H.; and Yi, L. 2026. Humanoid-GPT: Scaling Data and Structure for Zero-Shot Motion Tracking. arXiv preprint arXiv:2606.03985 .Rempe, D.; Petrovich, M.; Yuan, Y.; Zhang, H.; Peng, X. B.; Jiang, Y.; Wang, T.; Iqbal, U.; Minor, D.; de Ruyter, M.; Li, J.; Tessler, C.; Lim, E.; Jeong, E.; Wu, S.; Hassani, E.; Huang, M.; Yu, J.-B.; Chung, C.; Song, L.; Dionne, O.; Kautz, J.; Yuen, S.; and Fidler, S. 2026. Kimodo: Scal-ing Controllable Human Motion Generation. arXiv preprint arXiv:2603.15546 .Tao, Z.; Su, Z.; Liu, P.; Sun, J.; Que, W.; Ma, J.; Yu, J.; Cao, J.; Sun, P.; Liang, H.; Han, G.; Zhao, W.; Xu, Z.; Tang, J.; Zhang, Q.; and Guo, Y. 2026. Heracles: Bridging Precise Tracking and Generative Synthesis for General Humanoid Control. arXiv preprint arXiv:2603.27756 .Tevet, G.; Raab, S.; Cohan, S.; Reda, D.; Luo, Z.; Peng, X. B.; Bermano, A. H.; and van de Panne, M. 2025. CLoSD: Clos-ing the Loop between Simulation and Diffusion for Multi-Task Character Control. In ICLR .Tevet, G.; Raab, S.; Gordon, B.; Shafir, Y.; Cohen-Or, D.; and Bermano, A. H. 2023. Human Motion Diffusion Model. In ICLR .Wang, Z.; Wang, J.; Yao, S.; Zhang, Y.; Ding, Z.; Yang, M.; Wang, Y.; Jiang, H.; Ma, C.; Shi, X.; and Lu, Z. 2026. General Humanoid Whole-Body Control via Pretraining and Fast Adaptation. arXiv preprint arXiv:2602.11929 .Xie, W.; Zheng, J.; Han, J.; Shi, J.; Zhang, W.; Bai, C.; and Li, X. 2026. TextOp: Real-Time Interactive Text-Driven Humanoid Robot Motion Generation and Control. arXiv preprint arXiv:2602.07439 .Xu, M.; Shi, Y.; Yin, K.; and Peng, X. B. 2025. PARC: Physics-based Augmentation with Reinforcement Learning for Character Controllers. In SIGGRAPH Conference Papers .Xu, W.; Wu, Q.; Zhang, J.; Tan, J.; Li, Y.; Fang, Y.; Xiong, J.; Wu, K.; Ou, R.; and Xu, R. 2026. Iterative Closed-Loop Motion Synthesis for Scaling the Capabilities of Humanoid Control. In CVPR , 16398–16407. Yin, K.; Zeng, W.; Fan, K.; Dai, M.; Wang, Z.; Zhang, Q.; Tian, Z.; Wang, J.; Pang, J.; and Zhang, W. 2025. Uni-Tracker: Learning Universal Whole-Body Motion Tracker for Humanoid Robots. arXiv preprint arXiv:2507.07356 .Yuan, X.; Li, Z.; Lyu, B.; Zuo, K.; Lu, Y.; Li, G.; and Yang, J. 2026. RoboForge: Physically Optimized Text-Guided Whole-Body Locomotion for Humanoids. arXiv preprint arXiv:2603.17927 .Yuan, Y.; Song, J.; Iqbal, U.; Vahdat, A.; and Kautz, J. 2023. PhysDiff: Physics-Guided Human Motion Diffusion Model. In Proceedings of the IEEE/CVF International Conference on Computer Vision , 16010–16021. Yue, J.; Wang, Z.; Wang, Y.; Zeng, W.; Wang, J.; Xu, X.; Zhang, Y.; Zheng, S.; Ding, Z.; and Lu, Z. 2025. RL from Physical Feedback: Aligning Large Motion Models with Hu-manoid Control. arXiv preprint arXiv:2506.12769 .Zhang, H.; Zhang, L.; Chen, Z.; Chen, L.; Wang, Y.; and Xiong, R. 2025a. Natural Humanoid Robot Locomotion with Generative Motion Prior. arXiv preprint arXiv:2503.09015 .Zhang, J.; Liang, H.; Zhang, R.; Li, B.; Zhang, J.; Chen, X.; Wang, J.; Xu, L.; and Yu, J. 2026a. SCRIPT: Scalable Diffusion Policy with Multi-Stage Training for Language-Driven Physics-Based Humanoid Control. arXiv preprint arXiv:2605.22894 .Zhang, J.; Zhang, Y.; Cun, X.; Zhang, Y.; Zhao, H.; Lu, H.; Shen, X.; and Shan, Y. 2023a. Generating Human Motion from Textual Descriptions with Discrete Representations. In 
+
+CVPR , 14730–14740. Zhang, M.; Cai, Z.; Pan, L.; Hong, F.; Guo, X.; Yang, L.; and Liu, Z. 2024. MotionDiffuse: Text-Driven Human Mo-tion Generation with Diffusion Model. IEEE Transactions on Pattern Analysis and Machine Intelligence , 46(6): 4115– 4128. Zhang, M.; Guo, X.; Pan, L.; Cai, Z.; Hong, F.; Li, H.; Yang, L.; and Liu, Z. 2023b. ReMoDiffuse: Retrieval-Augmented Motion Diffusion Model. In ICCV .Zhang, X.; Haener, S.; Madabushi, V.; and Tucker, M. 2026b. Kinodynamic Motion Retargeting for Humanoid Locomo-tion via Multi-Contact Whole-Body Trajectory Optimiza-tion. arXiv preprint arXiv:2603.09956 .Zhang, Y.; Muraleedharan, A.; Akizhanov, R.; Butt, A. A.; Varol, G.; Fua, P.; Pizzati, F.; and Laptev, I. 2026c. Phys-MoDPO: Physically-Plausible Humanoid Motion with Pref-erence Optimization. arXiv preprint arXiv:2603.13228 .Zhang, Z.; Guo, J.; Chen, C.; Wang, J.; Lin, C.; Lian, Y.; Xue, H.; Wang, Z.; Liu, M.; Lyu, J.; Liu, H.; Wang, H.; and Yi, L. 2025b. Track Any Motions under Any Disturbances. 
+
+arXiv preprint arXiv:2509.13833 .Zhang, Z.; Wen, K.; Xu, M.; He, J.; Li, C.; Miki, T.; Schwarke, C.; Zhang, C.; Peng, X. B.; and Hutter, M. 2026d. Learning Whole-Body Humanoid Locomotion via Motion Generation and Motion Tracking. arXiv preprint arXiv:2604.17335 .Zhao, Q.; Yang, K.; Wang, X.; Zhao, S.; Lu, Y.; Zhang, X.; Shen, Q.; Long, X.-X.; and Cao, X. 2026. Make Tracking Easy: Neural Motion Retargeting for Humanoid Whole-Body Control. arXiv preprint arXiv:2603.22201 .Zhou, Y.; Barnes, C.; Lu, J.; Yang, J.; and Li, H. 2019. On the Continuity of Rotation Representations in Neural Networks. In CVPR .Zhuang, Z.; Wang, T.; Zou, B.; Luo, X.; Ma, J.; Zhou, H.; Liu, J.; and Wang, D. 2025. Humanoid-R0: Bridging Text-to-Motion Generation and Physical Deployment via RL. Open-Review, withdrawn ICLR 2026 submission. A Extended Related Work 
+
+Because of the main-paper page limit, its Related Work section gives a concise overview; this appendix provides a broader discussion of closely related work. 
+
+Text-to-motion generation. Text-to-motion generation maps natural language to human motion sequences and is commonly evaluated on HumanML3D and KIT-ML with retrieval, FID, diversity, and multimodality metrics (Plap-pert, Mandery, and Asfour 2016; Guo et al. 2022). Diffu-sion models such as MDM, MotionDiffuse, MLD, ReMoDif-fuse, FlowMDM, and MotionLCM improve quality, control-lability, retrieval augmentation, long-horizon composition, or sampling efficiency (Tevet et al. 2023; Zhang et al. 2024; Chen et al. 2023; Zhang et al. 2023b; Barquero, Escalera, and Palmero 2024; Dai et al. 2024). Discrete-token and language-model variants such as T2M-GPT, MotionGPT, MoMask, MMM, SATO, and HumanTOMATO improve se-quence modeling, text alignment, and whole-body expres-siveness (Zhang et al. 2023a; Jiang et al. 2023; Guo et al. 2024; Pinyoanuntapong et al. 2024; Chen et al. 2024; Lu et al. 2024). Their standard benchmarks measure semantic fidelity and motion diversity, but do not determine whether a generated reference is executable by a physical humanoid. 
+
+Language-conditioned humanoid motion. Recent work has begun to connect motion generation with humanoid execution. Kimodo scales controllable kinematic motion generation and releases robot-compatible assets (Rempe et al. 2026). TextOp, FRoM-W1, Humanoid-LLA, SafeFlow, MIND, and SCRIPT drive humanoids from language by com-bining high-level motion or intent generation with physics-based execution or action policies (Xie et al. 2026; Li et al. 2026b; Liu et al. 2025b; Cho et al. 2026; Li et al. 2026a; Zhang et al. 2026a). DreamControl-v2, PhyGile, CLAW, and RoboGhost further study robot-space priors, physics-prefix generation, language-annotated G1 data construction, or retargeting-free language-to-control interfaces (Harithas et al. 2026; Bao et al. 2026; Cao, Chen, and Tomizuka 2026; Li et al. 2026e). GenTrack is closest to this emerging fam-ily, but targets a different experimental claim: a robot-native generator should improve under physical feedback, and the tracker should improve zero-shot coverage from the gener-ated distribution rather than merely execute the generator’s current outputs. 
+
+Joint generator–controller training. PARC iteratively re-trains a character motion generator on trajectories corrected by a physics-based tracker, while QuadFM jointly trains text-conditioned motion generation and control for quadrupeds (Xu et al. 2025; Gao et al. 2026). Humanoid-DART ap-plies an alternating generator–tracker curriculum to sparse, goal-conditioned humanoid loco-manipulation demonstra-tions (Debbad et al. 2026). Other generator–tracker hierar-chies improve a humanoid tracker online while freezing the generator (Zhang et al. 2026d). These are direct precedents for coupling the two components. Our scope differs in test-ing broad language-conditioned robot motion, bidirectional post-training, and unseen-motion tracker coverage as sepa-rate claims under matched one-way and offline controls. 
+
+Retargeting and morphology. Human-to-humanoid re-targeting maps SMPL, marker, video, or BVH motions to robot joint trajectories under morphology, contact, and joint-limit constraints. H2O and OmniH2O use retargeted human motion to train real-time humanoid teleoperation policies (He et al. 2024b,a). Recent retargeting studies such as Gen-eral Motion Retargeting, implicit kinodynamic retargeting, kinodynamic trajectory optimization, physics-aware cross-morphology transfer, and neural motion retargeting show that retargeting quality strongly affects downstream tracking and controllability (Araujo et al. 2025; Chen et al. 2025; Zhang et al. 2026b; Huang et al. 2026; Zhao et al. 2026). In our experiments, retargeting is therefore not treated as an invisible preprocessing step: native G1 generation, held-out GMD-retargeted G1 references, and tracker execution fail-ures are measured separately. 
+
+# B Implementation Details 
+
+## B.1 Robot Choice and Motion Representation 
+
+We use Unitree G1 as the primary robot morphology be-cause it is an open humanoid robot model with ProtoMo-tions support, MJCF/URDF assets, pretrained tracker check-points, and a real-robot deployment path. This choice makes the robot-control claim concrete: success is measured on an actual humanoid morphology rather than on an SMPL-like physics proxy. 
+
+Robot-native motion representation. The generator emits a compact per-frame representation qt ∈ R38 that decodes exactly to a MuJoCo G1 configuration: a 3-d root channel, a 6-d continuous rotation (Zhou et al. 2019) of the pelvis orientation, and the 29 actuated joint angles. Two de-sign choices make this target a deterministic function of lan-guage and easy for a flow-matching model to fit. (i) Per-clip canonicalization. The raw retargeted clips inherit an arbitrary world placement: the ground-plane (x, y ) start position and the global heading (yaw about the up axis) are not determined by the caption, so a text-conditioned model regresses them toward the dataset mean and incurs metre-scale translation error. We therefore express every clip in a canonical frame whose first frame sits at the ground origin facing the canoni-cal +x direction, while preserving the physically meaningful height channel. (ii) Velocity-based root. The ground-plane translation is stored as a per-frame displacement rather than an absolute position; absolute position spans a large, sparse range (a run reaches several metres) that a flow-matching model systematically under-shoots, whereas the per-frame velocity is small and bounded, and the absolute trajectory is recovered by cumulative summation at decode time. The height channel stays absolute because it is bounded and se-mantically informative (e.g. a crawl versus a stand). 
+
+Offline retargeting as data construction. To obtain robot-native supervision, we retarget our internal human-motion dataset to the Unitree G1 skeleton once, offline , using the GMD retargeting pipeline. After internal quality control, this yields a paired training set Dpair = {(ci, qi)} with 357,472 clips. We use these internal pairs only to initialize and re-hearse Gθ ; their GMD-retargeted trajectories are never sup-plied to tracker training. We warm-start Gθ from a pre-trained human text-to-motion backbone, replace its output head with the 38 -d robot head, and supervise it on Dpair . Crucially, re-targeting is confined to this offline generator-training stage: at loop time the generator already speaks the robot’s language, which removes the retargeting confound that otherwise con-taminates any claim about generator physical realism. 
+
+## B.2 Generator Retention and Initialization 
+
+Physical reward alone can favor slow, low-amplitude mo-tions that are easy to execute. The full configuration limits drift with two retention mechanisms: a KL penalty to the frozen initial generator during FlowGRPO and periodic su-pervised flow-matching updates on the original train-only text–motion pairs. Generator prompts are sampled from the fixed curated training corpus. No TMR, style, diversity, or prompt-coverage reward enters the training objective. In-stead, TMR-G1 retrieval, MM-Dist, FID, and diversity are measured on a frozen held-out suite for model assessment. 
+
+Offline initialization. We build Dpair by retargeting our in-ternal human-motion dataset to the G1 skeleton with GMD and fine-tune the robot-native generator Gθ on it. These pairs are used only for generator initialization and rehearsal and never enter tracker training. The tracker π(0)  
+
+> ϕ
+
+is initial-ized from an existing pretrained policy. We instantiate the framework separately with pretrained ProtoMotions and re-leased SONIC trackers; their histories are disclosed and never counted as new GenTrack supervision. The initial tracker sup-plies the first quality model, after which each round uses the tracker from the preceding round. 
+
+## B.3 Tracker Curriculum and Generator Update Details 
+
+Generator prompts undergo an internal validity check before generation. The main protocol rejects only malformed or non-finite decoded references; it does not require the lagged quality tracker or current trainee to complete a motion be-fore admitting that reference to tracker training. Tracker up-dates draw equal numbers of public-reference and generated-reference transitions. Generated-motion and environment-transition budgets are matched to the offline controls. Let c denote rollout completion, ej maximum joint error in radians, et mean root-trajectory error in metres, and ed root-displacement error in metres. The implemented execution score is 
+
+Sexec = (1 − c) + [ ej ]2 + [ et/0.5] 2
+
++ 0 .5[ ed/0.5] 2 + 2 Ifall , (5) where [x]2 = min( x, 2) . The quality tracker from the pre-ceding round remains fixed throughout each generator phase, while the current trainee has zero generator-reward weight. No additional velocity or amplitude gate is applied to this score. For FlowGRPO, rewards are normalized within each same-prompt sample group and each freshly sampled tra-jectory group is replayed for four clipped policy-ratio up-dates. The full configuration uses a 0.02 KL weight to the frozen generator and a supervised flow-matching anchor up-date of weight 1.0 every two GRPO iterations. The reward-weighted SFT control uses the same positive-advantage sam-ples, while the Diffusion-DPO control forms preferences from the highest- and lowest-reward samples in each prompt group. Sampling and update budgets are matched across all three objectives. 
+
+Online co-training schedule. Each round first samples K
+
+candidates per training prompt. Reference-only checks re-move malformed or scene-dependent motions, and the lagged quality tracker scores the survivors. Same-prompt rewards then create FlowGRPO advantages, and multi-epoch replay updates the generator under KL and GT anchors. Structurally valid on-policy generations accumulate in a merged pool with the fixed public references, and the tracker is updated by its method-native objective with an equal public/generated tran-sition budget. The updated tracker becomes the next trainee, while the previous trainee is delayed into the quality tracker role. Reward variance, policy-ratio movement, KL and GT-anchor updates, exported references, and frozen validation performance are checked at every round boundary. 
+
+# C Detailed Experimental Protocol 
+
+Robot and motion representation. All experiments use the Unitree G1 morphology and the canonical 38 -d mo-tion representation described above. References, generated motions, executed trajectories, and visualizations are ex-ported at 30 FPS. Matched training comparisons use the same tracker architecture, simulator, optimizer, initialization, and environment-transition budget. External trackers are run with their released implementations, but their outputs are converted to the same start-aligned G1 reference/execution format before root-aware tracker evaluation. Their native suc-cess flags are not used for tracker comparison. Generator executability is evaluated separately with a frozen SONIC policy and the low-level metric family defined below. This evaluator is shared by every generator row and provides a consistent compatibility measure under frozen SONIC exe-cution on simulated G1. 
+
+Training data. The generator-only internal corpus con-tains 357,472 GMD-retargeted G1 training pairs and a fixed held-out test set. We use disjoint training and test partitions and apply an internal curation and quality-control proto-col. Across tracker post-training arms, the only admissible sources are the public pool of 12,733 AMASS-G1 and 604 LAFAN1-G1 motions and G1 references sampled from the relevant generator; reference-only continuation uses the pub-lic pool alone. Captions from the internal training split may provide generator prompts, but their paired GMD-retargeted trajectories are never provided to the tracker. 
+
+Tracker protocols and baselines. We instantiate Gen-Track from two existing tracker checkpoints: a root-aware ProtoMotions/AMP-PPO checkpoint (NVLabs 2025) and the official released SONIC checkpoint (Luo et al. 2025). For each backbone, the primary post-training arms start from the same checkpoint hash and match simulator, optimizer, Source SONIC Succ. ↑
+
+Root err. ↓
+
+Ref. skate ↓
+
+TMR R@1 ↑ MM-Dist ↓ FID ↓ Diversity 
+
+Retargeted GT 91.41 0.402 0.126 0.849 16.345 0.000 36.713 KIMODO-G1 (Rempe et al. 2026) 
+
+98.63 0.101 0.087 0.500 25.215 0.122 35.689 HYMotion ( G0) 91.89 0.381 0.119 0.774 18.293 0.023 36.375 
+
+Table 3: Robot-native source validation on the fixed held-out test suite. SONIC Succ. and Root err. are measured by executing each reference with the same frozen IsaacLab SONIC policy. Succ. is recomputed from complete 30-FPS exports with the shared fall-only protocol; released callback flags are diagnostic only. Ref. skate is computed on each reference with the same MuJoCo-FK contact protocol. Semantic metrics use TMR-G1, with MM-Dist and Diversity in raw latent space and FID in unit-normalized latent space. Succ. is a percentage, Root err. is in metres, and Ref. skate is in metres per second. Bold marks the best value per metric; Diversity is descriptive. 
+
+Metric Definition Used for Direction 
+
+Generator Succ. fraction of generated references whose complete 30-FPS official SONIC execution maintains reference-relative pelvis-height devia-tion at most 0.25 m (Luo et al. 2025; Yue et al. 2025) generator physical quality ↑
+
+Ejoint mean wrapped rotation error over the 29 actuated G1 joints between reference and execution, in radians generator physical quality ↓
+
+Ekey mean start-XY-aligned position error over SONIC’s fixed official 14 tracked bodies, in metres generator physical quality ↓
+
+Fall-only SR fraction of unseen references whose complete 30-FPS rollout main-tains maximum reference-relative pelvis-height deviation at most 0.25 
+
+m; one missing resampled endpoint is tolerated (Luo et al. 2025) tracker zero-shot coverage ↑
+
+Completion / Unex-pected Fall executed-frame ratio and persistent reference-relative collapse when reference pelvis height and up-axis cosine are at least 0.50 ; low-floor targets are excluded and absolute execution height is never used auxiliary diagnostics mixed MPJPE mean Cartesian position error over SONIC’s official 14-body set after subtracting each frame’s pelvis translation, in millimetres; all cases and frames pooled across all splits in one frame-micro average (Luo et al. 2025) tracker pose fidelity ↓
+
+Eg start-XY-aligned global Cartesian position error over the same 14-body set, in millimetres; the same all-trajectory aggregation as MPJPE tracker global fidelity ↓
+
+MPJVE mean finite-difference Cartesian velocity error over the same root-relative 14-body trajectories, in metres per second; the same all-trajectory aggregation as MPJPE tracker motion fidelity ↓
+
+RootVelErr mean Cartesian linear-velocity error of the robot root, in metres per second; the same all-trajectory aggregation as MPJPE tracker trajectory fidelity ↓
+
+Root err. mean start-aligned root-trajectory position error between reference and execution physical feasibility ↓
+
+Foot skate / penetration contact-frame foot speed and below-ground penetration depth com-puted on generated references or physics rollouts physical artifacts ↓
+
+Robot kinematic diag-nostics joint-limit saturation, contact-rhythm mismatch, root/yaw statistics, and other robot-centric pose or velocity checks; these are auxiliary diagnostics rather than main distribution metrics morphology compatibility audit mixed Prompt cov. / action en-tropy prompt/action coverage and action-category entropy over the fixed generator prompt suite anti-degeneration ↑
+
+Judge calibration margin by which lagged checkpoints from the adapting tracker branch rank held-out GT references above corrupted or invalid references before their reward is used for generator optimization reward reliability ↑
+
+Text guardrails TMR-G1 R-Precision and raw-latent MM-Dist/diversity, together with unit-normalized-latent FID, on the fixed robot-motion suite semantic preservation mixed 
+
+Table 4: Metric definitions and evaluation roles. Generator metrics evaluate text-conditioned references with frozen-SONIC execution and TMR-G1, while tracker metrics evaluate policies executing fixed references. Low-level generator metrics follow the RLPF structure, and tracker success follows SONIC’s relaxed criterion recomputed from shared 30-FPS G1 trajectories. environment transitions, validation, and checkpoint selec-tion. The primary comparison is the frozen checkpoint ver-sus equal-budget public-reference continuation, frozen-G0
+
+offline replay, and GenTrack . We additionally report offline replay from the final online generator. This control restarts from the same tracker checkpoint and separates temporal co-adaptation from final-generator quality. Checkpoint pre-training data are disclosed rather than counted as evidence for training a tracker from scratch. Released Any2Track (Zhang et al. 2025b), Humanoid-GPT (Qi et al. 2026), SONIC, and BeyondMimic (Liao et al. 2025) are external references; their weights are not used to initialize either adapting branch, ex-cept for the explicitly labeled SONIC-Released branch itself. 
+
+Evaluation splits. We evaluate zero-shot motion general-ization on three frozen, mutually disjoint G1 splits. LAFAN1-G1 follows the common locomotion and transition bench-mark (Harvey et al. 2020); AMASS-test-G1 follows the pro-tocol used by prior tracking work (Mahmood et al. 2019; NVLabs 2025); and Wild-G1-clean is held out from the robot-native corpus and curated for compatibility with the flat-ground evaluation setup. No test split is used for train-ing, replay construction, or checkpoint selection. 
+
+## C.1 Metric Definitions and Computation 
+
+Tracker metrics. Every tracker is first rolled out until the reference motion timeout with its method-native fail-ure termination disabled. We export reference and execution states, resample each trajectory once to 30 FPS, and apply the same post-hoc termination test to every method. Fol-lowing SONIC’s cross-method MuJoCo comparison (Luo et al. 2025), a trajectory fails only if its maximum reference-relative pelvis-height error exceeds 0.25 m. A single missing endpoint sample caused by resampling is tolerated. Because the height test is reference-conditioned, a commanded fall or get-up is not rejected merely for approaching the ground. The released-code evaluator’s additional ankle/wrist height and pelvis-orientation terms, method-native success flags, and Any2Track’s mean-error criterion are retained only as diagnostics and never enter the main table. All simulator evaluations start from reference frame zero. We disable observation corruption, reset pose/velocity per-turbations, adaptive motion sampling, and startup random-ization of friction, restitution, default joint positions, center of mass, and body mass. These choices make the nominal initial state deterministic across checkpoints. Using SONIC’s root-relative position definition and the position–velocity metric family used by Humanoid-GPT (Luo et al. 2025; Qi et al. 2026), we report mean per-joint position error (MPJPE), start-XY-aligned global joint posi-tion error ( Eg ), mean per-joint velocity error (MPJVE), and root linear-velocity error (RootVelErr). Because the source papers use different representations and units, all four are recomputed in Cartesian robot space from the same syn-chronized trajectories. MPJPE subtracts the pelvis translation from each pose, evaluates SONIC’s fixed 14-body set, and is reported in millimetres. Eg retains global joint positions after start-XY alignment and is reported separately in millimetres. MPJVE applies the same root-relative alignment and body set to finite-difference velocities (m/s), while RootVelErr mea-sures global pelvis linear-velocity error (m/s). All four errors pool every valid frame from every evalu-ated case over the three splits into one frame-micro average. Split-macro and success-only values remain diagnostics and never populate the main table. Fall-only SR is shown along-side the errors as the separate coverage statistic. Completion, reference-conditioned Unexpected Fall, and acceleration er-ror remain auxiliary diagnostics and do not enter the success decision or the main table. 
+
+Generator metrics. Following the high-level/low-level evaluation decomposition of RLPF (Yue et al. 2025), gen-erator quality is measured by semantic generation metrics and by official frozen-SONIC execution in IsaacLab. We report success rate Succ , mean wrapped actuated-joint ro-tation error Ejoint (rad), and mean start-XY-aligned posi-tion error Ekey (m) over SONIC’s fixed official 14 tracked bodies. We use clearer notation because RLPF’s “MPJPE (rad)” is a joint-rotation rather than a Cartesian position er-ror. Succ is recomputed from complete 30-FPS exports using the same fall-only, reference-conditioned termination term as the tracker table. The frozen policy, motion-timeout horizon, reference, and start alignment are held fixed. Reported dura-tions and continuous errors are computed from complete 30-FPS exports rather than simulator-specific early-reset flags. Unexpected Fall, root error, foot skate, and penetration re-main auxiliary diagnostics rather than extra success gates. TMR-G1 supplies R-Precision, MM-Dist, FID, and di-versity. MM-Dist and diversity use raw TMR-G1 latents, whereas FID uses unit-normalized latents to avoid scale-dominated Fréchet values. SMPL- or HumanML3D-space evaluators are not used for the main generator result. 
+
+## C.2 Robot-Native Source Validation 
+
+Table 3 evaluates the held-out G1 references and KIMODO-G1 (Rempe et al. 2026) under the same prompts and evalua-tors. The frozen initial generator G0 is reported in main-paper Table 2 and is not repeated here. The GT physical columns are obtained by executing the retargeted references with the frozen tracker, rather than by a trivial reference-to-reference comparison. This experiment validates the motion source and execution judge used by the subsequent closed-loop study. 
+
+# D Additional Experiments and Ablations 
+
+## D.1 Control Experiments 
+
+The controls in the main tables cover reference-only contin-uation, tracker-only frozen-G0 replay, tracker-filtered SFT, and frozen-SONIC FlowGRPO. Together, they provide direct comparisons for additional tracker optimization, static re-play, and generator feedback. Table 5 completes the matched ProtoMotions comparison by separating update directions in panel (a) and varying the execution score, reward judge, and generator objective in panel (b). 
+
+Generator-side effect. Relative to G0 in the main-paper generator table, generator-only feedback raises frozen-SONIC execution success from 92.58 to 93.95 and reduces 
+
+Ekey from 0.410 to 0.381. At the same time, Ejoint decreases from 0.159 to 0.157, while TMR R@1 and FID change from 0.774/0.023 to 0.783/0.020. The fixed strong-tracker con-trol improves Ekey to 0.363 but lowers success and R@1 to 90.92/0.767 and raises FID to 0.027, whereas the on-line SONIC branch reaches 94.43 success, Ekey = 0 .325 ,R@1 = 0 .783 , and FID = 0 .020 . These trends support the combined design of execution-grounded generator updates, Tracker fall-only SR (%) ↑ Generator Variant LAFAN1 AMASS-test Wild-G1 IsaacLab Succ. ↑                                                                                  
+
+> TMR R@1 ↑
+> Ejoint
+> ↓
+> Ekey
+> ↓
+> TMR FID ↓
+> (a) Update directions
+> No update ( G0, T 0)75.0 81.2 45.9 92.58 0.774 0.159 0.410 0.023 Tracker only 77.5 79.0 46.8 92.58 0.774 0.159 0.410 0.023 Generator only 75.0 81.2 45.9 93.95 0.783 0.157 0.381 0.020
+> GenTrack 75.0 81.2 47.3 93.55 0.782 0.160 0.399 0.020
+> (b) Feedback and objective
+> w/o exec. reward 77.5 78.9 46.1 92.71 0.778 0.161 0.408 0.024 Success only 76.3 80.2 46.7 93.12 0.780 0.160 0.406 0.021
+> Current judge 74.8 79.6 46.4 93.01 0.777 0.163 0.412 0.026 RW-SFT 76.1 79.8 46.6 94.10 0.769 0.158 0.389 0.029 DPO 75.2 80.5 46.9 93.36 0.776 0.159 0.402 0.023
+> GenTrack 75.0 81.2 47.3 93.55 0.782 0.160 0.399 0.020
+
+Table 5: Matched closed-loop ablations from the ProtoMotions initialization. Panel (a) separates generator and tracker update directions; panel (b) compares the full configuration with variants that change only the execution feedback, judge timing, or generator objective. Tracker only freezes G0, Generator only freezes T0, and GenTrack uses FlowGRPO with a lagged judge. Current judge uses the adapting trainee, and RW-SFT denotes reward-weighted SFT. All variants share prompts, candidate groups, accepted-motion and tracker-transition budgets, validation, and frozen evaluators. Generator metrics use the fixed held-out prompt suite. Bold marks the best value within each panel, including ties.                                   
+
+> Variant λKL λGT
+> IsaacLab Succ. ↑
+> Ekey
+> ↓
+> TMR R@1 ↑
+> TMR FID ↓Diversity
+> w/o KL 01.0 93.84 0.389 0.773 0.028 36.102 w/o GT 0.02 094.07 0.382 0.768 0.034 35.812 w/o both 0094.62 0.369 0.749 0.051 34.684
+> GenTrack 0.02 1.0 93.55 0.399 0.782 0.020 36.373
+
+Table 6: Matched generator-retention ablations for the ProtoMotions branch. λKL weights the frozen-generator penalty and λGT 
+
+weights the supervised flow-matching update applied every two FlowGRPO iterations in the full configuration. The controls remove either retention component or both while retaining the prompts, online-loop schedule, optimization budget, and frozen evaluators. Bold marks the strongest physical value or the best-preserved semantic/distribution value. evolving tracker feedback, and KL/rehearsal anchors that pre-serve the pretrained motion distribution. 
+
+Tracker-side effect. The tracker controls explain why gen-erated supervision is updated online rather than stored as a fixed replay bank. Frozen-G0 replay provides useful but split-dependent gains. With SONIC, the full loop improves its three success rates from 85.0/78.3/45.5 to 90.0/79.7/48.0 rel-ative to frozen-G0 replay, while reducing MPJPE from 133.3 to 124.1 mm and Eg from 847.6 to 807.2 mm. With Pro-toMotions, it improves AMASS-test and Wild-G1 success and reduces MPJPE. Reference-only continuation likewise does not reproduce this cross-split pattern. These controls support the generated-reference curriculum and the central choice to evolve generator feedback and tracker supervision online rather than relying only on additional tracker updates or static replay. 
+
+Execution-feedback and objective controls. Panel (b) of Table 5 maps each comparison directly to a method choice. Removing execution reward leaves the generator at 92.71 success, 0.778 R@1, and 0.024 FID, while AMASS-test/Wild-G1 SR reach 78.9/46.1. Success-only feedback improves these values to 93.12/0.780/0.021 and 80.2/46.7, respectively, but remains below the dense-score configura-tion. Using the current trainee as sole judge lowers cross-split SR to 74.8/79.6/46.4 and degrades Ejoint /E key to 0.163/0.412. Reward-weighted SFT obtains the highest raw success (94.10) and lowest Ejoint /E key (0.158/0.389), but re-duces R@1 to 0.769 and raises FID to 0.029. Diffusion-DPO provides a more balanced control (93.36 success, 0.776 R@1, 0.023 FID) and reaches 80.5/46.9 on AMASS-test/Wild-G1, but remains below FlowGRPO on execution success, key-body alignment, R@1/FID, and the two target-split cover-ages. Because these controls retain the same online samples, rewards, and update budget, the comparison supports dense lagged feedback and FlowGRPO as complementary choices rather than consequences of extra data or optimization. 
+
+Generator-retention controls. Table 6 connects the preservation mechanisms to the generator-side claim. Re-moving either anchor improves raw executability but re-duces TMR retrieval, increases FID, and lowers diversity; the degradation is largest when both anchors are removed. The full configuration therefore retains most of the physi-cal benefit while providing the strongest physical–semantic balance. D.2 Qualitative and Distribution-Gap Analysis 
+
+Paired qualitative evidence. The paired visualizations ex-pose the complementary effects targeted by our alternat-ing updates. Under the same prompt, length, and sampling noise, replacing G0 with the GenTrack generator turns a reference that the same frozen SONIC policy fails to exe-cute into one that it completes. Conversely, for the shown held-out Wild-G1 reference, both the initial tracker and the frozen-G0 replay control fail, whereas the online GenTrack 
+
+tracker completes the motion. Together with the main-paper generator and tracker tables, these cases visualize the role of each branch: tracker rollouts guide the generator toward robot-compatible references, while an evolving generated-reference curriculum extends tracker coverage beyond static replay. All snapshots render logged poses on the Unitree G1 STL model. 
+
+Reference–execution diagnostics. The main-paper reference–execution figure analyzes a diagnostic high-fidelity subset selected by predefined execution-fidelity thresholds. Shared PCA of 9,332 paired windows exhibits broad reference–execution overlap, with its first two com-ponents explaining 61.1% of pooled variance. The shared structure supports robot-native initialization and rehearsal, but a systematic local gap remains: a motion-case-grouped classifier in the full descriptor space reaches an AUC of 0.996 ± 0.004 , compared with 0.505 ± 0.006 under shuffled labels. Across all 10,369 diagnostic windows, descriptor densities localize the largest shifts to body jerk, foot skating, root height, and foot clearance, with a smaller change in peak root speed. These results support the central method choice to evaluate motions through closed-loop execution and use a dense trajectory-level score, rather than treating robot-space references or a fixed generated pool as executable by construction. 
+
+# E Limitations 
+
+GenTrack depends on retargeting, simulation, and tracker quality. We therefore evaluate held-out GMD-retargeted G1 references, robot-native G1 motions produced by the genera-tor, and their tracker executions separately. The evaluation is scoped to Unitree G1 in simulation. Because physical feed-back can favor conservative motions, we report text align-ment and diversity alongside physical metrics.

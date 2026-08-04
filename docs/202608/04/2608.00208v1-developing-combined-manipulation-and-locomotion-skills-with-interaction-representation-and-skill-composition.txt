@@ -1,0 +1,474 @@
+Title: Developing Combined Manipulation and Locomotion Skills with Interaction Representation and Skill Composition
+
+URL Source: https://arxiv.org/pdf/2608.00208v1
+
+Published Time: Tue, 04 Aug 2026 00:13:03 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Developing Combined Manipulation and Locomotion Skills with Interaction Representation and Skill Composition 
+
+Fanxing Meng 1 and Jing Xiao 1
+
+Abstract — This paper addresses how to enable a humanoid robot to learn motion policies based on developmental principles and combine policies to create more sophisticated and useful behaviors. Specifically, we present an approach to (1) learning a whole-body reaching and grasping policy and (2) combining it and a standing-up and walking policy to compose a more complex policy of manipulation and locomotion: grasping, standing up, and walking. In (1), our method draws inspiration from harmonic analysis and adopts cubic harmonics as weights to represent the hand-object spatial relationship via spatial convolution. Utilizing an intra-episode finger joint decoupling curriculum based on developmental principles, a robot can autonomously learn a generalizable grasping policy without relying on external datasets or pretrained models. In (2), our method combines the grasping policy with a separately learned getting-up policy by providing both policies with their respective observation vectors and using hand-object interaction scores to determine when each policy should control which robot joints. Our results show a 93% zero-shot success rate for grasping unseen objects and a 96–100% success rate for standing up while holding the object. Our work also demonstrates that combining different policies is only effective if each policy learning happens on the same whole humanoid body even if a policy (such as for locomotion) does not seem to need all the body parts (such as fingers). 1
+
+I. I NTRODUCTION 
+
+Human infants are capable of learning motor skills through self-exploration and intrinsic motivation. They can also com-bine different skills into unified behaviors such as crawling to a toy, picking it up, and carrying it around. Developmental science suggests that motor development proceeds in stages: rolling precedes crawling, crawling precedes standing, and reaching precedes grasping [1]. Developmental robotics focuses on applying baby-inspired learning principles to robotics, with previous work enabling humanoid robots to autonomously learn to roll, kneel, stand, and walk in se-quence by structuring the learning process as a graph [2]. We aim to extend this approach to object reaching and grasping using a humanoid robot model with anthropomorphic hands. Developing skills to interact with objects and blending them with other whole-body motor skills raises two new questions . The first is representational: what type of spatial information about robot-object interaction is efficient and effective for learning without large-scale human demonstra-tion data or pretrained vision-language models ? The second is architectural: once separate skills (e.g., reach, grasp, stand) are learned, how can they be combined to create a continuous, more complex whole-body behavior ?      
+
+> 1Robotics Engineering Department, Worcester Polytechnic Institute, Worcester, MA, USA
+
+{fmeng, jxiao2 }@wpi.edu  
+
+> 1Video available at https://youtu.be/x-7x89fSJWY
+
+To address the representation question, we hypothesize that a distance field can represent an object’s shape; the spatial positions of the robot’s fingers within the object’s distance field represent the hand-object interaction relation. Distance field values alone provide only a radial component; the angular distribution of the fingers surrounding the object also needs to be captured. To encode the angular component, we draw inspiration from the shapes of atomic orbitals, which describe the probabilistic locations of electrons in atoms. We perform spatial convolution over the radial and angular components of all fingers around the object as a low-dimensional embedding, rather than using them disjointedly. Our experiments show that convoluted finger-object distances and orientations are more advantageous for grasp success rate and learning speed than unconvoluted raw values. To address the architecture question, we run multiple policies simultaneously and use subtask progress to deter-mine which policy controls which robot joints. This brings up a question regarding cross-embodiment transferability: can a stand-up policy trained on a robot model without fingers be directly applied to a robot model with fingers by only letting it control the body joints (but not the hands)? Our experiments produce a counter-intuitive outcome: the missing fingers caused an embodiment mismatch that even domain randomization could not resolve. This research makes three major contributions:  
+
+> •
+
+Establishing a set of learning tools for reaching and grasping, including a reversible achievement-triggered reward graph and gradual finger joint decoupling, in-spired by developmental principles.  
+
+> •
+
+Formulating a cubic-harmonics-weighted spatial convo-lution with inversely scaled distance fields as a compact representation of the hand-object interaction relation.  
+
+> •
+
+Composing manipulation and locomotion policies on a humanoid robot to perform object reaching and grasp-ing, followed by standing up and walking, and verifying the necessity of training on the complete body for plug-and-play composition without extra adaptation. II. R ELATED WORK 
+
+This work draws on three areas: developmental robotics, spatial representations for grasping, and reinforcement learn-ing (RL) policy composition. We briefly describe them and indicate how this work differs from the prior literature. 
+
+A. Developmental Robotics 
+
+Piaget’s theory suggests that learning is more effective through a curriculum, allowing the learner to start by mas-arXiv:2608.00208v1 [cs.RO] 31 Jul 2026 tering foundational skills that are prerequisites for more complex skills [3]. Prior work implemented this idea in re-inforcement learning using an achievement-triggered reward graph, where each node represents a motor skill (rolling over, kneeling, crawling, etc.) as a reward function; the edges of the graph represent achievement conditions between motor skills: after a parent node’s reward value has reached a pass-ing score, its child nodes’ reward values can be incorporated into the total reward [2]. Although this formulation works well for gross motor skills where different skills require different poses, it lacks the ability to define an enforcement mechanism to require a prerequisite skill like pre-grasping to sustain after having reached a passing score. Developmental robotics methodologies also tried to sim-plify high-degree-of-freedom (DoF) learning problems by using a curriculum to unlock distal joints after proximal joints [4], learning gross motor skills before fine motor skills. However, prior work only applied this methodology to simple grippers [5] or unlocked all hand joints at once [6]. Our work aims to extend these methodologies to whole-body reaching and grasping by incorporating an enforcement condition into the achievement-triggered reward graph and a curriculum that gradually unlocks the finger joints. 
+
+B. Spatial Representations for Grasping 
+
+Recent work in manipulation learning has leveraged dis-tance fields in favor of point clouds or voxels as an inter-mediate representation of the object scene due to their rich geometric structure [7]. However, the complete distance field is difficult to use directly by a reinforcement learning policy. To address this issue while allowing generalization across different object types, existing work often encodes the dis-tance field as a neural network [8] or learns neural grasping distance functions from pose databases [9]. However, these approaches require training with large datasets to generalize. In other domains such as biochemistry and crystallogra-phy, harmonic decomposition has often been applied to spa-tial mapping and shape representation. Spherical harmonics, for example, are used to reconstruct anatomical boundaries from discrete tomographic data [10]. Cubic harmonics, which are real-valued linear combinations of spherical harmonics, are used in modeling multipolar electronic populations [11]. In robotics, however, harmonic decomposition has only been applied in path planning [12], navigation [13], and system control using isotypic subspaces [14]. Our work attempts to combine the strengths of distance fields and harmonic functions via spatial convolution to an-alytically compute a generic grasp interaction representation that does not require pre-training. 
+
+C. RL Policy Composition 
+
+RL policies for manipulation and locomotion are often trained separately due to their different goals and reward definitions. Existing work often relies on hierarchical rein-forcement learning, which uses a high-level policy to output subgoals and weights for low-level policies [15]. A simpler idea is multi-expert synthesis, which provides each expert policy with a minimal state observation vector optimized for the specific task [16]. However, these approaches require training an additional meta-policy or high-level controller. Our policy composition method instead uses a quantitative transition threshold to determine when each policy should take control of which joint, offering flexibility without re-quiring an additional trained meta-policy. III. M ETHOD 
+
+This section provides an overview of the problem formu-lation and introduces each component of our approach. 
+
+A. Problem Formulation 
+
+We use reinforcement learning to train a neural network policy on a humanoid robot model to perform whole-body object reaching and grasping before standing. The policy takes an observation vector comprising environment states such as limb poses and joint forces as input and outputs an action vector in terms of joint torque commands. The reward functions are evaluated to serve as the learning signal that the learner tries to maximize. At inference time, the trained grasping policy will be composed with a getting-up policy to stand up and walk while keeping the object grasped. Our approach focuses on acquiring the spatial reasoning ability for grasping; hence, we bypass the computer vision step and assume that the objects models are obtained via multi-view perspective and provided to a 3D preprocessing library to compute their distance fields. To provide a generic methodology, we do not presume any specific existing RL algorithm. Our methods only involve pre-computing the observation vector, pre-processing action outputs before applying them to robot joints, and designing the reward functions, which makes it agnostic to the RL agent implementation or neural network architecture. 
+
+B. Inversely Scaled Distance Field (ISDF) 
+
+In robotics and computer vision, signed distance fields are often used to represent the shortest distance of an arbitrary point i in space to the surface of an object ∂Ω as a continuous function S : R3 → R. The value of S(i) is positive when i
+
+is outside the object, negative if i is inside the object, and 0 if i is located on the boundary. To model proximity as a reward, we define an inversely scaled distance field by applying an inverse exponential transformation to the signed distance field, producing asmooth attractive potential around the object: 
+
+I(i) = min (1 , exp ( −αS (i))) (1) where α is a fixed positive hyper-parameter controlling the curvature of the transformation. The function ignores negative distances (penetration) by capping the result at 1. 
+
+C. Cubic Harmonics Weighted Spatial Convolution (CHWSC) 
+
+Harmonic functions are the solutions to Laplace’s equa-tion. In spherical coordinates, the solutions are spherical harmonics, a family of complex-valued functions denoted by Y mℓ (θ, φ ), where ℓ is a non-negative integer representing the degree and m is the order, which can take values between −ℓ
+
+and ℓ. θ and φ are spherical angular coordinates. For compu-tational benefits, it is common to use cubic harmonics, which are real-valued linear combinations of spherical harmonics, denoted as Kmℓ (r), where r is the Cartesian coordinate vector corresponding to (θ, φ ). Fig. 1 visualizes the angular distribution using the radius of the surface to represent the magnitude of the cubic harmonics in that direction. We use cubic harmonics as weights 2to convolute with the inversely scaled distance from each finger segment fj to the object, represented in the object’s reference frame: 
+
+CHWSC( l) = 
+
+> l
+
+X
+
+> ℓ=0
+
+X
+
+> j
+
+I(fj ) Kmℓ
+
+ fj
+
+∥fj ∥
+
+
+
+(2)                     
+
+> (a) ℓ= 4 ,m=−1(b) ℓ= 5 ,m= 4 (c) ℓ= 6 ,m=−5
+> Fig. 1. Surface representations of selected cubic harmonics. The phase is indicated by color, with red representing positive values and cyan
+> representing negative values. 4
+
+D. Hand-object Interaction Scores 
+
+To quantitatively evaluate grasp quality and provide dense reward to the learning agent, we define the following five metrics, illustrated in Fig. 2. 
+
+1) Hand-object proximity: We use I(h) to represent how close the hand is to the object, where I() is defined in Eq. 1 and h is a fixed point on the hand, as shown in Fig. 2a. 
+
+2) Interior-normal alignment: We use −⃗ nf ·⃗ nΩ to encour-age each finger segment’s inward-pointing surface normal (⃗ nf ) to be anti-parallel to the object surface normal ( ⃗ nΩ)closest to it, as shown in Fig. 2b. 
+
+3) Finger-object proximity: We use avg j (I(fj )) to repre-sent how close each finger segment is to the object, where 
+
+fj is a fixed point on a finger segment, as shown in Fig. 2c. 
+
+4) Object-finger proximity: In contrast to finger-object proximity, which measures how close each finger is to any part of the object, this metric evaluates how close each sampled point on the object is to any finger, as shown in Fig. 2d. We denote this as 
+
+avg 
+
+> k
+
+
+
+exp  −α min  
+
+> j
+
+fj − Ωk
+
+
+
+where ∥fj − Ωk∥ is the distance from a point k on the object to the nearest finger segment j. The points are sampled on              
+
+> 2Excluding asymmetry ones such as K−12,K−44,K−24,K−66,K−36due to out-of-range numerical values
+> 4Images sourced from https://www.quanty.org/physics_ chemistry/orbitals/k
+
+the object surface by curvature matching: the density of the point distribution is highest where the surface curvature is closest to the characteristic length of the hand. 
+
+5) Encapsulation: We encourage spatial overlap by re-warding the proximity of the collective center of all finger segments to the center of the convex hull of the object, as shown in Fig. 2e. We denote it as exp  −α cobj − cfingers 
+
+.If the center does not reside within the object, for instance in the case of the torus, a point inside the object is chosen. 
+
+E. Finger Joint Decoupling 
+
+We apply an intra-episode curriculum to overcome the difficulty of high-dimensional control by pooling and gradu-ally isolating the neural network policy output for the finger joints. This curriculum delays the increase in action-space dimensionality until after the policy has gained experience controlling in lower-dimensional space. At the beginning of each episode, all finger joints receive the averaged joint torque command. During each episode, finger joints are decoupled from the averaging function in a proximal-to-distal schedule. We examine two options: 
+
+Individual : happens once every 100 time steps after t =800 ; the torque command of a finger joint is decoupled linearly from the remaining averaged joint torque commands according to the schedule in Fig. 3a. 
+
+Group-based : happens once every 500 time steps after 
+
+t = 800 ; the torque commands of the same joint types are decoupled together linearly from the remaining averaged joint torque commands according to Fig. 3b. After the schedule ends, all finger joints are controlled independently by the policy output. 
+
+F. Achievement-triggered Rewards 
+
+We train a whole-body reaching and grasping policy by breaking down the task into a few milestones inspired by developmental principles, such as rolling over, head-object alignment, hand-object proximity, encapsulation, etc. We define a reward function for each milestone and organize them as a directed acyclic graph, where the nodes are the rewards and the edges represent achievement conditions for “unlocking” the learning of subsequent ones. We define two types of achievement scores: an enforced achievement score 
+
+AEi,j,t = ri,t − pi,j 
+
+and a non-enforced achievement score 
+
+ANi,j,t = max 
+
+> t∗≤t
+
+ ri,t ∗ − pi,j 
+
+where ri,t is the instantaneous reward for milestone i at time t, and pi,j is the passing score for milestone i to activate milestone j. They differ in the reward value used for calculating the achievement score: the enforced one uses instantaneous reward, so AEi,j,t can decrease once ri,t 
+
+decreases. This is useful when modeling transitions where a prerequisite milestone such as pre-grasping needs to be maintained during a later milestone such as grasping. (a) Hand-object proximity (b) Interior-normal alignment          
+
+> (c) Finger-object proximity
+> (d) Object-finger proximity
+> (e) Encapsulation Fig. 2. Schematic illustrations of the hand-object interaction metrics. (a) Proximity of a fixed hand point to the object. (b) Alignment of finger surface normals with the object surface normal. (c) Proximity of finger segments to the object. (d) Proximity of sampled object points to the nearest finger. (e) Proximity of the finger-segment centroid to the object center.
+> (a) Individual decoupling (b) Group-based decoupling Fig. 3. Finger joint decoupling schedules. Each label x≤t≤yindicates the time window during which the corresponding joint or joint group is linearly decoupled from the remaining averaged joints.
+
+The non-enforced one uses max-over-all-time reward, so 
+
+ANi,j,t does not decrease even if ri,t decreases. This is useful when modeling transitions where a prior milestone such as hand-object proximity can be sacrificed once a later milestone such as finger-object proximity is being optimized. Generally, both types of achievement scores can be present in a reward graph. We use dashed arrow lines for transitions with enforced achievement scores and solid arrow lines for transitions using non-enforced achievement scores, as shown in Fig. 4. The reward function for each milestone is listed in Table I with its level and multiplier. The total reward at time t is the sum of all active milestone rewards, weighted by their achievement scores and a milestone level multiplier: 
+
+rt = X
+
+> j
+
+pow( Lj , w ) X
+
+> i
+
+max  0, A i,j,t 
+
+rj,t 
+
+where Lj is the maximum number of hops from the initial milestone node to milestone j in the graph, and w is a fixed positive exponent representing the scaling factor for the learner to gain higher rewards for more advanced milestones. 
+
+G. Policy Composition 
+
+The policy composition module is implemented as a multi-policy RL player. When performing a composite task that requires multiple policies, such as reaching and grasping followed by standing and walking, we first construct aunified observation vector comprising the observation data needed for each subtask policy, as listed in Table II. The policy composition module then extracts the independent observation vectors for each subtask policy from the unified observation vector via index selection. At the beginning of the episode, the reaching and grasping policy commands all robot joints. After the object is grasped, indicated by passing the final milestone in the reward graph (% of finger segments in contact), the getting-up policy takes over control of body joints excluding the fingers, to allow the robot to get up and walk while holding the object in hand. IV. E XPERIMENTS 
+
+We implemented the method in a simulation environment and tested it with ablation studies. 
+
+A. Simulation Environment 
+
+We run 4096 simulation environments in Isaac Gym [17]. Each environment contains a humanoid robot and a cube. The robot model has 72 DoF in total, with each anthropomorphic hand having 20 DoF. The robots are initially lying on the ground in a supine position with random joint angles, while the cube is located on the ground in random directions. Each episode contains 3000 time steps. We apply domain randomization to robot link mass and friction, joint damping and stiffness, and gravity. Training hyper-parameters are listed in Table III. We use proximal policy optimization [18] to train a neural network policy with 4 fully-connected layers of 1600, 800, 400, and 200 neurons, using ELU activation. We test the policy composition module using the grasping policy trained on the 72-DoF robot and getting-up policies trained on 3 variations of the robot listed in Table V. 
+
+B. Ablation 
+
+To verify the effectiveness of having CHWSC in the observation vector, we experiment with cubic harmonics of degrees up to 6 and without CHWSC. We also compare the convoluted spatial representation with unconvoluted raw value by replacing CHWSC with finger-object proximity and direction vectors from the object to each finger. To verify the importance of gradual finger joint decou-pling, we run an experiment without the decoupling curricu-lum while still using CHWSC in the observation vector. Roll over halfway 
+
+Rolled over 
+
+Head up 
+
+Head-object alignment 
+
+Head-object proximity 
+
+Hand-object proximity 
+
+Interior-normal alignment 
+
+Finger-object proximity 
+
+Object-finger proximity 
+
+Encapsulation 
+
+% finger segments in contact Fig. 4. Achievement-triggered reward graph illustrating different transition mechanisms. Solid arrow lines indicate transitions using a non-enforced achievement score, whereas dashed arrow lines represent transitions with an enforced achievement score, which requires prerequisite milestones to remain activated. TABLE I REWARD FUNCTIONS 
+
+Milestone Expression Level Multiplier (w = 2 )Passing score 
+
+Roll over halfway (lateral axis of root points upward) ˆyroot ,z 1 1 85% Rolled over (anterior axis of root points downward) −ˆxroot ,z 2 4 75% Head up (head’s superior axis points upward) ˆzhead ,z 3 9 75% Head-object alignment (head’s anterior axis points to object) ˆxhead · oobject −ohead 
+
+> oobject −ohead
+
+4 16 75% Head-object proximity (head at arm distance from object) exp  −α( oobject − ohead − Larm )2 5 25 75% Hand-object proximity I(h) 6 36 85% Interior-normal alignment −⃗nf ·⃗ no 7 49 50% Finger-object proximity avg( I(f )) 8 64 70% Object-finger proximity avg k
+
+ exp  −α min j fj − Ωk
+
+ 8 64 50% Encapsulation exp  −α cobj − cfingers 
+
+ 8 64 40% % of finger segments in contact     
+
+> P{Ffinger >F threshold }
+> Nfingers
+
+9 81 20% TABLE II OBSERVATION VECTOR COMPONENTS 
+
+Dimension for policy and robot type Manipulation Locomotion Expression Meaning Full 72 DoF Full 72 DoF 32 DoF, non-actuated fingers 32 DoF, no fingers 
+
+zroot height of robot root (pelvis) 1 1 1 1
+
+qroot orientation of robot root 4 4 4 4
+
+vroot velocity of robot root 3 3 3 3
+
+ωroot angular velocity of robot root 3 3 3 3
+
+olinks origin of robot links and object 83 ×3 83 ×3 83 ×3 42 ×3
+
+qlinks orientation of robot links and object 83 ×4 83 ×4 83 ×4 42 ×4
+
+vlinks velocity of robot links and object 83 ×3 83 ×3 83 ×3 42 ×3
+
+Ffingers finger contact force 40 ×3 40 ×3 40 ×3 None 
+
+CHWSC(6) CHWSC of finger segments 44 ×2 None None None 
+
+qjoints joint angular position 72 72 72 32 
+
+ωjoints joint angular velocity 72 72 72 32 
+
+Fjoints joint force 72 72 72 32 
+
+τthigh force and torque at thigh 12 12 12 12 
+
+τupper arm force and torque at upper arm 12 12 12 12 
+
+aproc previous step’s policy output 72 72 32 32 
+
+aproc τmax previous step’s joint torque command 72 72 32 32 
+
+sin  0.5 π t f  CPG signals 16 16 16 16  
+
+> ttmax
+
+episode progress ratio 1 1 1 1TABLE III LIST OF HYPER -PARAMETERS .                                    
+
+> Simulator Randomization
+> Timestep length 0.005 s Observations +N(0 ,0.001)
+> Position iterations 4Actions +N(0 ,0.0075)
+> Velocity iterations 0Gravity +N(0 ,0.175)
+> Contact offset 0.01 m Body mass ×U [0 .75 ,1.25]
+> Rest offset 0.01 m Friction ×U [0 .85 ,1.15]
+> Bounce threshold 0.5 m/s Damping & stiffness ×U [0 .8,1.2]
+> Max depenetration 0.2 m/s Joint limit +N(0 ,0.005)
+
++N (mean , variance ) stands for additive normal distribution. 
+
+×U [lower , upper ] is scaling with uniform distribution. 
+
+Finally, to show how these two methods work in synergy, we run a baseline experiment containing neither CHWSC nor finger joint decoupling, representing a naive RL environment. V. R ESULTS 
+
+Our methods successfully trained a humanoid robot to roll over from a supine pose to a prone pose, crawl toward an object, reach out its arms, and grasp the objects. The policy composition module then commands the robot to stand up and walk while holding the object. Table VI shows the success rates of using different degrees of cubic harmonics versus ablation experiments. A successful grasp is defined as passing the finger-object proximity, object-finger proximity, and encapsulation scores. Fig. 5 is a detailed breakdown showing the percentage of robots that have passed each hand-object interaction score during policy execution. The results show that both CHWSC and finger joint decoupling are critical for the policy to learn grasping. As the maximum degree of cubic harmonics decreases, the success rate drops from 93% to 0%, suggesting that higher-order spatial convolution benefits learning by providing a more informative representation of the hand-object interaction rela-tion. Without CHWSC (by removing it or using unconvoluted distance and direction of the fingers with respect to the object), the observation vector cannot provide enough spatial information for the policy to learn grasping effectively. Without joint decoupling, only 7% of robots succeeded in grasping, suggesting that the RL algorithm suffers from a high action space dimension; the policy was unable to learn to control all 72 DoF at once. With finer joint decoupling, the policy only needs to learn 32 DoF at the beginning and gradually learns to control a 72-DoF action space later in the training stage. Decoupling the joints in groups performs better for proximity but worse for encapsulation and overall success rate than decoupling individually. If neither CHWSC nor joint decoupling is used, the grasp success rate was 0%, and the policy stopped learning at only 7,407 epochs, suggesting that the RL algorithm was unable to learn any rewarding actions due to the missing spatial information and the high dimensionality of the action space. Table IV shows the zero-shot grasp success rates of unseen objects. Although the policy was only trained using a cube, its generalizability shows the benefit of learning to interact with a distance field rather than explicit object geometry.                 
+
+> TABLE IV ZERO -SHOT GRASP SUCCESS RATES FOR UNSEEN OBJECTS .
+> Object Success rate Object Success rate
+> Sphere 98% Tetrahedron 94% Cuboid 94% Octahedron 93% Cylinder 93% Icosahedron 94% TABLE V SUCCESS RATES OF STANDING UP AND WALKING WITH OBJECT BEING GRASPED WITH THE STANDING -UP POLICY TRAINED ON DIFFERENT ROBOT MODELS .
+> Robot model for stand-up policy training Success rate
+> Same robot, 72 DoF 100% Same robot, non-actuated fingers, 32 DoF 96% Robot without fingers, 32 DoF 31% (76% got up but 45% fell)
+
+Table V shows the success rates of standing up and walk-ing when composing the grasping policy with the standing-up policy. Interestingly, although all three standing-up policies had a 100% success rate on the embodiment they were trained on, only the policies trained on the full robot model with fingers were able to stand up when composed with the grasping policy trained on the full 72-DoF robot. The comparative results imply that whether observation space and robot mechanism match or not determines cross-embodiment transferability between different policies. To combine standing-up policy with reaching out and grasping policies, the standing-up policy learned on a robot without fingers could not work. The composition only works if the standing-up policy learned also on the robot with fingers. Qualitative outcomes and the corresponding video are provided in the supplementary material. VI. C ONCLUSIONS 
+
+Summary : This work introduced an autonomous develop-mental reinforcement learning framework that enables ahumanoid robot to learn a reusable whole-body reaching and grasping policy efficiently without requiring external datasets or pre-trained models. It further demonstrated a policy com-position method to combine separately trained skill policies for more sophisticated composite robot behaviors. The introduced CHWSC provides a concise and infor-mative spatial representation of hand-object interaction re-lations, allowing the robot to learn to grasp various types of objects and generalize to unseen objects. Gradual finger joint decoupling and achievement-triggered rewards with enforcement provide a curriculum to the learn-ing algorithm, enabling the robot to learn motor skills progressively and refine its dexterity. Policy composition confirms that diverse motor policies trained on the same robot model can be seamlessly integrated at the inference time, implying that it is feasible to construct complex skills by combining multiple simpler motor policies. 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step 
+
+> % robots meeting criterion
+
+(a) CHWSC(6), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(b) CHWSC(5), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(c) CHWSC(4), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step 
+
+> % robots meeting criterion
+
+(d) CHWSC(3), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(e) CHWSC(2), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(f) CHWSC(1), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step 
+
+> % robots meeting criterion
+
+(g) CHWSC(0), D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(h) CHWSC(6), D(5) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(i) No CHWSC, D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step 
+
+> % robots meeting criterion
+
+(j) Unconvoluted, D(1) 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(k) CHWSC(6), No D 0 1,000 2,000 3,000 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Time step  
+
+> % robots meeting criterion
+
+(l) Neither Hand-object proximity Interior-normal alignment Finger-object proximity Object-finger proximity Encapsulation Grasped 
+
+Fig. 5. Percentage of robots that have passed each hand-object interaction score. Each sub-figure shows an episode of the policy trained from each experiment. Dashed black line represents the grasp success rate (finger-object proximity, object-finger proximity, and encapsulation scores passed). TABLE VI GRASP SUCCESS RATE AND LEARNING SPEED ACROSS ABLATION CONDITIONS .
+
+% robots meeting criterion Experiment ID Cubic harmonics degree Joint decoupling Finger-object proximity Object-finger proximity Encapsulation Success rate Total reward Training Epochs 
+
+CHWSC(6), D(1) 0 ≤ ℓ ≤ 6 Individual 97% 98% 97% 93% 414 376 23 907 
+
+CHWSC(5), D(1) 0 ≤ ℓ ≤ 5 Individual 97% 96% 92% 89% 421 887 32 813 CHWSC(4), D(1) 0 ≤ ℓ ≤ 4 Individual 96% 92% 69% 41% 278 800 33 094 CHWSC(3), D(1) 0 ≤ ℓ ≤ 3 Individual 86% 56% 23% 8% 221 712 11 344 CHWSC(2), D(1) 0 ≤ ℓ ≤ 2 Individual 88% 85% 75% 53% 224 928 33 750 CHWSC(1), D(1) 0 ≤ ℓ ≤ 1 Individual 90% 78% 57% 47% 233 171 24 000 CHWSC(0), D(1) ℓ = 0 Individual 24% 26% 10% 0% 116 098 8 344 CHWSC(6), D(5) 0 ≤ ℓ ≤ 6 Group-based 99% 99% 86% 73% 434 384 35 719 No CHWSC, D(1) Individual 22% 50% 32% 0% 240 376 37 782 Unconvoluted, D(1) Individual 76% 71% 57% 56% 211 278 36 563 CHWSC(6), No D 0 ≤ ℓ ≤ 6 52% 81% 64% 7% 259 932 39 750 Neither 3% 14% 3% 0% 161 759 7 407 
+
+Some future extensions : This work does not explicitly use object shape in training the robot reaching and grasping policies, but the object shape information was used in some computations. In real-world deployment, object shapes can be approximated from multiple visual perceptions [19]. To further enhance generalizability, more types of objects can be included as a training curriculum. The current hand-object interaction scores used are irre-spective of whether the left or right hand should be used. If a task requires a specific hand or bimanual manipulation, the interaction scores can be defined separately for each hand. The policy composition module currently does not address picking up the object if it is dropped when the getting-up policy has already taken over control. Large language reasoning models may be utilized to select the individual motor policies under appropriate conditions. REFERENCES [1] A. Cangelosi and M. Schlesinger, Developmental Robotics: From Babies to Robots . The MIT Press, 2015. [2] F. Meng and J. Xiao, “From rolling over to walking: Enabling humanoid robots to develop complex motor skills,” arXiv preprint arXiv:2303.02581 , 2023. [3] H. Ginsburg and S. Opper, “Piaget’s theory of intellectual develop-ment,” ser. The Prentice-Hall series in developmental psychology. Prentice-Hall, 1988. [4] J. Law, P. Shaw, K. Earland, M. Sheldon, and M. H. Lee, “A psychology based approach for longitudinal development in cognitive robotics,” Frontiers in Neurorobotics , vol. Volume 8 - 2014, 2014. [5] J. Juett and B. Kuipers, “Learning and acting in peripersonal space: Moving, reaching, and grasping,” Frontiers in Neurorobotics , vol. Volume 13 - 2019, 2019. [6] P. Savastano and S. Nolfi, “A robotic model of reaching and grasping development,” IEEE Transactions on Autonomous Mental Develop-ment , vol. 5, no. 4, pp. 326–336, 2013. [7] Y. Li, Y. Zhang, A. Razmjoo, and S. Calinon, “Representing robot ge-ometry as distance fields: Applications to whole-body manipulation,” in 2024 IEEE International Conference on Robotics and Automation (ICRA) , 2024, pp. 15 351–15 357. [8] J. Ortiz, A. Clegg, J. Dong, E. Sucar, D. Novotny, M. Zollhoefer, and M. Mukadam, “isdf: Real-time neural signed distance fields for robot perception,” in Robotics: Science and Systems , 2022. [9] T. Weng, D. Held, F. Meier, and M. Mukadam, “Neural grasp distance fields for robot manipulation,” IEEE International Conference on Robotics and Automation (ICRA) , 2023. [10] L. Shen and F. Makedon, “Spherical mapping for processing of 3d closed surfaces,” Image and Vision Computing , vol. 24, no. 7, pp. 743–761, 2006. [11] L. Buiarelli, R. M. Fernandes, and T. Birol, “Noncollinear magnetic multipoles in collinear altermagnets,” Phys. Rev. B, vol. 112, p. 224442, Dec 2025. [12] N. Mont´ es, F. Chinesta, M. C. Mora, A. Falc´ o, L. Hilario, N. Rosillo, and E. Nadal, “Real-time path planning based on harmonic functions under a proper generalized decomposition-based framework,” Sensors (Basel, Switzerland) , vol. 21, 2021. [13] P. Vlantis, C. Vrohidis, C. P. Bechlioulis, and K. J. Kyriakopoulos, “Robot navigation in complex workspaces using harmonic maps,” in 2018 IEEE International Conference on Robotics and Automation (ICRA) , 2018, pp. 1726–1731. [14] D. Ordo˜ nez Apraez, V. Kostic, G. Turrisi, P. Novelli, C. Mastalli, C. Semini, and M. Pontil, “Dynamics harmonic analysis of robotic systems: Application in data-driven Koopman modelling,” in Proceed-ings of the 6th Annual Learning for Dynamics & Control Conference ,ser. Proceedings of Machine Learning Research, A. Abate, M. Cannon, K. Margellos, and A. Papachristodoulou, Eds., vol. 242. PMLR, 15– 17 Jul 2024, pp. 1318–1329. [15] Y. Kuang, H. Geng, A. Elhafsi, T.-D. Do, P. Abbeel, J. Malik, M. Pavone, and Y. Wang, “Skillblender: Towards versatile humanoid whole-body loco-manipulation via skill blending,” arXiv preprint arXiv:2506.09366 , 2025. [16] K. Yuan and Z. Li, “Multi-expert synthesis for versatile locomotion and manipulation skills,” Frontiers in Robotics and AI , vol. Volume 9 - 2022, 2022. [17] V. Makoviychuk, L. Wawrzyniak, Y. Guo, M. Lu, K. Storey, M. Mack-lin, et al. , “Isaac gym: High performance gpu-based physics simulation for robot learning,” 2021. [18] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal policy optimization algorithms,” 2017. [19] S. Izadi, D. Kim, O. Hilliges, D. Molyneaux, R. Newcombe, P. Kohli, J. Shotton, S. Hodges, D. Freeman, A. Davison, and A. Fitzgibbon, “Kinectfusion: real-time 3d reconstruction and interaction using a moving depth camera,” in Proceedings of the 24th Annual ACM Symposium on User Interface Software and Technology , ser. UIST ’11. New York, NY, USA: Association for Computing Machinery, 2011, p. 559–568.

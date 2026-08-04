@@ -1,0 +1,377 @@
+{
+  "date": "20260804",
+  "date_label": "",
+  "generated_at": "2026-08-04 21:50:42 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2607.26770v1",
+      "route": "202608/04/2607.26770v1-vision-tl-action-neuro-symbolic-trajectory-generation-from-visual-observations-and-temporal-logic",
+      "title": "Vision-TL-Action: Neuro-Symbolic Trajectory Generation from Visual Observations and Temporal Logic",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过双向交叉注意力与流匹配，从多视角图像和时间逻辑语法图生成动作轨迹",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29169v1",
+      "route": "202608/04/2607.29169v1-actfovea-runtime-safeguarding-for-vla-policies-via-spatiotemporal-visual-action-consistency",
+      "title": "ActFovea: Runtime Safeguarding for VLA Policies via Spatiotemporal Visual-Action Consistency",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过时空视觉-动作一致性检查对 VLA 策略进行运行时风险检测与缓解",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29569v1",
+      "route": "202608/04/2607.29569v1-safe-vision-language-action-models-via-barrier-enhanced-flow-matching",
+      "title": "Safe Vision Language Action Models via Barrier Enhanced Flow Matching",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为视觉-语言-动作模型提供安全保证",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29596v1",
+      "route": "202608/04/2607.29596v1-fibvla-an-efficient-temporal-vision-language-action-model-with-fibonacci-sampling",
+      "title": "FibVLA: An Efficient Temporal Vision-Language-Action Model with Fibonacci Sampling",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于斐波那契采样的高效时序VLA模型",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.00793v1",
+      "route": "202608/04/2608.00793v1-dynamicwam-dual-path-motion-conditioning-for-world-action-models-in-dynamic-manipulation",
+      "title": "DynamicWAM: Dual-Path Motion Conditioning for World-Action Models in Dynamic Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "直接改进世界动作模型，利用双路径运动条件实现动态操作",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.02197v1",
+      "route": "202608/04/2608.02197v1-look-where-it-matters-adaptive-visual-refinement-for-vision-language-action-models",
+      "title": "Look Where It Matters: Adaptive Visual Refinement for Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "针对视觉-语言-动作模型视觉编码器中的注意力伪影，提出自适应视觉精炼方法以提升空间精确操作",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.26148v2",
+      "route": "202608/04/2607.26148v2-embodied-agents-take-control-minimal-interface-zero-shot-agents-rival-industrial-scale-policies-in-vision-and-language-navigation",
+      "title": "Embodied Agents Take Control: Minimal-Interface Zero-Shot Agents Rival Industrial-Scale Policies in Vision-and-Language Navigation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "零样本智能体具身控制媲美工业级VLN策略",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.26809v1",
+      "route": "202608/04/2607.26809v1-practice-makes-policies-bootstrapping-and-consolidating-robotic-capabilities-from-zero-human-demonstrations",
+      "title": "Practice Makes Policies: Bootstrapping and Consolidating Robotic Capabilities from Zero Human Demonstrations",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "机器人操作数据引擎",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.28251v1",
+      "route": "202608/04/2607.28251v1-self-evolving-learning-for-embodied-ai-with-criticality-model",
+      "title": "Self-Evolving Learning for Embodied AI with Criticality Model",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过临界性模型指导具身AI自进化数据采集",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.28382v1",
+      "route": "202608/04/2607.28382v1-semancorr-semantic-anchored-correspondence-for-zero-shot-manipulation-skill-transfer",
+      "title": "SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于语义对应的零样本操作技能迁移",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29613v1",
+      "route": "202608/04/2607.29613v1-wcm-a-world-critic-model-for-vision-language-action-reinforcement-learning",
+      "title": "WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向视觉语言动作模型的评论家强化学习",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.01013v1",
+      "route": "202608/04/2608.01013v1-rl-bootstrapping-of-openvla-oft-for-a-novel-robot-embodiment",
+      "title": "RL Bootstrapping of OpenVLA-OFT for a Novel Robot Embodiment",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过强化学习实现OpenVLA-OFT的零演示具身对齐",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.01265v1",
+      "route": "202608/04/2608.01265v1-hermite-curves-as-trajectory-priors-for-vision-language-action-models",
+      "title": "Hermite Curves as Trajectory Priors for Vision-Language-Action Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "视觉-语言-动作模型机器人控制",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.01410v1",
+      "route": "202608/04/2608.01410v1-gentrack-physical-alignment-for-robot-native-motion-generation-and-zero-shot-humanoid-tracking",
+      "title": "GenTrack: Physical Alignment for Robot-Native Motion Generation and Zero-Shot Humanoid Tracking",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "将生成的人类运动与机器人可执行性对齐，实现零样本人形追踪",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.28442v1",
+      "route": "202608/04/2607.28442v1-viewmind3d-modular-view-aware-inference-for-training-free-3d-qa",
+      "title": "ViewMind3D: Modular View-Aware Inference for Training-Free 3D-QA",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向具身智能与机器人感知的无训练3D空间推理",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29302v1",
+      "route": "202608/04/2607.29302v1-bwm-a-low-cost-high-fidelity-world-simulator-for-robot-learning",
+      "title": "BWM: A Low-Cost High-Fidelity World Simulator for Robot Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "动作条件的世界模型模拟未来观测",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29482v1",
+      "route": "202608/04/2607.29482v1-temporal-policy-history-initialized-action-generation-for-robotic-learning-from-demonstration",
+      "title": "Temporal Policy: History-Initialized Action Generation for Robotic Learning from Demonstration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "从历史初始化的流生成机器人动作，用于示教学习",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.29687v1",
+      "route": "202608/04/2607.29687v1-diagnosing-compositional-generalization-in-sequential-robot-tasks",
+      "title": "Diagnosing Compositional Generalization in Sequential Robot Tasks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过指令空间覆盖分解诊断组合泛化失败",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.00208v1",
+      "route": "202608/04/2608.00208v1-developing-combined-manipulation-and-locomotion-skills-with-interaction-representation-and-skill-composition",
+      "title": "Developing Combined Manipulation and Locomotion Skills with Interaction Representation and Skill Composition",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "用于操作-运动人形策略的交互表示与技能组合",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.24112v1",
+      "route": "202608/04/2607.24112v1-scaling-gui-agents-with-visual-state-transitions",
+      "title": "Scaling GUI Agents with Visual State Transitions",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "利用行动-接地状态转移表征扩展GUI智能体",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2607.27261v1",
+      "route": "202608/04/2607.27261v1-its-not-just-more-demos-counterfactual-action-sensitivity-coverage-for-data-efficient-robust-robot-imitation",
+      "title": "It's Not Just More Demos: Counterfactual Action Sensitivity Coverage for Data-Efficient Robust Robot Imitation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "用于鲁棒机器人模仿的离线数据选择框架",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.00315v1",
+      "route": "202608/04/2608.00315v1-towards-general-language-conditioned-latent-safety-filters",
+      "title": "Towards General Language-Conditioned Latent Safety Filters",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向VLA机器人策略的语言条件安全过滤器",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    },
+    {
+      "paper_id": "2608.01899v1",
+      "route": "202608/04/2608.01899v1-spatiolm-towards-general-physical-spatial-intelligence-in-vision-language-models",
+      "title": "SpatioLM: Towards General Physical Spatial Intelligence in Vision-Language Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "在视觉语言模型中增强三维空间理解能力",
+      "first_seen_at": "2026-08-04 21:50:42 UTC",
+      "updated_at": "2026-08-04 21:50:42 UTC"
+    }
+  ]
+}

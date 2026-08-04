@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-07-26 ~ 2026-08-04</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-04</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 46 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 23 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>32</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>14</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-04 09:05:03 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-04 21:50:42 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,9 +62,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>本期日报共收录46篇论文，精读32篇、速读14篇，机器人学习与实时控制成为焦点。</p>
-<p>最值得精读的是满分论文《Mirror Learning》，以及9分新作《FutureRTC》，前者重交互学习、后者主打预判式动作分块，均指向更稳更快的机器人操控。</p>
-<p>建议优先从上述两篇入手，再顺藤摸瓜啃《PRISM》《P3》《Transformer Transformer》三篇8分速读，快速把握运动控制与策略传播的新思路。</p>
+<p>今日共读23篇论文，其中精读9篇、速读14篇，聚焦视觉-语言-动作模型（VLA）的前沿进展。最值得关注的是两篇9分精读：基于神经符号的轨迹生成（Vision-TL-Action）和VLA策略的运行时安全守护（ActFovea），分别强调可解释性与安全一致性。建议优先精读这两篇，再浏览速读中的操作技能迁移与世界模型方向，结合自身场景验证适用性。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -73,12 +71,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">32 篇</strong>
+    <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Mirror Learning">Mirror Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="FutureRTC: Real-Time Robot Execution with Anticipatory-Conditioned Action Chunking">FutureRTC: Real-Time Robot Execution with Anticipatory-Conditioned Action Chunking</span></li><li><span class="dpr-home-dashboard-paper-title" title="Learning Reusable Hybrid Motion Priors for Humanoid Locomotion from Motion Imitation">Learning Reusable Hybrid Motion Priors for Humanoid Locomotion from Motion Imitation</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Vision-TL-Action: Neuro-Symbolic Trajectory Generation from Visual Observations and Temporal Logic">Vision-TL-Action: Neuro-Symbolic Trajectory Generation from Visual Observations and Temporal Logic</span></li><li><span class="dpr-home-dashboard-paper-title" title="ActFovea: Runtime Safeguarding for VLA Policies via Spatiotemporal Visual-Action Consistency">ActFovea: Runtime Safeguarding for VLA Policies via Spatiotemporal Visual-Action Consistency</span></li><li><span class="dpr-home-dashboard-paper-title" title="Safe Vision Language Action Models via Barrier Enhanced Flow Matching">Safe Vision Language Action Models via Barrier Enhanced Flow Matching</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>17</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>5</strong></span><span class="dpr-home-dashboard-tag">robot <strong>5</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>5</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -89,9 +87,9 @@
     <strong class="dpr-home-dashboard-count">14 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="PRISM: Polynomial Representations for Interaction-Structured Motor Control">PRISM: Polynomial Representations for Interaction-Structured Motor Control</span></li><li><span class="dpr-home-dashboard-paper-title" title="P3: Probabilistic Policy Propagation for Stable VAE-Based Robot Learning">P3: Probabilistic Policy Propagation for Stable VAE-Based Robot Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design">Transformer Transformer: A Unified Model for Motion-Conditioned Robot Co-design</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer">SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer</span></li><li><span class="dpr-home-dashboard-paper-title" title="WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning">WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="RL Bootstrapping of OpenVLA-OFT for a Novel Robot Embodiment">RL Bootstrapping of OpenVLA-OFT for a Novel Robot Embodiment</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>7</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>9</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>3</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
 </section>
 </div>
 
