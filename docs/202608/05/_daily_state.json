@@ -1,0 +1,377 @@
+{
+  "date": "20260805",
+  "date_label": "",
+  "generated_at": "2026-08-05 21:28:01 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.03244v1",
+      "route": "202608/05/2608.03244v1-uninav-a-unified-world-action-diffusion-model-for-visual-navigation",
+      "title": "UniNav: A Unified World-Action Diffusion Model for Visual Navigation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "统一世界动作扩散模型，联合生成未来视觉观测与路点轨迹用于视觉导航。",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03387v1",
+      "route": "202608/05/2608.03387v1-roboreact-agentic-skill-distillation-from-generated-egocentric-videos-for-generalizable-whole-body-manipulation",
+      "title": "RoboReact: Agentic Skill Distillation from Generated Egocentric Videos for Generalizable Whole-Body Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从生成的自我中心视频中蒸馏出全身人形机器人技能",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03563v1",
+      "route": "202608/05/2608.03563v1-unified-visuomotor-targets-supervising-vlas-beyond-physical-actions",
+      "title": "Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "直接针对VLM高层表示与底层机器人动作之间的不匹配，提出统一潜在预测目标",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03701v1",
+      "route": "202608/05/2608.03701v1-lila-wam-lightweight-latent-reasoning-world-action-model-for-robotic-manipulation",
+      "title": "LiLa-WAM: Lightweight Latent Reasoning World-Action Model for Robotic Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向机器人操作的轻量级潜空间世界-动作模型",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.02958v1",
+      "route": "202608/05/2608.02958v1-valueformer-a-causal-transformer-value-function-with-stage-aware-labels-for-semi-autonomous-vision-language-action-policies",
+      "title": "ValueFormer: A Causal Transformer Value Function with Stage-Aware Labels for Semi-Autonomous Vision-Language-Action Policies",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "为视觉-语言-行动策略引入带阶段感知标签的因果变换器价值函数，以检测失败",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.02980v1",
+      "route": "202608/05/2608.02980v1-qwen-3d-a-generalist-3d-vision-language-model-for-spatial-understanding",
+      "title": "Qwen-3D: A Generalist 3D Vision-Language Model for Spatial Understanding",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向空间理解的通用3D视觉-语言模型",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.02990v1",
+      "route": "202608/05/2608.02990v1-embodiedvae-disentangled-video-vae-for-efficient-and-controllable-embodied-manipulation",
+      "title": "EmbodiedVAE: Disentangled Video VAE for Efficient and Controllable Embodied Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过解耦视频VAE学习机器人操作的潜在表示",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03052v1",
+      "route": "202608/05/2608.03052v1-how-should-vision-language-action-models-use-proprioceptive-state",
+      "title": "How Should Vision-Language-Action Models Use Proprioceptive State?",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "对VLA模型应如何整合本体感知状态（含历史与注入位置）进行受控实验研究。",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03116v1",
+      "route": "202608/05/2608.03116v1-shooting-for-contact-contact-implicit-multiple-shooting-for-dynamic-motion-retargeting",
+      "title": "Shooting for Contact: Contact-Implicit Multiple Shooting for Dynamic Motion Retargeting",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "保持接触一致性的跨形态运动重定向",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03231v1",
+      "route": "202608/05/2608.03231v1-structure-aware-robust-fine-tuning-defending-vision-language-action-robots-against-physical-attention-hijacking",
+      "title": "Structure-Aware Robust Fine-Tuning: Defending Vision-Language-Action Robots Against Physical Attention Hijacking",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "视觉-语言-动作策略的鲁棒性与注意力劫持",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03483v1",
+      "route": "202608/05/2608.03483v1-continue-or-replan-bernoulli-continuation-policy-learning-for-adaptive-horizon-execution",
+      "title": "Continue or Replan? Bernoulli-Continuation Policy Learning for Adaptive Horizon Execution",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过伯努利继续/重规划决策为分块VLA模型提供自适应执行时域。",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03727v1",
+      "route": "202608/05/2608.03727v1-track4action-distilling-world-centric-3d-tracker-into-vision-language-action-policies",
+      "title": "Track4Action: Distilling World-Centric 3D Tracker into Vision-Language-Action Policies",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "将世界中心3D追踪器蒸馏到VLA策略以生成动作",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03753v1",
+      "route": "202608/05/2608.03753v1-gordon-graph-based-object-centric-rewards-for-decomposition-of-long-horizon-manipulation",
+      "title": "GORDON: Graph-based Object-centric Rewards for Decomposition of Long-Horizon Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "从无动作视频演示中学习密集奖励，使用以对象为中心的图网络实现长程操控。",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2607.27261v1",
+      "route": "202608/05/2607.27261v1-its-not-just-more-demos-counterfactual-action-sensitivity-coverage-for-data-efficient-robust-robot-imitation",
+      "title": "It's Not Just More Demos: Counterfactual Action Sensitivity Coverage for Data-Efficient Robust Robot Imitation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "机器人操作数据引擎：基于反事实动作敏感性覆盖度的数据选择",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.00613v1",
+      "route": "202608/05/2608.00613v1-from-failures-to-supervision-dynamicenvplan-for-robust-long-horizon-embodied-planning",
+      "title": "From Failures to Supervision: DynamicEnvPlan for Robust Long-Horizon Embodied Planning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向长时程具身规划，结合结构化语义记忆与失败驱动的监督信号",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.01452v1",
+      "route": "202608/05/2608.01452v1-dynamicmanip-enabling-dynamic-manipulation-from-a-single-static-demonstration",
+      "title": "DynamicManip: Enabling Dynamic Manipulation from a Single Static Demonstration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "从单个静态演示合成多样化的动态操作演示数据",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03103v1",
+      "route": "202608/05/2608.03103v1-a-hierarchical-approach-to-imitation-learning-for-manipulation-tasks-requiring-time-varying-forces",
+      "title": "A Hierarchical Approach to Imitation Learning for Manipulation Tasks Requiring Time Varying Forces",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向随时间变化力交互的接触丰富操作任务的分层模仿学习方法",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03207v1",
+      "route": "202608/05/2608.03207v1-drift-derailing-denoising-trajectories-of-flow-matching-vlas-with-adversarial-patch-attack",
+      "title": "DRIFT: Derailing Denoising Trajectories of Flow-Matching VLAs with Adversarial Patch Attack",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过对抗补丁攻击分析流匹配VLA模型的去噪轨迹",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.01083v1",
+      "route": "202608/05/2608.01083v1-sparse-meets-dense-correspondence-guided-robotic-manipulation-with-rigid-deformable-interactions",
+      "title": "Sparse Meets Dense: Correspondence Guided Robotic Manipulation with Rigid-Deformable Interactions",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向机器人感知与控制的表示学习；刚软交互操作的对应关系表示",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.01603v1",
+      "route": "202608/05/2608.01603v1-affordtrajdp-dynamic-affordance-guided-visuomotor-policy-learning-for-robotic-manipulation",
+      "title": "AffordTrajDP: Dynamic Affordance-Guided Visuomotor Policy Learning for Robotic Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过动态可供性轨迹引导视觉运动策略学习，用于高精度机器人操作",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.01851v1",
+      "route": "202608/05/2608.01851v1-weights-or-skills-a-survey-of-robot-learning-techniques-from-action-predicting-weights-to-robots-that-write-their-own-skills",
+      "title": "Weights or Skills? A Survey of Robot-Learning Techniques: from Action-Predicting Weights to Robots that Write their Own Skills",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "涵盖VLA模型与代码即策略的机器人学习综述",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03234v1",
+      "route": "202608/05/2608.03234v1-learning-context-aware-motion-priors-for-humanoid-control",
+      "title": "Learning Context-Aware Motion Priors for Humanoid Control",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "情境感知的运动先验框架使通用参考运动适应当前任务上下文，用于人形控制",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    },
+    {
+      "paper_id": "2608.03851v1",
+      "route": "202608/05/2608.03851v1-litemvs-efficient-multi-view-stereo-with-foundation-distillation-and-expert-aggregation",
+      "title": "LiteMVS: Efficient Multi-View Stereo with Foundation Distillation and Expert Aggregation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "高效多视图立体方法，为基础模型蒸馏与专家聚合，为机器人具身4D表征提供3D几何。",
+      "first_seen_at": "2026-08-05 21:28:01 UTC",
+      "updated_at": "2026-08-05 21:28:01 UTC"
+    }
+  ]
+}

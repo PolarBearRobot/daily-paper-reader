@@ -1,0 +1,378 @@
+Title: Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions
+
+URL Source: https://arxiv.org/pdf/2608.03563v1
+
+Published Time: Wed, 05 Aug 2026 01:00:35 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions 
+
+Zhenyang Feng 1 and Unnat Jain 1
+
+Abstract — VLA models are trained to predict robot actions from visual and language observations. This is a natural choice, but it creates a mismatch: VLMs encode rich, high-level representations of scenes and goals, while robot actions are low-level signals with limited task structure. We ask whether changing what the policy is trained to predict, rather than how it is architecturally designed, can yield better and more efficiently trained policies. We propose UVT (Unified Visuomotor Target), a unified latent prediction target that jointly encodes motor control and visual scene transition information, requiring no architectural changes and no additional data. Applied to two representative VLA systems across simulation benchmarks and real bimanual manipulation tasks, UVT improves training efficiency, final task performance, and policy robustness, with particularly strong gains under limited training budgets and challenging environmental conditions. Rollout videos and addi-tional qualitative results are available at our project webpage: 
+
+unified-visuomotor-targets.github.io .
+
+I. I NTRODUCTION 
+
+Vision-Language-Action (VLA) models adapt pretrained vision-language models (VLMs) as robot policy backbones, mapping image observations and language instructions to robot actions. Early systems extended the VLM vocabulary to predict discretized action tokens, treating binned joint values or frequency-domain codes as language tokens [1– 3]. Treating actions as tokens aligns with autoregressive VLM pretraining, but discretization limits motion precision. Predicting raw continuous actions via direct regression or flow matching recovers this precision, but VLMs are not pretrained to produce continuous actuator signals. Recent work has addressed this by specializing the architecture: MLP heads on top of VLM predictions [4], action expert transformers conditioned on VLM key-value features [5, 6], and cross-attention modules adapted for robotic control [7]. Adding these modules can degrade the VLM’s pretrained representations, motivating separate techniques to preserve them [8, 9]. All of these ask how to adapt the architecture to the target, not what the target should be. 
+
+The targets remain the same: raw robot actions, first quantized, now continuous. VLMs are trained to predict task-relevant semantic outputs from image and language inputs: which objects are present, their spatial relations, what the goal state is. Robot joint angles and Cartesian poses have none of this structure; the same wrist motion or gripper correction recurs across tasks with entirely different goals. Training a semantic predictor to output kinematic signals 
+
+> 1Zhenyang Feng and Unnat Jain are with the Department of Computer Science, University of California, Irvine.
+
+slows convergence and limits robustness. We ask: can a pre-diction target better aligned with VLM representations improve VLA training without architectural changes? 
+
+Latent Action Models (LAMs) [10–14] encode what robot actions lack. Trained as inverse-dynamics models on image pairs, LAMs compress the visual state transition between two frames into a compact discrete code that captures task-relevant scene change, not embodiment-specific motor commands. These models have been used primarily for large-scale robotics pretraining, where dynamics codes bootstrap generalist policies from video and cross-embodiment data. Their use as a fine-tuning supervision signal has not been explored. We propose UVT (Unified Visuomotor Target), a compact latent supervision target for VLA fine-tuning that jointly encodes robot actions and visual state-transition codes from a pretrained LAM. As shown in Fig. 1, a lightweight multimodal VAE, trained once on the demonstration dataset, fuses each action chunk with its corresponding LAM code into a 32-dimensional latent. During fine-tuning, the VLA is supervised on this latent rather than raw actions; a trainable decoder recovers an executable action chunk at inference. Because the target captures both motor control and observed scene changes as discrete codes, it is better matched to what VLMs encode from image and language inputs than raw joint signals. The approach requires no architectural changes, no additional data, and no modification to the training schedule. We evaluate UVT on VLA-Adapter [7] (with regres-sion head) and π0.5 [6] (with flow-matching head) on LIBERO [15], the harder LIBERO-Plus benchmark [16], and three real-world bimanual manipulation tasks. On both VLA architectures, UVT improves convergence speed, task per-formance, and policy robustness. Under LIBERO-Plus, UVT reaches 81.5% on Spatial tasks at 10k steps versus 34.0% for the baseline. On real robot tasks, UVT substantially improves grasping reliability: on Close Marker , the baseline achieves 0% success across 50 trials while UVT reaches 38%; on 
+
+Plate Handover , success improves from 18% to 40%. Our contributions are threefold: (1) We introduce UVT, a prediction target that fuses robot actions with visual dynam-ics codes from a pretrained LAM, requiring no architectural changes and no additional data. (2) We show that training VLAs on UVT rather than raw actions improves training efficiency by providing a supervision signal more aligned with what VLMs encode. (3) We demonstrate improvements in convergence speed, task performance, and robustness across regression and flow-based VLA policies on LIBERO, LIBERO-Plus, and three real bimanual manipulation tasks. arXiv:2608.03563v1 [cs.RO] 4 Aug 2026 II. R ELATED WORK 
+
+Vision-Language-Action Models. Vision–Language–Action (VLA) models repurpose pretrained Vision–Language Mod-els (VLMs) as multimodal backbones for robotic control, leveraging their strong visual–textual reasoning capabili-ties [1, 6, 17]. Existing VLA approaches primarily differ in how actions are decoded from VLM representations. The first line of work towards this direction extends the VLM vocabulary to directly predict discretized action tokens that are subsequently mapped to continuous control [2, 3, 17]. More recent models instead attach a dedicated policy head on top of VLM hidden states to produce continuous actions: diffusion or flow-matching based heads generate ac-tions through iterative denoising [5, 6, 18], while regression-style heads (e.g., MLPs or transformer decoders) predict con-tinuous action chunks in parallel [7, 19]. Despite architectural differences, these paradigms typically supervise the model using low-level robot actions. From a training perspective, most general-purpose poli-cies follow a two-stage paradigm consisting of large-scale robotics pretraining followed by task-specific fine-tuning. Pretraining is often performed on aggregated multi-robot datasets [20, 21] or image/video datasets [22–25] requiring substantial computational resources to learn cross-task and cross-embodiment motion priors. The pretrained model is then adapted to a specific environment using a smaller demonstration dataset in the target domain. Recent work has also explored bypassing large-scale robotics pretraining altogether. Methods such as VLA-Adapter [7] demonstrate that pretrained VLMs can be di-rectly adapted into robotic policies via lightweight policy heads and fine-tuning, significantly reducing training cost. Complementary work studies how to fine-tune VLAs without overwriting pretrained VLM representations [8, 9]. These results suggest that efficient adaptation matters for scalable VLA deployment, even when large-scale pretraining helps. 
+
+Latent Action Learning. Latent Action Models (LAMs) aim to abstract action dynamics beyond explicit robot actions, enabling cross-embodiment and cross-domain generalization. Building on latent-action models from video such as Ge-nie [26], LAPA [10] introduces a Latent Action Model (LAM) trained with a variational objective to encode frame-to-frame dynamics into a compact discrete code space. By modeling visual transitions rather than robot actions, LAMs capture higher-level visual transition that can be shared across different robot embodiments and even human video data. Subsequent works extend this idea in various direc-tions. UniVLA [11] proposes task-centric dynamics codes to improve generalization across diverse environments. ConLA [27] and MVP-LAM [13] explore contrastive and cross-view reconstruction objectives to enhance the consis-tency and expressiveness of dynamics codes. VQ-VLA [3] further investigates vector-quantized action tokenizers within VLA training. All these methods aim to demonstrate that structured dynamics code representations can provide more abstract and transferable motion priors compared to robot actions. So far, most of these approaches have been studied pri-marily in the context of large-scale robotics pretraining, where dynamics codes are used to bootstrap generalist poli-cies. In contrast, our work focuses on a different setting: we use pretrained LAMs as auxiliary regularizers during downstream VLA fine-tuning. Rather than replacing action supervision, we integrate dynamics code signals with robot actions to construct a structured prediction target that im-proves optimization efficiency across both flow-matching and regression-style VLA policies. III. U NIFIED VISUOMOTOR TARGET (UVT) T RAINING 
+
+A. Preliminaries 
+
+We consider a robot manipulation setting where demon-strations consist of multimodal observations and robot ac-tions. Let D = {(xt, a t)} denote a demonstration dataset. Here, xt includes visual observations and language instruc-tions at time t, and at ∈ Rk×d denotes a future ground-truth action chunk the robot should take to complete the task, where k is the number of action steps each forward pass produces and d is the action dimensionality (e.g., 7D Cartesian pose with gripper). An action chunk at spans the interval [t, t + k] and represents a short-horizon trajectory of continuous robot actions. The action-chunk formulation follows [29]. Modern Vision-Language-Action (VLA) models are typically fine-tuned to predict such action chunks directly from multimodal inputs [6, 7, 11, 17, 21]: 
+
+min  
+
+> θ
+
+E(xt,a t)∼D [− log pθ (at|xt)] .
+
+This is the standard imitation learning objective used during VLA fine-tuning. The pretrained LAM operates purely on visual observa-tions. Let vt denote the visual observation component of xt.Given two images vt and vt+k, the LAM encodes their 2D visual state transition into a discrete dynamics code 
+
+zt = LAM( vt, v t+k),
+
+where zt captures image-level dynamics across the action window. Importantly, zt is derived from visual state tran-sitions rather than robot actions, and therefore contains no explicit motor grounding. In what follows, we will construct a unified visuomotor target ut that integrates robot action at with visual transition code zt.
+
+B. Method Overview 
+
+Our goal is to replace direct robot action supervision with a Unified Visuomotor Target (UVT), denoted ut, that integrates motor control and visual transition information. As illustrated in Figure 1, for each demonstration segment, we obtain the action chunk at and the corresponding discrete dynamics code zt from a pretrained LAM. These two signals answer different questions about the same motion. The action Unified Visuomotor Targets  
+
+> (instead of physical actions)
+> ×
+> Decoded
+> Physical Actions
+> Future Actions
+> Future Observations
+> Action Chunk
+
+𝑎 ! ∈ ℝ"×$
+
+> Inverse
+> Dynamics
+> Model
+
+## ❄  
+
+> Dynamics
+> Decoder
+> =++
+
+z"!
+
+a"!
+
+> α!
+> α"
+> Weighted
+> Product -of -Experts
+
+z!
+
+> Any VLA Policy
+> of your choice
+> Learnable Precision
+> Weight Coeff
+
+Extracting Unified Visuomotor Targets 
+
+VLA finetuning 
+
+> Action Posterior
+> Fused Posterior
+> Action
+> Reconstruction
+> Dynamic Code
+> Reconstruction
+> Smoothness
+> No Architectural Changes
+> No Extra Data
+> Faster convergence
+> Better performance
+> Action
+> Decoder
+> Dynamics
+> Encoder
+> Action
+> Encoder
+> Action
+> Decoder
+
+𝑢 ! ∈ ℝ%& Fig. 1: Unified Visuomotor Target (UVT) Overview. Top (Extracting UVT): a frozen pretrained inverse dynamics model extracts discrete dynamics codes zt from future observations, while ground-truth action chunks at ∈ Rk×d (k: chunk size, d:action dimension) provide continuous motor supervision. Two trainable encoders map at and zt to Gaussian posteriors, which are fused via a weighted Product-of-Experts [28] with learnable precision weights αa, α z to produce the unified visuomotor target ut ∈ R32 . The target is decoded to reconstruct both robot actions ( LACT ) and dynamics codes ( LDYN ), while a KL divergence loss LKL regularizes ut toward a standard normal prior, encouraging a well-conditioned prediction space. Bottom (VLA finetuning): the VLA policy is supervised to predict ut, and a trainable action decoder maps the predicted target back to executable actions, enabling faster convergence and better performance with no architectural changes and no extra data. chunk says how the robot moves; the dynamics code says how the scene changes. Fusing them into one target gives the VLA a supervision signal that matches both the motor command and the visual transition it must produce. We therefore learn a mapping ut = Φ( at, z t), where Φ
+
+produces a compact UVT representation that preserves robot action control fidelity while incorporating visual dynamics. During VLA fine-tuning, the policy is trained to predict ˆut
+
+from multimodal input xt. A trainable decoder then translates 
+
+ˆut back to executable robot actions. This framework consists of three components: (i) a mul-timodal encoder that constructs ut from (at, z t), (ii) aUVT supervision objective, and (iii) a trainable decoder for action reconstruction, as shown in Figure 1. The following subsections describe each component in detail. 
+
+C. Unified Visuomotor Target Construction 
+
+We construct the unified visuomotor target ut ∈ Rdu
+
+using a multimodal variational autoencoder (MVAE) [30], as illustrated in Fig. 1. The MVAE maps the robot action 
+
+at and the discrete dynamics code zt into a shared UVT space and produces a unified visuomotor target ut that can reconstruct both signals. 
+
+Encoders. We use two encoders that map each modality into a diagonal Gaussian in the same UVT space. The robot action encoder outputs: 
+
+(μat , log σ2,a t ) = f a(at),
+
+and the discrete dynamics encoder outputs: 
+
+(μzt , log σ2,z t ) = f z (zt).
+
+Thus, each training pair (at, z t) yields two Gaussian pre-dictions over u. Both encoders are trained jointly because the fused UVT (defined next) must support reconstruction of both modalities, which encourages the two encoders to produce aligned UVT representations. 
+
+Fusion. We combine the two Gaussian predictions using weighted precision fusion. Let τ = 1 /σ 2 denote elementwise precision. The fused precision and mean are: 
+
+τt = αa τ at + αz τ zt ,μt = αa τ at ⊙ μat + αz τ zt ⊙ μzt
+
+τt
+
+,
+
+where ⊙ denotes elementwise multiplication. The inverse variance (precision) acts as a weighting factor: dimensions with smaller predicted variance contribute more strongly to the fused mean. The learned scalar weights αa and αz
+
+provide a global balance between robot action and visual dynamics signals. Finally, we use the fused mean as the unified visuomotor target: 
+
+ut = μt.
+
+The corresponding fused variance is σ2 
+
+> t
+
+= 1 /τ t (elemen-twise), which parameterizes the Gaussian used in the KL term below. 
+
+Decoders. Two decoders reconstruct both modalities from the same UVT: 
+
+ˆat = ga(ut), ˆzt = gz (ut).
+
+This forces ut to preserve information needed to recover both the robot action and the discrete dynamics code. 
+
+Training objective. We train the MVAE with reconstruction losses for both modalities and a KL regularizer that keeps the UVT distribution close to a standard normal: 
+
+LACT = ∥at − ˆat∥1, LDYN = CE( zt, ˆzt),
+
+LKL = DKL 
+
+ N (μt, diag( σ2 
+
+> t
+
+)) ∥ N (0 , I ) .
+
+The overall objective is to minimize the term: 
+
+LUVT = LACT + LDYN + LKL .
+
+This procedure produces the unified visuomotor target ut
+
+used as the prediction target for VLA fine-tuning. 
+
+D. UVT for Imitation Learning with VLAs 
+
+The MVAE described in Sec. III-C is trained first to construct the unified visuomotor target ut from robot actions 
+
+at and discrete dynamics codes zt. After training, we pre-compute ut = Φ( at, z t) for all samples in the demonstration dataset D. VLA imitation learning is then performed in this UVT space, using the triples (xt, u t, a t) as its data sample. 
+
+UVT objective. Given multimodal input xt, the VLA policy predicts 
+
+ˆut = fθ (xt),
+
+and is supervised using 
+
+LUVT-align = ∥ˆut − ut∥22.
+
+This loss anchors the policy’s internal representation to the unified visuomotor target space, encouraging it to predict both robot action and visual dynamics information. 
+
+Trainable action decoding. The MVAE decoder was origi-nally trained to reconstruct actions from ground-truth UVTs 
+
+ut. During VLA training, however, the policy produces predicted UVTs ˆut that may not exactly match the distri-bution of precomputed ut. If the decoder were frozen, small deviations in ˆut could lead to amplified reconstruction errors. We therefore keep the action decoder ga trainable and apply an additional action decoding loss 
+
+ˆat = ga(ˆ ut), Ldec = ∥ˆat − at∥1.
+
+This allows the decoder to adapt to the distribution of pre-dicted UVTs while preserving the UVT alignment objective. The UVT loss anchors the policy in unified visuomotor target space, and the decoding loss ensures that decoded outputs remain consistent with executable robot actions. The final objective is 
+
+LVLA = LUVT-align + γLdec .
+
+Note that this modification changes only the prediction tar-get and the loss formulation. The backbone VLA architecture remains unchanged. Any policy head capable of producing a UVT vector ˆut can be trained under this objective, including regression-style heads (L2 on ˆut) and flow-matching heads that generate ut in place of at before action decoding. IV. E XPERIMENTS 
+
+A. Experimental Setup 
+
+We first describe the benchmarks, models, and training protocol used in our experiments. We then present results on training efficiency (Section IV-B), benchmark comparisons (Section IV-C), real-world evaluation (Section IV-D), abla-tion studies (Section IV-E), and UVT representation analysis (Section IV-F). 
+
+a) Benchmarks.: We evaluate our method primarily on the LIBERO benchmark suite [15], which consists of diverse manipulation tasks grouped into four categories: Object ,
+
+Spatial , Goal , and Long tasks. Each suite poses distinct challenges in terms of complex tasks and environmental variation, and success is measured by task success rate following the standard LIBERO protocol. In addition, we evaluate on the LIBERO-Plus bench-mark [16], a recently released extension that introduces ad-ditional perturbations and bigger visual and object state vari-ations (e.g., perturbations in object configuration and envi-ronment dynamics) to stress test model robustness. LIBERO-Plus is designed to evaluate not only final performance but also the stability and robustness of policies under more challenging variations beyond the standard suites. 
+
+b) Models.: To demonstrate the generality of our ap-proach, we integrate our UVT supervision framework into two representative VLA systems with different backbones and policy heads: (1) VLA-Adapter [7], which adopts a regression-style action prediction head on top of a pretrained VLM backbone, and (2) π0.5 [6], which includes a flow-matching-based action expert with a distinct backbone con-figuration. These models differ in both backbone architecture and policy head design. Our method modifies only the super-vision target and decoder integration described in Section III-D, leaving the backbone and policy architecture otherwise unchanged. 
+
+c) Unified Visuomotor Target.: The unified visuomotor target ut ∈ R32 is obtained from the precision-aware MVAE described in Section III-C. The MVAE is trained in a separate stage on paired robot actions at and discrete dynamics codes 
+
+zt. After training, we precompute ut for all training examples and use them as targets during VLA fine-tuning. TABLE I: Training Efficiency Comparison. We compare our model’s success rate under 10k and 100k training steps with baseline VLA-Adapter [7] across 2 different benchmarks, LIBERO [15] and LIBERO-Plus [16]. We observed significant bigger model performance boost under limited computation at 10k steps, especially on the more challenging LIBERO-Plus benchmark, which introduces additional visual perturbations. Object Spatial Goal Long Avg. Environment Method 10k 100k 10k 100k 10k 100k 10k 100k 10k 100k LIBERO [15] VLA-Adapter [7] 93.4 97.6 78.8 96.2 90.4 95.6 56.2 89.0 79.7 94.6 UVT (Ours) 94.0 99.6 95.0 98.6 95.0 97.2 68.8 91.2 88.2 96.7                      
+
+> LIBERO-Plus [16] VLA-Adapter [7] 52.7 58.3 34.0 86.8 42.3 72.4 41.7 64.3 42.7 70.5 UVT (Ours) 52.4 60.4 81.5 87.2 67.8 74.7 63.0 72.1 66.2 73.6
+
+d) Training Protocol.: During fine-tuning, the VLA model predicts ˆut from visual and language input xt, and a trainable MVAE decoder maps ˆut to a predicted action ˆat.We optimize a combined objective 
+
+LVLA = ∥ˆut − ut∥22 + γ∥ˆat − at∥1,
+
+where γ = 0 .5 balances UVT alignment with direct action reconstruction. All models are trained under identical data splits, batch sizes, and optimization schedules to ensure a fair comparison. For training efficiency, we report success at fixed step budgets (10k and 100k). 
+
+e) Real-World Evaluation.: For real-world evaluation, we design three challenging dual-arm manipulation tasks that test VLA policy’s ability to handle three distinct challenges: synchronization, precision, and cooperative manipulation. 
+
+f) Evaluation Metrics.: We measure: (1) success rate on LIBERO and LIBERO-Plus benchmarks, (2) training efficiency (performance vs. training steps), and (3) decoded action quality if applicable (e.g., smoothness and UVT geometry analysis). 
+
+B. Training Efficiency Analysis 
+
+We first analyze training efficiency under fixed optimiza-tion budgets. Table I reports success rates at fixed training steps (10k and 100k). 
+
+Early-stage performance gains. We observe improved training efficiency with UVT, achieving higher success rates at early training checkpoints. As seen in Table I, at 10k steps (around 8 GPU hours on A6000), our method improves success rate from 78.8% to 95.0%(+16.2%) on Spatial tasks and from 56.2% to 68.8%(+12.6%) on Long tasks. Similar gains are also observed on Object and Goal suites. Impor-tantly, these gains occur without increasing model capacity or modifying the backbone architecture (Sec. III-D). 
+
+Saturation performance improvements. At longer train-ing horizons (100k steps), our method matches or slightly exceeds the baseline across all suites. For example, on the Object suite, performance increases from 97.6% to 99.6%. This indicates that UVT supervision does not trade final accuracy for speed, but instead improves optimization while preserving asymptotic performance. 
+
+Robustness under perturbation. The acceleration effect persists under the more challenging LIBERO-Plus bench-mark. At 10k steps, our method substantially outperforms the baseline on Spatial (81.5% vs. 34.0%) and Long (63.0% vs. 41.7%) tasks. Even under increased environmental per-turbation, UVT supervision stabilizes training and improves early generalization. Across all four suites and both benchmarks, reformulating imitation learning as unified visuomotor target prediction accelerates VLA learning without architectural modification or additional data.                             
+
+> TABLE II: LIBERO Benchmark Results. We report the success rates of different VLA models across the four LIBERO benchmark suites, along with the overall average. Bold values denote the best performance. Model Object Spatial Goal Long Avg. VLA-Adapter [7] 97.6 96.2 95.6 89.0 94.6
+> π0.5[6] 97.8 98.4 98.0 90.6 96.2 UVT (VLA-Adapter) 99.6 98.6 97.2 91.2 96.7 UVT ( π0.5)99.0 98.4 97.8 92.4 96.9
+
+C. Benchmark Results 
+
+Table II reports the final success rates on the four LIBERO suites. Integrating UVT consistently improves performance over the corresponding baselines without increasing model size. For VLA-Adapter, our method improves the overall average success rate from 94.6 to 96.7, achieving the best performance on the Object and Spatial suites. Similarly, when applied to π0.5, our method increases the average from 96.2 to 96.9, with gains on Object and Long tasks, showing that UVT is compatible with different types of existing VLA architectures and gives consistent improvements. Rollout videos on the LIBERO suites are available on our webpage. 
+
+D. Real-World Evaluation 
+
+We also evaluate UVT on a real bimanual manipulation platform under the same fine-tuning budget as the baseline (VLA-Adapter [7]). We consider three tabletop tasks. Lift Pot requires the robot to grasp both side handles of a large aluminum pot and lift it into the air. Close Marker requires the robot to grasp a marker and its cap with separate grippers, align them, and close the marker. Plate Handover requires the robot to grasp a thin paper plate from the table with the right arm, transfer it to the left arm, and place it back on the table. Example rollouts of our UVT policy on each task, together with per-task success rates and characteristic failure modes, are shown in Figures 2 to 4; video illustrations of each task and its failure modes are available on our webpage. For each task, we collect 30 human demonstrations using VR headset teleoperation, fine-tune both methods for 10 GPU hours (A6000), and run 50 evaluation trials. During both demonstration collection and evaluation, we apply the same amount of positional variation in initial object placement; for Lift Pot and Close Marker we additionally randomize Awkward     
+
+> Grasp
+> Missed
+> Grasp
+> 123
+> Reach Orient Grasp
+> 4
+> Lift
+> +16%
+> Lift Pot
+
+Fig. 2: Lift Pot. Keyframes from a real-world rollout of our UVT policy: both arms Reach toward the pot, Orient their grippers toward the side handles, Grasp , and Lift the pot off the table. The Grasp stage is the main bottleneck: the zoom-ins show the baseline’s dominant failure modes, an awkward grasp closing on the rim or a missed grasp missing the handles; since both handles must be secured simultaneously, either failure by either arm fails the trial. See videos on our webpage. +38%     
+
+> Reach Orient Grab
+> 123
+> Insert
+> 4
+> Close
+> Marker
+> Align
+
+Fig. 3: Close Marker. Keyframes from UVT policy: the arms Reach toward the marker and cap, Orient their grippers parallel to the table, Grab the marker body and cap with separate grippers, then Align and Insert the cap onto the marker. This is the most precision-demanding task: the zoom-in panels highlight the Align steps, where sub-centimeter accuracy is required. # Half denotes half successes where grippers pick up both objects successfully but fail the insertion. +22%  
+
+> Lift Handover
+> 32
+> Place
+> 4
+> Approach
+> 1
+> Plate
+> Handover
+
+Fig. 4: Plate Handover. Keyframes from UVT policy: the right arm Approaches and slides below the thin paper plate, Lifts 
+
+it off the table, performs the dual-arm Handover , and the left arm Places it back down. The most challenging step is the initial approach, where a gripper finger must slide underneath the thin plate, and the handover stage, where both grippers have to coordinate the movement. # Half denotes half successes where gripper picks up the plate but fails the handover. the object rotation so the grippers are not always aligned with the object(s). 
+
+Metric. For tasks where intermediate progress is meaningful, we record both full success and half-success and compute Success Rate = #Full + 0 .5 × #Half 
+
+50 .
+
+Half-success for each task is defined as follows: successfully lifting the plate but failing the transfer for Plate Handover ,and successfully grasping both marker and cap but failing the insertion for Close Marker . Lift Pot is evaluated with full success only. All results are reported in Figures 2 to 4. 
+
+UVT improves object acquisition and secure grasps. 
+
+Across tasks, we observe that UVT completes the initial grasping phases more reliably, which reduces downstream failures. On Plate Handover especially, UVT reaches the handover stage far more often: the baseline achieves only 4 half-successes and 7 full successes, whereas UVT achieves 16 half-successes and 12 full successes (Figure 4) (failure-mode rollouts can be viewed on our webpage). On Close Marker , the baseline fails on every trial (0 full, 0 half), whereas UVT achieves 5 full successes and 28 half-successes: it grasps both the marker and cap consistently, and completes the precision insertion step on some trials. On Lift Pot , UVT improves lift success from 19/50 to 27/50 (38% →54%). In many baseline failures, the handle slips shortly after lifting begins because the initial grasp is unstable or missed. 
+
+Connection to decoded action behavior. We also observe that UVT policies tend to approach objects with fewer corrective micro-motions before contact, which reduces acci-dental grazing and improves grasp stability. This is consistent with our offline analysis that decoded UVT actions are temporally smoother than direct action regression (Fig. 6). At the same time, Close Marker highlights a remaining limitation even with our method: although UVT completes the full insertion on a handful of trials, the precise alignment of the marker to its cap still poses a significant challenge despite the substantially improved object acquisition (for more details please see representative trials on our webpage).             
+
+> TABLE III: Ablation on LIBERO-Spatial. Comparison between (i) base-line action-only training, (ii) two-head auxiliary dynamics prediction without MVAE fusion using different LAM models, and (iii) UVT supervision. Results are reported at 10k and 100k training steps. Method @ 10k steps @ 100k steps VLA-Adapter [7] 78.8 96.2 w/ Villa-X [12] head 83.2 96.8 w/ UniVLA [11] head 86.4 95.8 UVT (Ours) 95.0 98.6
+
+E. LAM Regularization Ablation 
+
+We study alternative ways of incorporating discrete dy-namics codes into VLA training to understand the role of shared UVT supervision. Ablation results on different approaches on LIBERO-Spatial are summarized in Table III. 
+
+Two-head regularization. A natural first attempt to incorpo-rate discrete dynamics codes is to duplicate the policy head and add an auxiliary prediction task for discrete dynamics codes. Under this design, the VLA model predicts robot actions through its original head while an additional head predicts the discrete dynamics code zt. The auxiliary cross-entropy loss is expected to regularize the shared VLM hidden states to encode more dynamics information. We evaluate this strategy using two different Latent Ac-tion Models, Villa-X [12] and UniVLA [11]. As shown in Table III, adding a second policy head does improve early performance relative to the baseline. At 10k steps, success increases from 78.8% to 83.2% (Villa-X) and 86.4% (UniVLA). However, the gains are moderate, and final per-formance at 100k steps remains similar to the baseline. 
+
+Unified visuomotor target. In contrast, our method con-structs a shared unified visuomotor target ut that fuses robot 50 0 50        
+
+> t-SNE 1
+> 50
+> 0
+> 50
+> t-SNE 2
+> ut(latent, 32-d)
+> 50 050
+> t-SNE 1
+> 50
+> 25
+> 0
+> 25
+> t-SNE 2
+> at(actions, 56-d)
+> LIBERO-Spatial LIBERO-Goal LIBERO-Object LIBERO-Long
+
+Fig. 5: t-SNE visualization of unified visuomotor target 
+
+ut and robot action at. Compared to robot actions, the UVT ut exhibits a more structured and smoothly organized embedding across LIBERO suites. We can observe that even without suite information, ut nicely groups actions from the same suite together, giving a more semantically consistent representation of task dynamics and motor behaviors. action and discrete dynamics information into a single su-pervision space. Instead of predicting actions and dynamics independently, the policy aligns to a common UVT in which both signals are jointly encoded. This design substantially accelerates training without adding the training overhead of an additional policy head. At 10k steps, success improves to 95.0%, a large margin over both the baseline and the two-head variants. Final performance at 100k steps also increases to 98.6%. 
+
+Discussion. The comparison shows that simply adding an auxiliary dynamics prediction loss is insufficient to fully exploit discrete dynamics information. Independent heads supervise separate outputs, but do not enforce interaction between motor and dynamics representations. By contrast, UVT encodes both signals jointly, showing stronger regular-ization and significantly faster convergence. 
+
+F. Unified Visuomotor Target Analysis 
+
+We analyze the unified visuomotor target ut in comparison to robot actions at. We first visualize both representations using t-SNE [31] over trajectories from the four LIBERO suites, as shown in Figure 5. Although suite identifiers are never provided during MVAE training, ut exhibits clear and smooth grouping by suite, whereas robot action embeddings 
+
+at appear heavily intermixed. This difference reflects the type of information encoded by each representation. Robot actions primarily contain low-level motor control signals. Similar actuator-level patterns (e.g., small corrections, gripper adjustments) frequently oc-cur across different suites, even when the underlying task objectives differ. As a result, action vectors from different suites often overlap numerically, leading to entangled dis-tributions in action space. In contrast, ut is trained with additional supervision from the discrete dynamics code zt,which captures high-level visual dynamics across the entire interval [t, t + k]. By incorporating this visual transition signal, ut emphasizes task-dependent motion patterns rather than embodiment-specific robot actions, hence the clearer grouping in the representation space. 0 2 4 6         
+
+> Timestep
+> 0
+> 1Decoded from ut
+> 0246
+> Timestep
+> Real atchunk
+> roll pitch yaw
+
+Fig. 6: Temporal profiles of decoded vs. demonstration action trajectories. Robot actions decoded from predicted 
+
+ˆut (left) follow the same movement trend as the correspond-ing demonstration action chunk at (right) while exhibiting visibly fewer high-frequency fluctuations. The improved suite-level grouping is especially helpful for VLA prediction. Different suites correspond to different task families and interaction dynamics. If the supervision target clusters by suite without access to suite labels, it indicates that the representation encodes high-level task-dependent information that is consistently implied by the visual-language inputs. Compared to robot actions at, ut
+
+aligns more consistently with task context. Such a target reduces irrelevant variability and makes the conditional map-ping from xt to the supervision signal more aligned with the underlying task structure, which can help optimization. Beyond the geometric structure of the UVT space, we analyze the temporal profiles of the decoded actions. We sample predicted ˆut from the trained policy, decode them into robot actions, and compare the resulting trajectories with the original demonstration actions. As shown in Figure 6, the decoded trajectories are noticeably smoother, exhibiting fewer high-frequency fluctuations while preserving the over-all movement trend (corresponding rollouts on our webpage), suggesting that the learned UVT space captures the under-lying motion dynamics while filtering out low-level actuator noise present in demonstration robot action trajectories. Together, the clearer suite grouping and smoother decoded trajectories show that ut forms a supervision target that emphasizes visual dynamics information and suppresses low-level robot action variability. By shifting the prediction objective from purely low-level control signals to a repre-sentation that also encodes high-level dynamics, ut provides a better-conditioned target for VLA models, which achieves improved training efficiency and overall VLA performance. 
+
+Acknowledgments. We thank the IROS reviewers and Area Chair for their insightful feedback, as well as Basavasagar Patil and Dwip Dalal for their careful review of our manuscript. We also thank Yuchen Song for assistance with the robotic setup and Aditya Mittal for discussions. V. C ONCLUSION 
+
+We presented UVT, a supervision reformulation for VLA imitation learning that replaces direct action regression with unified visuomotor target prediction, combining robot actions with image-derived discrete dynamics signals. This change requires no modification to VLA backbones or policy archi-tectures and applies broadly across VLA designs. UVT con-sistently accelerates fine-tuning and improves early success under fixed training budgets on LIBERO and LIBERO-Plus, while also yielding performance gains on real-world bimanual manipulation tasks. Looking ahead, better prediction targets may also help beyond tabletop VLAs. Language-driven navigation [32– 36] similarly couples high-level scene understanding with low-level control; multi-agent coordination [37–41] requires predicting joint behaviors under partial observability; and classical imitation-learning failure modes, including com-pounding error and suboptimal cloning objectives [42–45], motivate supervision signals that are easier to learn than raw actions. REFERENCES [1] A. Brohan, N. Brown, J. Carbajal, Y. Chebotar, X. Chen et al. , “Rt-2: Vision-language-action models transfer web knowledge to robotic control,” in RSS , 2023. [2] K. Pertsch, K. Stachowicz, B. Ichter, D. Driess, S. Nair, Q. Vuong, O. Mees, C. Finn, and S. Levine, “Fast: Efficient action tokenization for vision-language-action models,” in RSS , 2025. [3] Y. Wang, H. Zhu, M. Liu, J. Yang, H.-S. Fang, and T. He, “Vq-vla: Improving vision-language-action models via scaling vector-quantized action tokenizers,” in ICCV , 2025. [4] M. J. Kim, C. Finn, and P. Liang, “Fine-tuning vision-language-action models: Optimizing speed and success,” arXiv:2502.19645 , 2025. [5] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, L. X. Shi, J. Tanner, Q. Vuong, A. Walling, H. Wang, and U. Zhilinsky, “ π0: A vision-language-action flow model for general robot control,” in RSS ,2025. [6] Physical Intelligence et al. , “ π0.5: a vision-language-action model with open-world generalization,” 2025. [7] Y. Wang, P. Ding, L. Li, C. Cui, Z. Ge, X. Tong, W. Song, H. Zhao, W. Zhao, P. Hou et al. , “Vla-adapter: An effective paradigm for tiny-scale vision-language-action model,” arXiv:2509.09372 , 2025. [8] D. Driess, J. T. Springenberg, B. Ichter, L. Yu, A. Li-Bell, K. Pertsch, A. Z. Ren, H. Walke, Q. Vuong, L. X. Shi, and S. Levine, “Knowledge insulating vision-language-action models: Train fast, run fast, gener-alize better,” arXiv:2505.23705 , 2025. [9] D. Dalal, S. Patel, C. Jain, J. Kim, U. Mishra, A. Baratian, H. Ha, H. Ji, S. Lazebnik, and U. Jain, “Generalizable VLA finetuning via represen-tation anchoring and language-action alignment,” arXiv:2607.13429 ,2026. [10] S. Ye, J. Jang, B. Jeon, S. Joo, J. Yang, B. Peng, A. Mandlekar, R. Tan, Y.-W. Chao, Y. Lin, L. Liden, K. Lee, J. Gao, L. Zettlemoyer, D. Fox, and M. Seo, “Latent action pretraining from videos,” in ICLR , 2025. [11] Q. Bu, Y. Yang, J. Cai, S. Gao, G. Ren, M. Yao, P. Luo, and H. Li, “Learning to act anywhere with task-centric latent actions,” in RSS ,2025. [12] X. Chen, H. Wei, P. Zhang, Z. Wang, S. Li et al. , “villa-x: En-hancing latent action modeling in vision-language-action models,” 
+
+arXiv:2507.23682 , 2025. [13] J. M. Lee, D. Lee, S. Ju, T. Cho, J. W. Koo, L. Zhao, S. Hong, and J. Lee, “Mvp-lam: Learning action-centric latent action via cross-viewpoint reconstruction,” arXiv:2602.03668 , 2026. [14] S. Routray, H. Pan, U. Jain, S. Bahl, and D. Pathak, “ViPRA: Video prediction for robot actions,” arXiv:2511.07732 , 2025. [15] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone, “LIBERO: Benchmarking knowledge transfer for lifelong robot learn-ing,” in NeurIPS D&B Track , 2023. [16] S. Fei, S. Wang, J. Shi, Z. Dai, J. Cai, P. Qian, L. Ji, X. He, S. Zhang, Z. Fei, J. Fu, J. Gong, and X. Qiu, “LIBERO-Plus: In-depth robustness analysis of vision-language-action models,” arXiv:2510.13626 , 2025. [17] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn, “Openvla: An open-source vision-language-action model,” in CoRL ,2024. [18] C. Chi, S. Feng, Y. Du, Z. Xu, E. Cousineau, B. Burchfiel, and S. Song, “Diffusion policy: Visuomotor policy learning via action diffusion,” in 
+
+RSS , 2023. [19] X. Li, M. Liu, H. Zhang, C. Yu, J. Xu, H. Wu, C. Cheang, Y. Jing, W. Zhang, H. Liu, H. Li, and T. Kong, “Vision-language foundation models as effective robot imitators,” in ICLR , 2024. [20] A. Padalkar, A. Pooley, A. Jain, A. Bewley, A. Herzog, A. Ir-pan, A. Khazatsky, A. Rai, A. Singh, A. Brohan et al. , “Open x-embodiment: Robotic learning datasets and rt-x models,” in CoRL ,2023. [21] Octo Model Team et al. , “Octo: An open-source generalist robot policy,” in RSS , 2024. [22] S. Bahl, R. Mendonca, L. Chen, U. Jain, and D. Pathak, “Affordances from Human Videos as a Versatile Representation for Robotics,” in 
+
+CVPR , 2023. [23] S. Dasari, M. K. Srirama, U. Jain, and A. Gupta, “An Unbiased Look at Datasets for Visuo-Motor Pre-Training,” in CoRL , 2023. [24] J. Lee, J. Duan, H. Fang, Y. Deng, S. Liu, B. Li, B. Fang, J. Zhang, Y. R. Wang, S. Lee, W. Han, W. Pumacay, A. Wu, R. Hendrix, K. Far-ley, E. VanderBilt, A. Farhadi, D. Fox, and R. Krishna, “MolmoAct: Action reasoning models that can reason in space,” arXiv:2508.07917 ,2025. [25] S. Patel, S. Mohan, H. Mai, U. Jain, S. Lazebnik, and Y. Li, “Robotic manipulation by imitating generated videos without physical demonstrations,” in ICLR , 2026. [26] J. Bruce, M. Dennis, A. Edwards, J. Parker-Holder, Y. Shi, E. Hughes, M. Lai, A. Mavalankar, R. Steigerwald, C. Apps, Y. Aytar, S. Bechtle, F. Behbahani, S. Chan, N. Heess, L. Gonzalez, S. Osindero, S. Ozair, S. Reed, J. Zhang, K. Zolna, J. Clune, N. de Freitas, S. Singh, and T. Rockt¨ aschel, “Genie: Generative interactive environments,” in 
+
+ICML , 2024. [27] W. Dai, K. Lan, J. Zhou, B. Zhao, X. Su, J. Tong, W. Guan, and S. Yang, “Conla: Contrastive latent action learning from human videos for robotic manipulation,” arXiv:2602.00557 , 2026. [28] G. E. Hinton, “Training products of experts by minimizing contrastive divergence,” Neural Computation , 2002. [29] T. Z. Zhao, V. Kumar, S. Levine, and C. Finn, “Learning fine-grained bimanual manipulation with low-cost hardware,” in RSS , 2023. [30] M. Wu and N. Goodman, “Multimodal generative models for scalable weakly-supervised learning,” in NeurIPS , 2018. [31] L. van der Maaten and G. Hinton, “Visualizing data using t-SNE,” 
+
+JMLR , 2008. [32] D. Shah, A. Sridhar, N. Dashora, K. Stachowicz, K. Black, N. Hirose, and S. Levine, “ViNT: A foundation model for visual navigation,” in 
+
+CoRL , 2023. [33] T. Chen, S. Gupta, and A. Gupta, “Learning exploration policies for navigation,” in ICLR , 2019. [34] J. Wasserman, K. Yadav, G. Chowdhary, A. Gupta, and U. Jain, “Last-mile embodied visual navigation,” in CoRL , 2022. [35] J. Wasserman, G. Chowdhary, A. Gupta, and U. Jain, “Exploitation-guided exploration for semantic embodied navigation,” in ICRA , 2024. [36] X. Puig, E. Undersander, A. Szot, M. Cote, R. Partsey, J. Yang, R. Desai, A. Clegg, M. Hlavac, T. Min, T. Gervet, V. Vondrus, V.-P. Berges, J. Turner, O. Maksymets, Z. Kira, M. Kalakrishnan, J. Malik, D. Chaplot, U. Jain, D. Batra, A. Rai, and R. Mottaghi, “Habitat 3.0: A co-habitat for humans, avatars and robots,” in ICLR , 2024. [37] P. Stone, G. A. Kaminka, S. Kraus, and J. S. Rosenschein, “Ad hoc autonomous agent teams: Collaboration without pre-coordination,” in 
+
+AAAI , 2010. [38] T. Rashid, M. Samvelyan, C. Schroeder, G. Farquhar, J. Foerster, and S. Whiteson, “QMIX: Monotonic value function factorisation for deep multi-agent reinforcement learning,” in ICML , 2018. [39] U. Jain, L. Weihs, E. Kolve, M. Rastegari, S. Lazebnik, A. Farhadi, A. Schwing, and A. Kembhavi, “Two body problem: Collaborative visual task completion,” in CVPR , 2019. [40] U. Jain, L. Weihs, E. Kolve, A. Farhadi, S. Lazebnik, A. Kembhavi, and A. Schwing, “A cordial sync: Going beyond marginal policies for multi-agent embodied tasks,” in ECCV , 2020. [41] S. Patel, S. Wani, U. Jain, A. Schwing, S. Lazebnik, M. Savva, and A. X. Chang, “Interpretation of emergent communication in heterogeneous collaborative embodied agents,” in ICCV , 2021. [42] M. Simchowitz, D. Pfrommer, and A. Jadbabaie, “The pitfalls of imitation learning when actions are continuous,” in COLT , 2025. [43] B. Eysenbach, S. Udatha, S. Levine, and R. Salakhutdinov, “Imitating past successes can be very suboptimal,” in NeurIPS , 2022. [44] L. Weihs, U. Jain, I.-J. Liu, J. Salvador, S. Lazebnik, A. Kembhavi, and A. Schwing, “Bridging the imitation gap by adaptive insubordination,” in NeurIPS , 2021. [45] U. Jain, I.-J. Liu, S. Lazebnik, A. Kembhavi, L. Weihs, and A. Schwing, “GridToPix: Training embodied agents with minimal supervision,” in ICCV , 2021.

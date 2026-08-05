@@ -41,7 +41,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-04</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-05</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 23 篇</strong>
@@ -51,7 +51,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>14</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-04 21:50:42 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-05 21:28:01 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日共读23篇论文，其中精读9篇、速读14篇，聚焦视觉-语言-动作模型（VLA）的前沿进展。最值得关注的是两篇9分精读：基于神经符号的轨迹生成（Vision-TL-Action）和VLA策略的运行时安全守护（ActFovea），分别强调可解释性与安全一致性。建议优先精读这两篇，再浏览速读中的操作技能迁移与世界模型方向，结合自身场景验证适用性。</p>
+<p>今日精读9篇、速读14篇，聚焦视觉导航与全身操作两大前沿方向。最值得关注的是UniNav统一世界-动作扩散模型（9.0）与RoboReact生成式视频技能蒸馏方法（9.0），后者为通用机器人操纵提供了新思路。建议普通读者先读这两篇9分论文，再搭配速读中关于VLA本体感觉与鲁棒微调的研究。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -74,9 +74,9 @@
     <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Vision-TL-Action: Neuro-Symbolic Trajectory Generation from Visual Observations and Temporal Logic">Vision-TL-Action: Neuro-Symbolic Trajectory Generation from Visual Observations and Temporal Logic</span></li><li><span class="dpr-home-dashboard-paper-title" title="ActFovea: Runtime Safeguarding for VLA Policies via Spatiotemporal Visual-Action Consistency">ActFovea: Runtime Safeguarding for VLA Policies via Spatiotemporal Visual-Action Consistency</span></li><li><span class="dpr-home-dashboard-paper-title" title="Safe Vision Language Action Models via Barrier Enhanced Flow Matching">Safe Vision Language Action Models via Barrier Enhanced Flow Matching</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="UniNav: A Unified World-Action Diffusion Model for Visual Navigation">UniNav: A Unified World-Action Diffusion Model for Visual Navigation</span></li><li><span class="dpr-home-dashboard-paper-title" title="RoboReact: Agentic Skill Distillation from Generated Egocentric Videos for Generalizable Whole-Body Manipulation">RoboReact: Agentic Skill Distillation from Generated Egocentric Videos for Generalizable Whole-Body Manipulation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions">Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>5</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">data <strong>3</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -87,9 +87,9 @@
     <strong class="dpr-home-dashboard-count">14 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer">SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer</span></li><li><span class="dpr-home-dashboard-paper-title" title="WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning">WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="RL Bootstrapping of OpenVLA-OFT for a Novel Robot Embodiment">RL Bootstrapping of OpenVLA-OFT for a Novel Robot Embodiment</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="How Should Vision-Language-Action Models Use Proprioceptive State?">How Should Vision-Language-Action Models Use Proprioceptive State?</span></li><li><span class="dpr-home-dashboard-paper-title" title="Structure-Aware Robust Fine-Tuning: Defending Vision-Language-Action Robots Against Physical Attention Hijacking">Structure-Aware Robust Fine-Tuning: Defending Vision-Language-Action Robots Against Physical Attention Hijacking</span></li><li><span class="dpr-home-dashboard-paper-title" title="Continue or Replan? Bernoulli-Continuation Policy Learning for Adaptive Horizon Execution">Continue or Replan? Bernoulli-Continuation Policy Learning for Adaptive Horizon Execution</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>9</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>3</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>10</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
 </section>
 </div>
 
