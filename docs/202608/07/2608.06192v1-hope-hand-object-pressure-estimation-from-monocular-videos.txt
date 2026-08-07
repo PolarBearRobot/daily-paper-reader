@@ -1,0 +1,288 @@
+Title: HOPE: Hand-Object Pressure Estimation from Monocular Videos
+
+URL Source: https://arxiv.org/pdf/2608.06192v1
+
+Published Time: Fri, 07 Aug 2026 01:10:27 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# HOPE: Hand-Object Pressure Estimation from Monocular Videos 
+
+Subin Jeon 1 Byungjun Kim 1 Hanbyul Joo 1,2 
+
+> 1
+
+Seoul National University 2RLWRLD 
+
+{subinjeon, byungjun.kim, hbjoo}@snu.ac.kr 
+
+## Abstract 
+
+Estimating physical pressure from vision is essential for understanding contact-rich hand-object interaction. However, prior vision-based pressure estimation methods are largely limited to planar surfaces and single image input, making them difficult to apply to dynamic hand-object interaction with diverse objects. We instead formu-late pressure estimation as a hand-centric video prediction problem with monocular video as input. This formulation predicts temporally evolving per-vertex normal pressure and contact directly on the hand mesh, yielding a unified output space independent of object shape and sensor layout. Building on this formulation, we propose HOPE , a framework with two key components. First, we lift tactile-glove pressure, planar-sensor pressure, and distance-based hand-object contact annota-tions into a shared hand vertex space, allowing bare-hand contact data to regularize pressure learning where metric labels are unavailable. Second, we introduce a vertex-anchored video transformer that treats each vertex as a persistent token, ag-gregates visual features and hand pose over time, and uses a contact-gated pressure head to enforce that pressure vanishes without contact. Experiments on OpenTouch, PressureVisionDB, and hand-object contact benchmarks validate HOPE across object-pressure, surface-pressure, and contact-supervised HOI settings. Despite using metric pressure supervision primarily from gloved-hand videos, HOPE gener-alizes to bare-hand egocentric and in-the-wild videos, producing joint contact and pressure predictions beyond the scope of contact-only or planar-pressure baselines. Our project page is at: https://subin6.github.io/page-hope. 
+
+## 1 Introduction 
+
+Estimating physical pressure from visual observations is a key step toward understanding how humans manipulate the world. While RGB video reveals where hands and objects are, many downstream tasks require knowing how they physically interact: which regions of the hand are in contact, how contact evolves over time, and where pressure is applied during pressing, grasping, or tool use. Such information is important for egocentric perception, augmented and virtual reality, robot learning from human demonstrations, and assistive systems that need to reason about physical interaction beyond object identity or hand pose alone. Despite this importance, vision-based pressure estimation has so far been studied mostly under constrained sensing geometries. Prior methods [ 12 , 11 , 50 ] have made important progress by estimating pressure from RGB observations in calibrated settings, often using instrumented surfaces where the contact surface is known and pressure can be represented as a 2D planar map. These formulations provide valuable physical supervision, but they remain tied to a particular object and limited set of interaction. Everyday hand-object interaction is less structured: the hand contacts arbitrary 3D object surfaces, undergoes frequent self- and object-occlusion, and exhibits diverse contact modes such as fingertip pressing, whole-hand grasping, palm support, and tool use. As a result, generalizing pressure estimation beyond instrumented surfaces to arbitrary hand-object interaction remains difficult.      
+
+> Preprint. arXiv:2608.06192v1 [cs.CV] 6 Aug 2026 Input Video
+> Rest Pose Time tPose Rest Pose Time tPose
+> Predicted Hand Force and Contact Input Video Predicted Hand Force and Contact
+
+Figure 1: From RGB video to hand-object force and contact. HOPE predicts vertex-level contact and force on the hand mesh without tactile sensing at test time. Pink vertices denote contact, and arrows indicate the aggregate force magnitude computed from the sum of predicted vertex-level force values. Recent hand-centric tactile datasets for object manipulation, exemplified by OpenTouch [ 37 ], mark an important step toward pressure estimation beyond fixed sensing surfaces. By moving tactile sensing from the tactile sensor pad to the hand, they make it possible to collect pressure annotation while the same hand interacts with many different objects. However, this benefit comes with a new limitation: the tactile glove that enables measurement also covers the hand. As a result, many appearance cues used by prior vision-based pressure methods, such as skin deformation, color change, local wrinkles, and fingertip appearance, are no longer directly visible. The visual domain of gloved hands also differs from the bare hands that appear in everyday manipulation, making it difficult for a model trained only on wearable tactile data to generalize to natural bare-hand interaction. To overcome these limitations, we learn hand-object pressure from complementary pressure and contact supervision. Wearable tactile data provides metric pressure during object manipulation, but is sensor-specific and visually tied to gloved hands; 3D HOI data provides diverse bare-hand interactions, but only contact. We unify these sources by lifting tactile-glove pressure, planar-sensor pressure, and distance-based HOI contact into a shared MANO [ 34 ] vertex space, where both pressure and contact are represented as per-vertex fields. Although contact does not determine pressure magnitude, it provides a structural prior on where pressure can occur and supplies bare-hand interaction supervision that gloved pressure data alone cannot provide. This unified representation allows metric pressure labels and broad bare-hand contact data to be used jointly for hand-object pressure estimation. We further propose a vertex-anchored video transformer for hand pressure estimation. The model represents each MANO vertex as a persistent token, enriches it with visual and hand-pose evidence, and reasons over both the hand surface and time. This design is motivated by the temporal nature of force. Pressure is not determined by per-frame appearance alone: it changes as the hand approaches an object, establishes contact, loads the object during grasping or holding, and releases it. In these phases, visually similar contact configurations may correspond to different pressure magnitudes. Temporal modeling therefore helps disambiguate loading states and propagates pressure cues through short occlusions. Finally, a contact-gated pressure head encodes the physical prior that pressure should vanish without contact, enabling contact-only supervision to regularize pressure prediction even where metric force labels are unavailable. We evaluate the proposed framework on hand-object pressure estimation with OpenTouch [ 37 ], hand-surface pressure estimation with PressureVisionDB [ 12 ], and dense hand contact estimation on hand-object interaction [ 10 , 5]. Our experiments show that the proposed formulation enables pressure estimation beyond fixed planar surfaces and benefits from combining metric pressure supervision with contact-only HOI data. Furthermore, as illustrated in Fig. 1, the learned hand-centric representation can be applied to bare-hand videos, producing dense contact and pressure predictions despite pressure supervision being obtained primarily from gloved-hand videos. Our contributions are threefold. First, we introduce a hand-centric formulation for visual hand-object pressure estimation, representing pressure and contact as per-vertex fields on the MANO hand mesh. Second, we unify heterogeneous supervision by lifting tactile-glove pressure, planar-sensor pressure, and contact-only HOI annotations into the same vertex space, allowing bare-hand contact data to serve as a structural prior for pressure estimation. Third, we propose a vertex-anchored video transformer with contact-gated pressure prediction, enabling temporally informed pressure estimation from monocular RGB video. 22 Related Work 
+
+Vision-based hand pressure estimation. Estimating physical pressure from visual observations has recently emerged as a way to perceive contact-rich interaction without instrumenting every object or surface. PressureVision and its follow-up showed that RGB images contain pressure cues such as skin deformation, color change, pose, and shadows, while EgoPressure moves this problem into the egocentric setting with paired pressure and pose annotations [ 12 , 11 , 50 ]. These works establish that pressure can be inferred from visual evidence, but their pressure outputs remain tied to planar sensor images, image-space maps, fingertip-level labels, or a particular capture setup. Among them, EgoPressure [ 50 ] is the most closely related to ours: both build on off-the-shelf MANO reconstruction to express pressure in a hand-centric space. EgoPressure, however, estimates bare-hand pressure frame-wise against an instrumented planar surface, whereas HOPE targets diverse hand-object interactions, jointly learns from heterogeneous pressure and contact supervision, and models temporal pressure evolution. 
+
+Tactile sensing and touch datasets for hand-object interaction. Direct tactile sensing provides physical supervision that is difficult to obtain from vision alone. Physical touch has been captured with instrumented objects or sensing surfaces, wearable tactile gloves, and thermal contact imprints [ 31 , 12 ,38 , 3, 4]. Such setups provide direct force, pressure, or contact evidence, but their labels are naturally expressed in the coordinate system and coverage of the underlying hardware, such as force transducer locations, planar sensels, thermal object surfaces, or glove taxels. In contrast, many large hand-object interaction datasets provide hand-object pose, geometry, 2D contact, or inferred contact annotations that support contact reasoning, but do not directly measure pressure [17, 35, 5, 39, 7, 14, 15, 24, 28, 43 , 10 , 2]. Most closely related to our setting, OpenTouch [ 37 ] captures in-the-wild egocentric video, full-hand tactile maps, and hand pose with a wearable tactile glove, making full-hand touch available during natural manipulation. We use these physical signals as complementary supervision, but lift them into a shared MANO vertex representation so that heterogeneous pressure and contact labels can be learned jointly. 
+
+Hand-object contact and affordance estimation. Hand-object interaction has also been widely studied through contact, grasp, and affordance rather than pressure. Contact cues have been used to annotate grasp regions, refine hand-object poses, generate plausible grasps, and reconstruct in-the-wild hand-object interactions [ 3, 4, 20 , 13 , 26 , 18 , 27 , 30 ]. Large-scale interaction datasets and contact-estimation pipelines further show that contact can be derived from tracked geometry across diverse hand-object settings, although these labels are typically binary or proximity-based rather than metric pressure [ 17 , 35 , 5 , 39 , 7 , 14 , 15 , 24 , 28 , 43 , 10 ]. Dense vertex-level contact has also been studied for human-scene interaction, while HACO focuses on MANO-vertex hand contact from RGB images under severe class and spatial imbalance [ 16 , 19 , 41 , 21 ]. Beyond static contact labels, HOI generation and affordance models synthesize hand-object motion, contact maps, or object-centric interaction regions from text, visual observations, object geometry, and learned interaction priors [ 8, 6, 25 , 40 , 42 , 46 , 47 , 45 , 48 , 1, 44 , 33 , 23 , 22 ]. Among them, LatentAct is particularly close to our representation because it predicts future 3D hand motion and MANO contact-map trajectories, but it still models where contact occurs rather than how much pressure is applied [ 33 ]. These contact and affordance models provide important cues about where interaction is likely to occur, but they do not estimate the magnitude of physical loading on the hand. Our work treats contact as a structural prior for pressure and jointly predicts contact and per-vertex pressure, thereby connecting contact-rich HOI understanding with metric hand pressure estimation. 
+
+## 3 Method 
+
+We propose HOPE , a framework for predicting per-vertex contact and pressure on the hand surface from RGB video. Given a clip of T frames {It}Tt=1 , HOPE predicts per-vertex pressure ˆpt ∈ RV
+
+> ≥0
+
+and per-vertex contact ˆct ∈ [0 , 1] V on the MANO [ 34 ] mesh, where V =778 . HOPE consists of two components: (i) a unified annotation pipeline that lifts tactile-glove pressure, planar-sensor pressure, and distance-based hand-object contact into a shared MANO vertex space (Sec. 3.1), and (ii) VertexFormer , a vertex-anchored video transformer that predicts contact and pressure jointly on the MANO mesh through interleaved spatial and temporal attention with a contact-gated pressure head (Sec. 3.2). Training is performed with a unified objective: samples with pressure labels supervise both 3Vertex Token          
+
+> Encode rHaWo R
+> Patch token s
+> Vertex tokens
+> Patch
+> Projectio n
+> Vertex SA
+> Vertex -Patch  CA
+> Temporal  Attention
+> ×𝐿
+> Contact
+> Hea d
+> Force
+> Hea d
+> Videos
+> DINOv3
+> MANO params
+> 𝜃
+> 𝛽
+> 𝜙
+> 𝜏
+> Spatia l Attention
+> Sigmoi d
+> Pressure maps
+> Contact maps
+> 3D Hand
+> Unprojection
+> PVDB
+> Tactile -to -Vertex
+> Mapping
+> MANO Verte x
+> Pressure Map
+> 𝑝 !>𝛿
+> MANO Vertex
+> Contact Map
+> Contact Dat aset
+> Sensel Grid
+> Tactile Grid
+> OpenTouc h
+> Force Dataset
+> Distance -based
+> Contact Annotation
+> (a) Unified Hand Pressure -Contact Annotation
+> (b) Hand vertex -anchored transformer
+> ARCTIC
+> DexYCB
+
+Figure 2: Method overview. (a) Unified Hand Pressure–Contact Annotation. Heterogeneous force and contact supervision is lifted into a shared MANO vertex space. (b) VertexFormer. DINOv3 patch tokens and HaWoR-derived vertex tokens are fused via interleaved spatial and temporal attention. per-vertex pressure regression and contact classification, while contact-only HOI samples supervise only the contact head with the pressure loss masked out (Sec. 3.3). 
+
+3.1 Unified pressure–contact annotation on MANO vertex space 
+
+Existing force datasets provide annotations in sensor-specific coordinate systems—O PEN TOUCH [ 37 ]in a 16 ×16 tactile taxel grid attached to the palmar side of a glove, and PressureVisionDB (PVDB) [12 ] in a 2D sensel image of a planar touchpad. Training a single model across both sources requires a common output space. Moreover, force annotations only cover regions where sensors are physically mounted (predominantly palm and fingertips), leaving the dorsal and lateral surfaces of the hand unsupervised. We address both limitations by (i) projecting all force annotations onto MANO vertices, and (ii) augmenting the training signal with distance-based contact annotations derived from existing HOI datasets [10, 21, 4] that capture broader bare-hand object interactions (Fig. 2 (a)). 
+
+Tactile-to-vertex mapping (O PEN TOUCH ). OPEN TOUCH provides a calibrated correspondence 
+
+M : {1, . . . , 256 } → 2V between each taxel and the MANO vertices physically covered by its sensing patch, which we project onto the standard V =778 topology. Since taxel patches span many vertices (38 on average) and adjacent patches share vertices at their boundaries (73.7% of palmar vertices belong to multiple taxels), we aggregate the taxel pressures π ∈ R256  
+
+> ≥0
+
+at each vertex by averaging over its covering taxels, 
+
+˜pv = 1
+
+|T (v)|
+
+X 
+
+> i∈T (v)
+
+πi, T (v) = {i : v ∈ M (i)}, (1) and smoothing the resulting piecewise-constant field with K=2 iterations of geodesic Gaussian filtering on the canonical mesh ( σ = 5 mm ). The resulting pOT ∈ RV 
+
+> ≥0
+
+is supported on palmar vertices and their immediate neighborhood. 
+
+Sensel-to-vertex projection (PVDB). PVDB provides dense pressure on a planar Sensel pad synchronized with RGB video, but does not include 3D hand annotations. We obtain a posed MANO mesh per frame from an off-the-shelf hand reconstruction model, refined with multi-view fusion. We then project each palmar vertex onto the pad plane using the calibrated camera-to-pad extrinsics and bilinearly sample the sensel pressure map at its (u, v ) coordinate, yielding pPV ∈ RV
+
+> ≥0
+
+. Unlike OPEN TOUCH , PVDB pressure is observable only when the palm contacts the pad, but offers higher spatial resolution within that region. 4Force-derived contact. Both O PEN TOUCH and PVDB report pressure in kPa, so after lifting to the shared MANO vertex space the two sources are already on a common scale. We derive a binary contact label using a single threshold, 
+
+ct,v = 1[pt,v > τ p] , τp = 1 kPa , (2) applied uniformly across both datasets. This yields paired (pt, ct) supervision on force datasets. 
+
+Distance-based contact from HOI data. Force datasets cover only sensor-instrumented regions of the hand. To supervise contact on the rest of the hand surface—and to expose the model to bare-hand object interactions in natural settings—we incorporate contact annotations from existing HOI datasets (DexYCB [ 7 ], ARCTIC [ 10 ]) following the protocol of HACO [ 21 ]: given the ground-truth posed hand mesh and object mesh, a vertex is labeled as in contact if its distance to the object surface is below a threshold δc,
+
+ct,v = 1
+
+h
+
+dist 
+
+
+
+xhand  
+
+> t,v
+
+, Sobj 
+
+> t
+
+
+
+< δ c
+
+i
+
+, (3) where xhand  
+
+> t,v
+
+is the world-space coordinate of vertex v at frame t and Sobj  
+
+> t
+
+is the object surface. While the contact-only supervision itself is not novel, we are the first to combine it with sensor-derived force supervision in a single training framework, exploiting the fact that contact is a necessary condition for force. The final training set is the union of force samples (with pt and derived ct) from O PEN TOUCH /PVDB and contact-only samples (with ct alone) from HOI datasets, all expressed in the same V -dimensional MANO vertex space. 
+
+3.2 VertexFormer: a vertex-anchored transformer 
+
+VertexFormer (Fig. 2 (b)) tokenizes the input along two complementary axes—image patches and hand vertices—and reasons over both with interleaved spatial and temporal attention. Throughout the network, vertex tokens carry the prediction state and image patches serve as a key–value memory; we refer to this as a vertex-anchored design. 
+
+Patch tokens. Each frame is encoded by a frozen DINOv3 [ 36 ] backbone into a grid of patch features, which are linearly projected to dimension d to yield patch tokens Ft ∈ RNp×d.
+
+Vertex tokens. In parallel, we estimate per-frame MANO parameters (θt, β t, ϕ t, τ t) using Ha-WoR [ 49 ], where θt and βt are pose and shape and ϕt, τ t are the global orientation (in axis-angle representation) and translation in the camera frame. Posing the canonical MANO template under θt, β t
+
+without applying the global rigid transform yields per-frame posed vertex coordinates ˜Vt ∈ RV ×3 in the hand-local frame. A Vertex Token Encoder embeds each vertex v into a d-dimensional token zt,v 
+
+by combining 
+
+zt,v = ev + Wv ˜Vt,v + Wϕ ϕt + Wτ τt, (4) where ev is a learned identity embedding that anchors each token to a specific MANO vertex index, so that the output space is fixed by construction. Wv ∈ Rd×3, Wϕ ∈ Rd×3, and Wτ ∈ Rd×3 are learned linear projections that map the posed hand-local vertex coordinate, the axis-angle global orientation, and the global translation, respectively, into the token dimension d. Decomposing the rigid transform in this way lets the model reason separately about articulated hand shape, viewpoint, and camera-relative position, while the learned identity embedding ev provides a fixed slot per vertex for downstream contact prediction. 
+
+Spatial vertex–patch attention. Each transformer block applies two attention operations over the vertex tokens. Vertex self-attention (Vertex-SA) lets vertices exchange information along the hand topology, propagating contact signals from observable regions to occluded ones. Vertex-to-patch cross-attention (Vertex-Patch CA) lets each vertex token attend to the full patch grid, refining its visual evidence beyond the single-pixel sample at projection. Together these realize the vertex-anchored design: vertices are queries and remain the carriers of state, while image features serve as a key–value memory. 
+
+Temporal attention. A subsequent temporal attention layer attends over the T frames per vertex index, sharing information across time at fixed vertex identity. This provides temporal smoothing for pressure (which is physically continuous) and helps disambiguate contact during brief occlusions. The spatial–temporal block is repeated L times. 5Input Zoom In GT Ours HACO GT Ours PressureVision 
+
+(a) Contact (b) Force Figure 3: Qualitative comparison on OpenTouch. (a) Vertex-level contact (b) Vertex-level pressure Table 1: Quantitative comparison of hand-object force estimation on OpenTouch dataset. Contact (frame-level) Contact (vertex-level) Force (vertex-level) F1 Precision Recall F1 Precision Recall MAE (kPa) RMSE (kPa) PressureVision [12] 0.610 0.725 0.527 0.013 0.213 0.007 1.93 (8.03 / 0.14) 6.19 (12.94 / 0.59) PressureVision++ [11] 0.113 0.744 0.061 0.0013 0.386 0.001 1.92 (8.04 / 0.12) 6.20 (12.95 / 0.60) HACO [21] 0.835 0.720 0.994 0.361 0.256 0.611 - -Ours 0.874 0.817 0.940 0.660 0.647 0.673 1.808 (5.84 / 0.61) 4.998 (10.13 / 1.39) 
+
+Contact-gated force prediction. Two MLP heads take the final vertex tokens as input. The contact head outputs a logit per vertex, passed through a sigmoid to produce ˆct. The force head outputs a non-negative pressure value per vertex, ˜pt. We then gate the pressure prediction by the contact probability, 
+
+ˆpt = ˆ ct ⊙ ˜pt, (5) where ⊙ denotes element-wise product over vertices. This gating reflects the physical prior that pressure vanishes wherever contact is absent, and lets the abundant contact supervision (from HOI datasets) regularize the force prediction even on vertices where no force annotation is available. 
+
+3.3 Training objective 
+
+Let Ωpt ⊆ { 1, . . . , V } denote the set of vertices with valid pressure annotations at frame t (e.g., palmar vertices for O PEN TOUCH , vertices visible to the sensor pad for PVDB) and Ωct the set with valid contact annotations. We supervise contact with a binary cross-entropy loss and pressure with an L1 loss, 
+
+Lcontact = 1
+
+|Ωct |
+
+X
+
+> v∈Ωct
+
+BCE(ˆ ct,v , c t,v ) , Lpressure = 1
+
+|Ωpt |
+
+X
+
+> v∈Ωpt
+
+|ˆpt,v − pt,v | . (6) The total loss is 
+
+L = λc Lcontact + λp Lpressure , (7) with λp masked out for contact-only HOI samples. This unified loss enables joint training over force and contact data despite their heterogeneous supervision coverage. 
+
+## 4 Experiments 
+
+4.1 Experimental setup Datasets. We train and evaluate our model on a combination of pressure and contact datasets that cover different forms of hand interaction. For hand-object pressure, we use O PEN TOUCH [37 ], which 6Ours PressureVision Input GT Ours PressureVision Figure 4: Qualitative comparison on PressureVisionDB. Vertex-level predictions are projected to the image plane. GT Inpu t HAC O Ours 
+
+Figure 5: Contact comparison on MOW dataset. Table 2: Hand-surface force estimation on PressureVi-sionDB. MAE/RMSE are vertex-level errors in kPa; IoUs are pixel-level. Contact Force Frame F1 (P / R) contact IoU vol IoU MAE RMSE PV [12] 0.939 (0.977 / 0.904) 0.547 0.411 0.471 3.726 PV++ [11] 0.248 (0.963 / 0.143) 0.022 0.021 0.248 3.025 Ours 0.905 (0.891 / 0.920) 0.328 0.218 0.449 2.314 Table 3: Dense hand-object contact estima-tion on MOW dataset. Precision Recall F1 POSA [16] 0.134 0.128 0.101 BSTRO [19] 0.204 0.126 0.112 DECO [41] 0.246 0.235 0.197 HACO [21] 0.525 0.607 0.522 Ours 0.530 0.436 0.416 contains egocentric videos of natural hand-object interaction with synchronized tactile measurements from a wearable glove and hand pose annotations. We use 1,637 clips / 171,260 frames for training and 190 clips / 18,062 frames for testing. For hand-surface pressure, we use PressureVisionDB (PVDB) [ 12 ], which contains RGB observations synchronized with pressure maps measured on a planar sensor surface; we use 1,672 sequences / 105,887 frames for training and 417 sequences / 24,544 frames for testing. For contact supervision, we additionally use D EX YCB [ 7] (3,200 clips / 29,656 frames) and ARCTIC [ 10 ] (267 clips / 187,050 frames) with distance-based contact labels. MOW [5] (92 images, evaluation only), which provides single-image hand-object interaction in the wild, is used for image-level contact evaluation following the protocol of HACO [21]. 
+
+Baselines. We compare with prior methods according to their output space and task. For hand-surface pressure estimation, we compare against PressureVision [ 12 ] and PressureVision++ [ 11 ], which predict pressure on planar image coordinates. For dense hand contact estimation, we compare against HACO [ 21 ], which predicts MANO vertex-level hand contact from RGB images. Since HACO does not estimate pressure magnitude, we report only contact metrics for HACO. For all baselines, we use the official checkpoints released by the authors without further fine-tuning. 
+
+Metrics. We report contact and force metrics at multiple granularities. Frame-level contact 
+
+F1/Precision/Recall treats each frame as a binary classification (contact present anywhere on the hand vs. not). Vertex-level contact F1/P/R is computed per-vertex across all frames, measuring spatial localization of contact. For force, we report vertex-level mean absolute error (MAE) and root mean square error (RMSE) in kPa, computed only over vertices with valid pressure annotations ( Ωpt ). For OpenTouch, we additionally decompose MAE/RMSE into contact / non-contact regions (numbers in parentheses) to separately assess force magnitude estimation and false-positive suppression. For PVDB, we additionally report pixel-level contact IoU and volume IoU on the pad plane by projecting MANO-vertex predictions back to sensor coordinates, following the PressureVision protocol. 
+
+Implementation details. We use DINOv3 [ 36 ] ViT-B/16 [ 9] as a visual backbone and HaWoR [ 49 ]for per-frame MANO parameter estimation; both are kept frozen during training. Input frames are resized to 224 × 224 , yielding Np = 196 patch tokens per frame. Each clip contains T = 10 frames. The vertex-anchored transformer uses L = 2 spatio-temporal blocks with hidden dimension d = 64 
+
+and 4 attention heads. We train with AdamW [ 29 ], learning rate 3×10 −3, batch size 128, for 20 epochs on 1×RTX 3090. Loss weights are set to λc = 1 .0 and λp = 1 .0; the pressure loss is masked out for contact-only HOI samples. The contact threshold is τp = 1 kPa and the distance-based contact threshold follows HACO at δc = 10 mm. 
+
+4.2 Comparison Hand-object pressure on OpenTouch. Table 1 reports results on the held-out OpenTouch test set, our main target setting. Our method outperforms both baselines on contact and force metrics, with 7ARCTIC              
+
+> Force Contact Force Contact Contact Force Contact Force Contact
+> OT OT + HOI GT In -the -wild OT OT + HOI
+
+Figure 6: Generalization to bare-hand object interaction. We compare predictions from models trained without (OT) and with (OT + HOI) bare-hand contact supervision. Table 4: Dataset composition ablation. OT : OpenTouch (force), PV : PressureVisionDB (force), HOI :DexYCB + ARCTIC (contact). We evaluate on OpenTouch (in-domain hand-object pressure), PVDB (hand-surface pressure), and ARCTIC (bare-hand contact generalization).                                            
+
+> Training data OpenTouch PVDB ARCTIC OT PV HOI Frame F1 ↑Vertex F1 ↑MAE ↓Frame F1 ↑MAE ↓Frame F1 ↑Vertex F1 ↑
+> ✓0.871 0.657 1.840 0.725 0.822 0.835 0.137
+> ✓✓0.878 0.672 1.841 0.908 0.265 0.765 0.069
+> ✓✓✓0.876 0.671 1.866 0.892 0.285 0.947 0.498
+
+the gap most pronounced at the vertex level. PressureVision predicts pressure in a 2D planar map and cannot transfer meaningfully to MANO vertices, which explains its near-zero vertex-level F1. HACO predicts MANO-vertex contact and achieves high recall, but its precision drops substantially when applied to gloved-hand interaction, indicating a tendency to over-predict contact regions. Qualitative results in Fig. 3 confirm that our predictions concentrate pressure on physically meaningful contact regions and align spatially with the ground-truth tactile map. 
+
+Hand-surface pressure on PVDB. We next evaluate on PressureVisionDB to assess whether the same MANO-vertex representation supports planar hand-surface pressure estimation (Table 2). Our method is competitive with PressureVision on frame-level contact and achieves the lowest vertex-level force errors, despite predicting in a hand-centric space rather than the sensor’s native 2D image space. PressureVision retains an advantage on pixel-level contact IoU, as projecting MANO-vertex predictions back to the pad plane introduces hand reconstruction error that planar methods avoid. Overall, these results suggest that the MANO-vertex formulation does not sacrifice planar-surface performance while enabling pressure estimation in non-planar settings where prior methods are not applicable. Qualitative comparisons are shown in Fig. 4. 
+
+Dense hand-object contact on MOW. Finally, we evaluate contact transfer to in-the-wild bare-hand object interaction on MOW (Table 3). Our model achieves higher precision than HACO but lower recall, resulting in a lower overall F1. Rather than indicating worse performance, this reflects a difference in contact characteristics induced by supervision: HACO is trained on distance-based contact labels that mark all near-surface vertices as in contact, whereas our model is trained primarily with force-derived contact, which only labels vertices where measurable pressure is applied. As a result, our predictions tend to be more spatially localized around regions of likely physical loading, while HACO covers broader near-contact areas (Fig. 5). Importantly, our model maintains reasonable contact performance while additionally enabling metric pressure prediction, a capability absent in contact-only baselines. 
+
+4.3 Analysis Effect of training data composition. We study how each training source contributes to in-domain performance and cross-domain generalization (Table 4). Training on OpenTouch alone (OT) already provides strong hand-object pressure performance on the OpenTouch test set, but transfers poorly to the planar PVDB setting and gives only modest contact accuracy on bare-hand ARCTIC interactions. Adding PVDB pressure supervision (OT + PV) substantially improves planar hand-surface pressure estimation while leaving in-domain OpenTouch performance largely unchanged, indicating that the unified MANO-vertex representation absorbs heterogeneous pressure sources without interference. Since both OT and PV expose the model only to gloved or planar-surface interactions, contact transfer to ARCTIC remains limited; incorporating distance-based contact from HOI datasets (OT 8Table 5: Ablation study on input modalities. We compare variants using different combinations of visual (RGB), hand pose, and temporal information. Bold indicates the best result. Variant Inputs Frame-level Vertex F1 MAE (kPa) Visual Pose Temp. F1 ↑ P ↑ R ↑ ↑ ↓                                                
+
+> Pose only ×✓×0.8441 0.7596 0.9497 0.5848 1.8717 RGB only ✓××0.8466 0.7604 0.9547 0.6106 1.8916 RGB + Pose ✓✓×0.8562 0.7761 0.9548 0.6307 1.8438 Pose sequence ×✓✓0.8512 0.7797 0.9370 0.5856 1.9014 Video ✓×✓0.8673 0.8089 0.9347 0.6328 1.8673
+> Full (Ours) ✓✓✓0.8716 0.8140 0.9379 0.6538 1.7735
+
+Table 6: Robustness to hand reconstruction. (a) Change in vertex-level contact F1 on OpenTouch under test-time MANO perturbations. (b) Retraining the full pipeline with different backbone models. Perturbation ∆ Vertex F1 (increasing magnitude) None (default) 0.671 F1, 1.866 MAE (kPa) Global trans. (10/20/50/100 mm) −0.0002 −0.0004 −0.0012 −0.0032 Global orient. (5/10/20/40 ◦) +0.0001 −0.0002 −0.0011 −0.0055 Joint pose (2/5/10/20 ◦) −0.0003 −0.0014 −0.0042 −0.0134 Shape (0.5/1/2 std) −0.0006 −0.0013 −0.0030 –
+
+(a) Test-time MANO perturbations           
+
+> Reconstructor + backbone Vertex F1 ↑MAE ↓
+> HaWoR + DINOv3 (default) 0.671 1.866 WiLoR + DINOv3 0.661 1.915 HaWoR + HaWoR ViT-H 0.666 1.837
+
+(b) Component replacement 
+
++ PV + HOI) yields a large improvement in bare-hand contact generalization with negligible cost on in-domain pressure metrics. This confirms our central design choice: contact-only HOI supervi-sion provides a structural prior that complements sensor-derived pressure supervision. Qualitative comparisons in Fig. 6 show the corresponding effect on bare-hand transfer. 
+
+Input modality ablation. We ablate the three input modalities of the vertex-anchored transformer— visual features, hand pose, and temporal context—in Table 5: RGB is removed by skipping the vertex-to-patch cross-attention, pose by replacing the posed MANO vertices with the canonical-pose template (leaving only the per-vertex identity embedding ev ), and temporal context by disabling the temporal attention layer. Pose-only and RGB-only variants achieve comparable performance, and combining the two consistently improves over either alone, indicating that hand articulation and visual evidence carry complementary, non-redundant signals. Adding temporal context yields further gains, supporting our motivation that pressure is a temporally evolving quantity, and the full model achieves the best results across all contact and force metrics. 
+
+Robustness to hand reconstruction. Since HOPE relies on MANO estimates from an off-the-shelf reconstructor, we assess its sensitivity to reconstruction errors (Table 6). Injecting random noise into the estimated MANO parameters at test time changes vertex-level contact F1 marginally, with the largest drop of 0.013 under 20 ◦ per-joint pose noise. The model is trained on estimated MANO parameters, so it already sees reconstruction error during training and learns to tolerate it. Replacing HaWoR with the single-image reconstructor WiLoR [ 32 ], or DINOv3 with HaWoR’s ViT-H features, and retraining the full pipeline yields comparable performance, suggesting that our model captures the association between visual evidence and hand geometry rather than relying on features specific to a particular reconstructor or backbone. 
+
+## 5 Discussion and conclusion 
+
+We presented HOPE, a framework for hand-object pressure estimation that predicts per-vertex pressure and contact directly on the MANO mesh. By lifting tactile-glove, planar-sensor, and distance-based contact annotations into a shared vertex space, HOPE unifies heterogeneous supervision and uses bare-hand contact as a structural prior for pressure where metric force labels are unavailable. Our method achieves the lowest vertex-level pressure errors against task-specific baselines and produces meaningful predictions on bare-hand egocentric and in-the-wild videos. 
+
+Limitations. HOPE relies on an off-the-shelf hand reconstructor and inherits its failure modes under heavy occlusion and out-of-distribution viewpoints, although its predictions remain stable under moderate reconstruction noise (Table 6). Our pressure supervision is also dominated by a single tactile-glove dataset, and scaling to broader interaction categories likely requires additional metric-pressure sources. Finally, we predict only normal pressure; recovering tangential force and full contact wrench from vision remains an open direction. 9References 
+
+[1] Shikhar Bahl, Russell Mendonca, Lili Chen, Unnat Jain, and Deepak Pathak. Affordances from human videos as a versatile representation for robotics. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023. [2] Bharat Lal Bhatnagar, Xianghui Xie, Ilya A. Petrov, Cristian Sminchisescu, Christian Theobalt, and Gerard Pons-Moll. BEHAVE: Dataset and method for tracking human object interactions. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022. [3] Samarth Brahmbhatt, Cusuh Ham, Charles C. Kemp, and James Hays. ContactDB: Analyzing and predicting grasp contact via thermal imaging. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2019. [4] Samarth Brahmbhatt, Chengcheng Tang, Christopher D Twigg, Charles C Kemp, and James Hays. Contact-pose: A dataset of grasps with object contact and hand pose. In Proceedings of the European Conference on Computer Vision (ECCV) , 2020. [5] Zhe Cao, Ilija Radosavovic, Angjoo Kanazawa, and Jitendra Malik. Reconstructing hand-object interactions in the wild. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2021. [6] Junuk Cha, Jihyeon Kim, Jae-Shin Yoon, and Seungryul Baek. Text2HOI: Text-guided 3d motion generation for hand-object interaction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024. [7] Yu-Wei Chao, Wei Yang, Yu Xiang, Pavlo Molchanov, Ankur Handa, Jonathan Tremblay, Yashraj S. Narang, Karl Van Wyk, Umar Iqbal, Stan Birchfield, Jan Kautz, and Dieter Fox. Dexycb: A benchmark for capturing hand grasping of objects. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2021. [8] Sammy Joe Christen, Shreyas Hampali, Fadime Sener, Edoardo Remelli, Tomas Hodan, Eric Sauser, Shugao Ma, and Bugra Tekin. DiffH2O: Diffusion-based synthesis of hand-object interactions from textual descriptions. In SIGGRAPH Asia 2024 Conference Papers , 2024. [9] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition at scale. In 
+
+International Conference on Learning Representations (ICLR) , 2021. [10] Zicong Fan, Omid Taheri, Dimitrios Tzionas, Muhammed Kocabas, Manuel Kaufmann, Michael J. Black, and Otmar Hilliges. ARCTIC: A dataset for dexterous bimanual hand-object manipulation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023. [11] Patrick Grady, Jeremy A Collins, Chengcheng Tang, Christopher D Twigg, Kunal Aneja, James Hays, and Charles C Kemp. Pressurevision++: Estimating fingertip pressure from diverse rgb images. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , 2024. [12] Patrick Grady, Chengcheng Tang, Samarth Brahmbhatt, Christopher D Twigg, Chengde Wan, James Hays, and Charles C Kemp. Pressurevision: estimating hand pressure from a single rgb image. In Proceedings of the European Conference on Computer Vision (ECCV) , 2022. [13] Patrick Grady, Chengcheng Tang, Christopher D. Twigg, Minh Vo, Samarth Brahmbhatt, and Charles C. Kemp. ContactOpt: Optimizing contact to improve grasps. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2021. [14] Shreyas Hampali, Mahdi Rad, Markus Oberweger, and Vincent Lepetit. HOnnotate: A method for 3d annotation of hand and object poses. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2020. [15] Shreyas Hampali, Sayan Deb Sarkar, Mahdi Rad, and Vincent Lepetit. Keypoint Transformer: Solving joint identification in challenging hands and object interactions for accurate 3d pose estimation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022. [16] Mohamed Hassan, Partha Ghosh, Joachim Tesch, Dimitrios Tzionas, and Michael J. Black. Populating 3d scenes by learning human-scene interaction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2021. 
+
+10 [17] Yana Hasson, Gul Varol, Dimitrios Tzionas, Igor Kalevatykh, Michael J. Black, Ivan Laptev, and Cordelia Schmid. Learning joint reconstruction of hands and manipulated objects. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2019. [18] Junxing Hu, Hongwen Zhang, Zerui Chen, Mengcheng Li, Yunlong Wang, Yebin Liu, and Zhenan Sun. Learning explicit contact for implicit reconstruction of hand-held objects from monocular images. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence (AAAI) , 2024. [19] Chun-Hao P. Huang, Hongwei Yi, Markus Höschle, Matvey Safroshkin, Tsvetelina Alexiadis, Senya Polikovsky, Daniel Scharstein, and Michael J. Black. Capturing and inferring dense full-body human-scene contact. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) ,2022. [20] Hanwen Jiang, Shaowei Liu, Jiashun Wang, and Xiaolong Wang. Hand-object contact consistency reasoning for human grasps generation. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2021. [21] Daniel Sungho Jung and Kyoung Mu Lee. Learning dense hand contact estimation from imbalanced data. In Advances in Neural Information Processing Systems (NeurIPS) , 2025. [22] Hyeonwoo Kim, Sangwon Baik, and Hanbyul Joo. DAViD: Modeling dynamic affordance of 3d objects using pre-trained video diffusion models. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2025. [23] Hyeonwoo Kim, Sookwan Han, Patrick Kwon, and Hanbyul Joo. Beyond the contact: Discovering comprehensive affordance for 3d objects from pre-trained 2d diffusion models. In Proceedings of the European Conference on Computer Vision (ECCV) , 2024. [24] Taein Kwon, Bugra Tekin, Jan Stühmer, Federica Bogo, and Marc Pollefeys. H2O: Two hands manipulating objects for first person interaction recognition. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2021. [25] Quanzhou Li, Jingbo Wang, Chen Change Loy, and Bo Dai. Task-oriented human-object interactions generation with implicit neural representations. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , 2024. [26] Shaowei Liu, Yang Zhou, Jimei Yang, Saurabh Gupta, and Shenlong Wang. ContactGen: Generative contact modeling for grasp generation. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [27] Yumeng Liu, Xiaoxiao Long, Zemin Yang, Yuan Liu, Marc Habermann, Christian Theobalt, Yuexin Ma, and Wenping Wang. EasyHOI: Unleashing the power of large models for reconstructing hand-object interactions in the wild. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. [28] Yunze Liu, Yun Liu, Che Jiang, Kangbo Lyu, Weikang Wan, Hao Shen, Boqiang Liang, Zhoujie Fu, He Wang, and Li Yi. HOI4D: A 4d egocentric dataset for category-level human-object interaction. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022. [29] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference on Learning Representations (ICLR) , 2019. [30] Hyeongjin Nam, Daniel Sungho Jung, Gyeongsik Moon, and Kyoung Mu Lee. Joint reconstruction of 3d human and object via contact-based refinement transformer. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024. [31] Tu-Hoa Pham, Nikolaos Kyriazis, Antonis A. Argyros, and Abderrahmane Kheddar. Hand-object contact force estimation from markerless visual tracking. IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI) , 40(12):2883–2896, 2018. [32] Rolandos Alexandros Potamias, Jinglei Zhang, Jiankang Deng, and Stefanos Zafeiriou. Wilor: End-to-end 3d hand localization and reconstruction in-the-wild. In 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 12242–12254. IEEE, 2025. [33] Aditya Prakash, Benjamin Lundell, Dmitry Andreychuk, David Forsyth, Saurabh Gupta, and Harpreet Sawhney. How do i do that? synthesizing 3d hand motion and contacts for everyday interactions. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. 
+
+11 [34] Javier Romero, Dimitrios Tzionas, and Michael J. Black. Embodied hands: Modeling and capturing hands and bodies together. ACM Transactions on Graphics (TOG) , 36(6):245:1–245:17, 2017. [35] Dandan Shan, Jiaqi Geng, Michelle Shu, and David F. Fouhey. Understanding human hands in contact at internet scale. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2020. [36] Oriane Siméoni, Huy V Vo, Maximilian Seitzer, Federico Baldassarre, Maxime Oquab, Cijo Jose, Vasil Khalidov, Marc Szafraniec, Seungeun Yi, Michaël Ramamonjisoa, et al. Dinov3. arXiv preprint arXiv:2508.10104 , 2025. [37] Yuxin Ray Song, Jinzhou Li, Rao Fu, Devin Murphy, Kaichen Zhou, Rishi Shiv, Yaqi Li, Haoyu Xiong, Crystal Elaine Owens, Yilun Du, Yiyue Luo, Xianyi Cheng, Antonio Torralba, Wojciech Matusik, and Paul Pu Liang. Opentouch: Bringing full-hand touch to real-world interaction, 2025. [38] Subramanian Sundaram, Petr Kellnhofer, Yunzhu Li, Jun-Yan Zhu, Antonio Torralba, and Wojciech Matusik. Learning the signatures of the human grasp using a scalable tactile glove. Nature , 569(7758):698– 702, 2019. [39] Omid Taheri, Nima Ghorbani, Michael J. Black, and Dimitrios Tzionas. GRAB: A dataset of whole-body human grasping of objects. In Proceedings of the European Conference on Computer Vision (ECCV) ,2020. [40] Omid Taheri, Yi Zhou, Dimitrios Tzionas, Yang Zhou, Duygu Ceylan, Soren Pirk, and Michael J. Black. GRIP: Generating interaction poses using latent consistency and spatial cues. In International Conference on 3D Vision (3DV) , 2024. [41] Shashank Tripathi, Agniv Chatterjee, Jean-Claude Passy, Hongwei Yi, Dimitrios Tzionas, and Michael J. Black. DECO: Dense estimation of 3d human-scene contact in the wild. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [42] Sirui Xu, Zhengyuan Li, Yu-Xiong Wang, and Liang-Yan Gui. InterDiff: Generating 3d human-object interactions with physics-informed diffusion. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [43] Lixin Yang, Kailin Li, Xinyu Zhan, Fei Wu, Anran Xu, Liu Liu, and Cewu Lu. OakInk: A large-scale knowledge repository for understanding hand-object interaction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022. [44] Yuhang Yang, Wei Zhai, Hongchen Luo, Yang Cao, Jiebo Luo, and Zheng-Jun Zha. Grounding 3d object affordance from 2d interactions in images. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [45] Yufei Ye, Abhinav Gupta, Kris Kitani, and Shubham Tulsiani. G-HOP: Generative hand-object prior for interaction reconstruction and grasp synthesis. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024. [46] Yufei Ye, Abhinav Gupta, and Shubham Tulsiani. What’s in your hands? 3d reconstruction of generic objects in hands. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2022. [47] Yufei Ye, Xueting Li, Abhinav Gupta, Shalini De Mello, Stan Birchfield, Jiaming Song, Shubham Tulsiani, and Sifei Liu. Affordance diffusion: Synthesizing hand-object interactions. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023. [48] Hui Zhang, Sammy Joe Christen, Zicong Fan, Luocheng Zheng, Jemin Hwangbo, Jie Song, and Otmar Hilliges. ArtiGrasp: Physically plausible synthesis of bimanual dexterous grasping and articulation. In 
+
+International Conference on 3D Vision (3DV) , 2024. [49] Jinglei Zhang, Jiankang Deng, Chao Ma, and Rolandos Alexandros Potamias. Hawor: World-space hand motion reconstruction from egocentric videos. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. [50] Yiming Zhao, Taein Kwon, Paul Streli, Marc Pollefeys, and Christian Holz. Egopressure: A dataset for hand pressure and pose estimation in egocentric vision. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. 
+
+12

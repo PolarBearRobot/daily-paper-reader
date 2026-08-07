@@ -1,9 +1,9 @@
 {
   "date": "20260807",
   "date_label": "",
-  "generated_at": "2026-08-07 01:32:09 UTC",
+  "generated_at": "2026-08-07 21:13:23 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
       "paper_id": "2608.04196v1",
@@ -17,9 +17,9 @@
         }
       ],
       "score": 9.0,
-      "evidence": "大规模第一人称人类视频挖掘用于灵巧操作VLA后训练",
+      "evidence": "从大规模第一人称视频中挖掘相似数据以支持跨具身灵巧操作",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2608.04396v1",
@@ -33,9 +33,9 @@
         }
       ],
       "score": 9.0,
-      "evidence": "通过反事实干预诊断并消除VLA模型中的因果混淆",
+      "evidence": "通过反事实干预消除视觉-语言-行动模型混杂偏差的框架",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2608.04404v1",
@@ -49,9 +49,185 @@
         }
       ],
       "score": 9.0,
-      "evidence": "世界动作模型的效率与未来条件化",
+      "evidence": "高效推理时未来条件化的世界动作模型",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.04657v1",
+      "route": "202608/07/2608.04657v1-mobilewam-bridging-world-action-models-to-mobile-manipulation-with-chain-of-foresight",
+      "title": "MobileWAM: Bridging World Action Models to Mobile Manipulation with Chain-of-Foresight",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将世界动作模型扩展到移动操作，实现全身控制",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05042v1",
+      "route": "202608/07/2608.05042v1-bridgevla-a-data-efficient-generalizable-and-memory-augmented-vision-language-action-framework-for-3d-manipulation",
+      "title": "BridgeVLA++: A Data-Efficient, Generalizable, and Memory-Augmented Vision-Language-Action Framework for 3D Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向3D操作的数据高效、可泛化且记忆增强的视觉-语言-行动框架",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05215v1",
+      "route": "202608/07/2608.05215v1-vlaff-vision-language-affordance-model-for-unified-actionable-affordances",
+      "title": "VLAff: Vision-Language-Affordance Model for Unified Actionable Affordances",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从第一视角人类视频中提取可操作的视觉、抓取和轨迹affordance，用于可扩展的机器人操作",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05369v1",
+      "route": "202608/07/2608.05369v1-world-to-wrist-task-conditioned-future-wrist-modeling-for-fine-grained-robot-manipulation",
+      "title": "World-to-Wrist: Task-Conditioned Future Wrist Modeling for Fine-Grained Robot Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向精细操作的VLA模型，建模未来手腕动态",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05674v1",
+      "route": "202608/07/2608.05674v1-joyai-ra-05-scaling-robot-manipulation-learning-via-dual-action-alignment",
+      "title": "JoyAI-RA 0.5: Scaling Robot Manipulation Learning via Dual Action Alignment",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "异质人类、仿真与机器人数据的双动作对齐",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05730v1",
+      "route": "202608/07/2608.05730v1-spacevla-spatially-grounded-vla-for-robotic-manipulation-with-user-authored-grasp-and-place-anchors",
+      "title": "SpaceVLA: Spatially Grounded VLA for Robotic Manipulation with User-Authored Grasp and Place Anchors",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "带用户指定抓取与放置锚点的空间接地VLA",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05799v1",
+      "route": "202608/07/2608.05799v1-xeworld-can-action-conditioned-world-models-generalize-to-unseen-robot-embodiments",
+      "title": "XEWorld: Can Action-Conditioned World Models Generalize to Unseen Robot Embodiments?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "考察动作条件世界模型的跨本体泛化能力，揭示视觉模式匹配瓶颈",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05903v1",
+      "route": "202608/07/2608.05903v1-robust-wam-bridging-generative-pretraining-and-semantic-foresight-in-world-action-models",
+      "title": "Robust-WAM: Bridging Generative Pretraining and Semantic Foresight in World-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在世界-动作模型中桥接VAE与语义潜空间，提升动作预测鲁棒性",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.06192v1",
+      "route": "202608/07/2608.06192v1-hope-hand-object-pressure-estimation-from-monocular-videos",
+      "title": "HOPE: Hand-Object Pressure Estimation from Monocular Videos",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从手-物交互的单目视频预测手网格上随时间演化的逐顶点压力与接触",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.06374v1",
+      "route": "202608/07/2608.06374v1-dypes-vla-learning-shared-dynamics-priors-and-embodiment-specific-control-for-cross-embodiment-manipulation",
+      "title": "DyPES-VLA: Learning Shared Dynamics Priors and Embodiment-Specific Control for Cross-Embodiment Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "跨本体机器人操作的视觉-语言-动作模型，学习共享动力学先验",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.06375v1",
+      "route": "202608/07/2608.06375v1--0-a-latent-predictive-world-action-model-for-concurrent-humanoid-loco-manipulation",
+      "title": "$ω$-0: A Latent Predictive World Action Model for Concurrent Humanoid Loco-Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "用于人形移动-操作的潜在预测全身世界行动模型",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2608.04510v1",
@@ -82,22 +258,6 @@
       ],
       "score": 9.0,
       "evidence": "面向视觉-语言-动作模型的指令感知空间表示对齐",
-      "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
-    },
-    {
-      "paper_id": "2608.04657v1",
-      "route": "202608/07/2608.04657v1-mobilewam-bridging-world-action-models-to-mobile-manipulation-with-chain-of-foresight",
-      "title": "MobileWAM: Bridging World Action Models to Mobile Manipulation with Chain-of-Foresight",
-      "section": "deep",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "model"
-        }
-      ],
-      "score": 9.0,
-      "evidence": "将世界动作模型扩展到移动全身操作",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
       "updated_at": "2026-08-07 01:32:09 UTC"
     },
@@ -134,20 +294,84 @@
       "updated_at": "2026-08-07 01:32:09 UTC"
     },
     {
-      "paper_id": "2608.05042v1",
-      "route": "202608/07/2608.05042v1-bridgevla-a-data-efficient-generalizable-and-memory-augmented-vision-language-action-framework-for-3d-manipulation",
-      "title": "BridgeVLA++: A Data-Efficient, Generalizable, and Memory-Augmented Vision-Language-Action Framework for 3D Manipulation",
-      "section": "deep",
+      "paper_id": "2608.04765v1",
+      "route": "202608/07/2608.04765v1-explicit-language-memory-for-long-horizon-planning-in-vision-language-action-models",
+      "title": "Explicit Language Memory for Long-Horizon Planning in Vision-Language-Action Models",
+      "section": "quick",
       "tags": [
         {
           "kind": "query",
           "label": "model"
         }
       ],
-      "score": 9.0,
-      "evidence": "面向3D操作的VLA框架，具备数据高效与记忆增强",
+      "score": 8.0,
+      "evidence": "在VLA模型中使用显式语言记忆进行长时程规划",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05706v1",
+      "route": "202608/07/2608.05706v1-lawm-3d-learning-3d-aware-latent-actions-from-human-videos-for-generalizable-robot-world-models",
+      "title": "LAWM-3D: Learning 3D-Aware Latent Actions from Human Videos for Generalizable Robot World Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "从人类视频学习3D感知的潜在动作以支持机器人世界模型",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05738v1",
+      "route": "202608/07/2608.05738v1-in-context-vla-endowing-vision-language-action-models-with-language-via-in-context-post-training-and-agentic-tool-use",
+      "title": "In-Context VLA: Endowing Vision-Language-Action Models with Language via In-Context Post-Training and Agentic Tool Use",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过上下文后训练和智能体工具使用分析与改进VLA模型",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05970v1",
+      "route": "202608/07/2608.05970v1-skillmemo-expert-guided-skill-memory-framework-for-compositional-embodied-manipulation",
+      "title": "SkillMemo: Expert-guided Skill Memory Framework for Compositional Embodied Manipulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向组合具身操作的技能记忆框架，隐式分解潜在技能",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05989v1",
+      "route": "202608/07/2608.05989v1-observation-grounded-self-predictive-reinforcement-learning-for-visual-continuous-control",
+      "title": "Observation-Grounded Self-Predictive Reinforcement Learning for Visual Continuous Control",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "用于视觉控制样本效率的动力感知表示学习",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2607.26985v1",
@@ -182,22 +406,6 @@
       "updated_at": "2026-08-07 01:32:09 UTC"
     },
     {
-      "paper_id": "2608.04765v1",
-      "route": "202608/07/2608.04765v1-explicit-language-memory-for-long-horizon-planning-in-vision-language-action-models",
-      "title": "Explicit Language Memory for Long-Horizon Planning in Vision-Language-Action Models",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "model"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "提出带显式语言记忆的层次化长时程VLA架构",
-      "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
-    },
-    {
       "paper_id": "2608.05137v1",
       "route": "202608/07/2608.05137v1-smartmage-dynamic-modality-orchestration-for-3d-scene-understanding",
       "title": "SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding",
@@ -214,6 +422,22 @@
       "updated_at": "2026-08-07 01:32:09 UTC"
     },
     {
+      "paper_id": "2608.02547v1",
+      "route": "202608/07/2608.02547v1-why-does-action-chunking-improve-behavioral-cloning-performance-in-robotic-control",
+      "title": "Why Does Action Chunking Improve Behavioral Cloning Performance in Robotic Control?",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "检验动作分块中表征学习假设对行为克隆的影响",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
       "paper_id": "2608.04425v1",
       "route": "202608/07/2608.04425v1-ssc-a-verifiable-structured-representation-for-bimanual-manipulation-labelling",
       "title": "SSC: A Verifiable Structured Representation for Bimanual Manipulation Labelling",
@@ -225,9 +449,57 @@
         }
       ],
       "score": 7.0,
-      "evidence": "用于双手机器人操作标注的可验证结构化表示",
+      "evidence": "为长时程操作演示标注提供结构化表示",
       "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05579v1",
+      "route": "202608/07/2608.05579v1-argus-aligning-robot-scene-geometry-under-shifting-views-with-large-3d-vision-models",
+      "title": "ARGUS: Aligning Robot Scene Geometry Under Shifting Views with Large 3D Vision Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "利用大型3D视觉模型将任意相机视角对齐到规范视角，增强操作策略的视角泛化",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05720v1",
+      "route": "202608/07/2608.05720v1-phylatent-learning-dynamics-relevant-representations-for-jepa-world-models",
+      "title": "PhyLatent: Learning Dynamics-Relevant Representations for JEPA World Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "针对JEPA世界模型设计保留物理状态与动作后果的动力相关训练目标",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05774v1",
+      "route": "202608/07/2608.05774v1-sr-jepa-learning-predictive-latent-state-in-3d-scenes",
+      "title": "SR-JEPA: Learning Predictive Latent State in 3D Scenes",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "3D点云中的预测性潜在表征学习",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2608.04533v1",
@@ -262,9 +534,25 @@
       "updated_at": "2026-08-07 01:32:09 UTC"
     },
     {
-      "paper_id": "2608.02547v1",
-      "route": "202608/07/2608.02547v1-why-does-action-chunking-improve-behavioral-cloning-performance-in-robotic-control",
-      "title": "Why Does Action Chunking Improve Behavioral Cloning Performance in Robotic Control?",
+      "paper_id": "2608.04042v1",
+      "route": "202608/07/2608.04042v1-kitchen-robotic-manipulation-utilizing-foundation-models",
+      "title": "Kitchen Robotic Manipulation utilizing Foundation Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "构建了一个集成多种视觉与几何基础模型的模块化感知管线，用于家庭操作",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.04761v2",
+      "route": "202608/07/2608.04761v2-insightemb-learning-action-intent-embeddings-for-agentic-insight-retrieval",
+      "title": "InsightEmb: Learning Action-Intent Embeddings for Agentic Insight Retrieval",
       "section": "quick",
       "tags": [
         {
@@ -273,9 +561,41 @@
         }
       ],
       "score": 6.0,
-      "evidence": "行为克隆中动作分块与表示学习假设",
-      "first_seen_at": "2026-08-07 01:32:09 UTC",
-      "updated_at": "2026-08-07 01:32:09 UTC"
+      "evidence": "面向行动意图嵌入的对比学习框架",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.05242v1",
+      "route": "202608/07/2608.05242v1-disentangling-3d-modeling-from-spatial-reasoning",
+      "title": "Disentangling 3D Modeling from Spatial Reasoning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将3D感知与空间推理解耦，让LLM基于显式3D证据进行推理",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
+    },
+    {
+      "paper_id": "2608.06210v1",
+      "route": "202608/07/2608.06210v1-vidp-variable-impedance-diffusion-policy-for-compliant-robot-manipulation-from-diverse-demonstrations",
+      "title": "VIDP: Variable Impedance Diffusion Policy for Compliant Robot Manipulation from Diverse Demonstrations",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "从演示中学习可变阻抗技能，用于顺应性操作",
+      "first_seen_at": "2026-08-07 21:13:23 UTC",
+      "updated_at": "2026-08-07 21:13:23 UTC"
     },
     {
       "paper_id": "2608.04575v1",

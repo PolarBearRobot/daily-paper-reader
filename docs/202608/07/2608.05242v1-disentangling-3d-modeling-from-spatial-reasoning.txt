@@ -1,0 +1,448 @@
+Title: Disentangling 3D Modeling from Spatial Reasoning
+
+URL Source: https://arxiv.org/pdf/2608.05242v1
+
+Published Time: Fri, 07 Aug 2026 00:07:34 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Disentangling 3D Modeling from Spatial Reasoning 
+
+Haoze Sun 1, Jiequan Cui 1∗, Qingshan Xu 2, Richang Hong 1 
+
+> 1
+
+HFUT, 2 USTC 
+
+Abstract 
+
+In this work, we explore an alternative paradigm for spatial rea-soning by explicitly disentangling 3D perception from reason-ing, rather than jointly acquiring implicit 3D perception and reasoning through large-scale training. Our key observation is that modern perception models excel at estimating continuous 3D geometry, whereas large language models (LLMs) are par-ticularly effective at compositional and symbolic reasoning. Motivated by these complementary strengths, we propose the 
+
+Disentangled Spatial Reasoner (DiSR) , a simple yet effective framework that reconstructs the physical world into struc-tured 3D evidence using off-the-shelf expert perception mod-els and fine-tunes an LLM with LoRA to perform reasoning solely over this explicit geometric evidence. Without large-scale 3D VQA training or complex tool-use policies, DiSR 
+
+achieves competitive performance on popular spatial reason-ing benchmarks. Beyond its strong performance, DiSR offers improved interpretability, modularity, and computational ef-ficiency, demonstrating that explicit separation of perception and reasoning is a scalable and effective alternative paradigm to end-to-end modeling for spatial intelligence. 
+
+Introduction 
+
+Spatial reasoning is a fundamental capability for intelligent systems to understand, interpret, and interact with the physi-cal 3D world. Unlike conventional visual recognition, which focuses on identifying objects and their semantic attributes, spatial reasoning requires models to infer geometric proper-ties, spatial relationships, and physical constraints from vi-sual observations. Such reasoning is essential in a wide range of applications, including embodied agents, robotic manipu-lation, autonomous driving, augmented reality, and human-robot interaction, where decision-making depends not only on what objects are present but also on where they are and 
+
+how they relate to one another in 3D space. As multimodal large language models (MLLMs) continue to demonstrate strong progress in visual understanding and language rea-soning (Liu et al. 2023; Achiam et al. 2023; Bai et al. 2025), enabling reliable spatial reasoning has become a key step toward building general-purpose AI systems. Despite these advances, achieving robust spatial intel-ligence with MLLMs remains challenging. Existing ap-proaches either train MLLMs on large-scale 3D visual ques-
+
+> ∗
+
+Corresponding author. 
+
+tion answering (3D VQA) datasets to acquire geometric un-derstanding (Chen et al. 2024; Cheng et al. 2024; Ma et al. 2025b, 2026; Liang et al. 2026), or align explicit 3D la-tent representations with MLLMs through multimodal learn-ing (Hong et al. 2023; Zhu et al. 2023b; Xu et al. 2024; Huang et al. 2023) as shown in Figure 1(a). Despite differences, these approaches share a common formulation: jointly opti-mizing implicit geometric perception and spatial reasoning. Consequently, 3D knowledge is embedded in latent represen-tations rather than explicitly reconstructed into interpretable geometric structures. Moreover, such large-scale training of-ten requires substantial computational resources, limiting the scalability and efficiency of spatial reasoning systems. Re-cently, agentic frameworks shown in Figure 1(b) have ex-plored the use of external perception tools to mitigate these challenges, but introduce additional complexity by requiring MLLMs to learn effective tool-use strategies through rein-forcement learning or strong foundation models (Ma et al. 2024; Chen et al. 2026a; Han et al. 2025; Chen et al. 2026b). 
+
+Disentangling 3D Perception from Spatial Reasoning. 
+
+Rather than further coupling perception and reasoning, we explore an alternative paradigm based on explicit disen-tanglement. This idea is motivated by the complementary strengths of modern perception models and large language models (LLMs): specialized perception models have demon-strated strong capabilities in estimating continuous geomet-ric properties, such as depth, object poses, and 3D layouts, while LLMs excel at compositional and symbolic reasoning over structured information. These observations raise a natu-ral question: can spatial intelligence be achieved by allowing each component to specialize in its respective capability, rather than requiring a single MLLM to jointly learn both? Based on this insight, we propose to explicitly separate 3D perception from spatial reasoning as shown in Fig-ure 1(c). Specifically, we leverage off-the-shelf expert percep-tion models to reconstruct the physical world into structured 3D evidence, including 3D locations, object orientations, and object sizes. An LLM with LoRA is then fine-tuned to reason solely over this explicit geometric evidence. By introducing an interpretable intermediate textual evidence between per-ception and reasoning, our method offers a simple, efficient, and modular alternative to end-to-end joint modeling. 
+
+Disentangled Spatial Reasoner (DiSR). To instantiate this idea, we propose the Disentangled Spatial Reasoner (DiSR) ,arXiv:2608.05242v1 [cs.LG] 5 Aug 2026 (a) Large -scale 3D VQA Training  (b) Agentic / Tool -Augmented Reasoning  (c) DiSR : Disentangled Spatial Reasoning (Ours)                
+
+> On which side of the
+> sofa is the TV?
+> Answer: Right
+> On which side of the
+> sofa is the TV?
+> Answer: Right
+> On which side of the
+> sofa is the TV?
+> Answer: Right
+> RGB Image
+> +
+> Question
+> Spatial ML LM
+> ++Answer:
+> Right
+> learn implicit 3d geometry and reasoning jointly
+> Which object is
+> closer to the
+> camera?
+> ……
+> Large -scale 3D VQA data
+> Millions –Billions
+> of supervision
+> RGB Image
+> +
+> Question
+> MLLM
+> Controller Grounding Depth
+> x
+> Geometry
+> MLLM
+> Controller
+> Answer:
+> Right
+> Iterative tool orchestration
+> x✓…
+> Tool -use / RL trajectories
+> Policy
+> learning
+> RGB Image
+> +
+> Question
+> Frozen Expert Models
+> x
+> Structured
+> 3D Evidence
+> LoRA
+> LLM
+> •••
+> Answer:
+> Right
+> Structured 3D Evidence Construction Reasoning over Evidence
+> Object
+> Refs x✓…
+> 0.3 3MLoRA samples
+> ••• Lightweight
+> training
+> Is the bag
+> to the left or
+> right of the
+> microwave?
+> 3D Latent
+> Representation
+
+Figure 1: Comparison of spatial reasoning paradigms. (a) Methods jointly acquire implicit geometric perception and spatial reasoning through extensive spatial supervision, whereas (b) tool-augmented agents learn tool-use policy and invoke external tools through iterative execution. (c) DiSR instead constructs explicit 3D evidence and then performs reasoning with an LLM solely on the structured evidence, thereby disentangling 3D modeling from spatial reasoning. illustrated in Figure 1(c). DiSR decomposes spatial reason-ing into two steps: (1) structured 3D evidence construction ,where specialized perception models produce structured geo-metric evidence, including object 3D locations, object sizes, and object orientations; and (2) reasoning over structured 3D evidence , where an LLM performs structured reasoning solely over the extracted geometric evidence inputs without images to produce the final answer. This disentangled design yields several practical advan-tages. First, by offloading geometric perception to special-ized perception models, DiSR significantly reduces the need for large-scale 3D supervision during MLLM training, lead-ing to more efficient training and lower computational cost, as summarized in Table 1. Second, the modular formulation improves interpretability and diagnosability: since structured 3D evidence is explicitly available, reasoning errors can be clearly separated from perception errors, as demonstrated by the controlled diagnostic analysis in Table 5. Third, the framework is highly extensible, allowing improvements in either perception models or LLMs to be incorporated inde-pendently without retraining the full system, as evidenced by the cross-backbone results in Table 7. 
+
+Experimental Results. We evaluate DiSR on three represen-tative benchmarks, including 3DSRBench (Ma et al. 2025a), SPAR-Bench (Zhang et al. 2026), and CV-Bench-3D (Tong et al. 2024). Despite using significantly less computational cost and fewer trainable parameters, DiSR consistently out-performs prior methods that rely on large-scale 3D training, such as SpatialRGPT (Cheng et al. 2024) and SpatialRea-soner (Ma et al. 2026). Specifically, we achieve new state-of-the-art performance on 3DSRBench and SPAR-Bench, outperforming previous best methods by 3.77% and 1.70% ,respectively. These results demonstrate that explicitly disen-tangling 3D perception from reasoning is an effective and data-efficient paradigm for spatial intelligence. Overall, our contributions are summarized as follows: 
+
+• We propose to disentangle 3D perception from spatial reasoning and introduce DiSR , which leverages 3D per-ception expert models to construct explicit evidence and reason solely over the structured evidence with LLMs. 
+
+• We demonstrate that DiSR with this disentangled design achieves strong performance while using significantly less training data and computational resources. 
+
+• We validate DiSR on popular spatial reasoning bench-marks, where it consistently outperforms prior large-scale training approaches, achieving new state-of-the-art re-sults on the challenging 3DSRBench and SPAR-Bench. 
+
+Related Work 
+
+Spatial VLMs with Large-scale 3D Supervision. A dom-inant approach to spatial reasoning is to enhance MLLMs through large-scale 3D supervision. Early works construct 3D visual question answering (3D VQA) datasets from monocular images and fine-tune VLMs to implicitly acquire geometric knowledge. For example, SpatialVLM (Chen et al. 2024) introduces Internet-scale 3D VQA data, while Spa-tialRGPT (Cheng et al. 2024) adopts region-level 3D scene graphs and depth cues to improve geometric representation learning. Subsequent studies, including SpatialLLM (Ma et al. 2025b), SpatialReasoner (Ma et al. 2026), and HiS-patial (Liang et al. 2026), explore improved 3D-aware data, training strategies, reinforcement learning, and RGB-D rep-resentations to further enhance spatial reasoning capabilities. Despite their differences, these methods share a common formulation: jointly learning implicit 3D perception and spa-tial reasoning within a single MLLM through large-scale optimization. This design often requires substantial 3D su-pervision and computational resources, while coupling per-ception and reasoning into an implicit representation that makes error diagnosis challenging. In contrast, DiSR adopts a disentangled paradigm by delegating geometric perception to specialized expert models and training the LLM solely to reason over explicit, structured 3D evidence. This design en-ables efficient learning while preserving the complementary strengths of perception models and language models. 
+
+Aligning MLLMs with 3D Representations. Another line of research equips MLLMs with spatial intelligence by align-ing them with explicit 3D representations. Instead of relying solely on 3D VQA supervision, these methods bridge the modality gap between geometric representations and lan-guage models through dedicated encoders, alignment objec-tives, or instruction tuning. For example, 3D-LLM (Hong et al. 2023) projects 3D scene features into the language space to support tasks such as question answering, ground-ing, navigation, and dialogue. 3D-VisTA (Zhu et al. 2023b) pre-trains unified 3D vision-language representations over RGB-D scenes and scene-text pairs for a variety of down-stream tasks. PointLLM (Xu et al. 2024) aligns point-cloud encoders with LLMs using point-text instruction tuning, en-abling language models to understand object-level 3D geom-etry. LEO (Huang et al. 2023) further extends this paradigm to embodied agents through joint 3D vision-language align-ment and vision-language-action instruction tuning. These methods aim to bridge the modality gap between 3D repre-sentations and MLLMs, which suffer from similar problems with methods training on large-scale 3D supervision. 
+
+Agentic Spatial Reasoning. Another line of research en-hances spatial reasoning by augmenting MLLMs with exter-nal perception models, geometric tools, or formal reasoning modules. Instead of encoding all geometric knowledge within the language model, these approaches enable MLLMs to ac-quire spatial capabilities through tool invocation. For exam-ple, SpatialPIN (Ma et al. 2024) improves spatial reasoning in a training-free manner by leveraging priors from multiple 3D foundation models. SpaceTools (Chen et al. 2026a) trains MLLMs to coordinate multiple perception and robotics tools through reinforcement learning, while TIGeR (Han et al. 2025) equips MLLMs with geometric computation tools for precise spatial operations. GCA (Chen et al. 2026b) further incorporates formal constraints to connect semantic under-standing with geometric reasoning. These methods demonstrate the effectiveness of external geometric computation for spatial reasoning. However, they require learning tool-use policies, orchestrating multi-step interactions, or designing task-specific constraints. In con-trast, DiSR adopts a fixed and interpretable interface between perception and reasoning: expert perception models recon-struct the physical world into structured 3D evidence, and the LLM reasons directly over this explicit evidence. This design avoids the complexity of tool orchestration while en-abling simpler reasoning, lightweight training, and clearer attribution of errors to either perception or reasoning. 
+
+Method 
+
+Modern perception models have demonstrated remarkable capabilities in estimating continuous geometric properties, whereas LLMs excel at compositional and symbolic reason-ing. Motivated by these complementary strengths, we pro-pose the Disentangled Spatial Reasoner (DiSR) , which for-mulates spatial reasoning as a two-stage process: reconstruct-ing the physical world into structured 3D evidence, followed by reasoning over this explicit geometric evidence. Rather than jointly optimizing perception and reasoning, DiSR ex-plicitly separates the two through an interpretable interme-diate textual evidence, resulting in a simple, modular, and efficient framework. We first present an overview of DiSR and then describe each component in detail. 
+
+Overview of DiSR 
+
+As illustrated in Figure 2, the key idea of DiSR is to explicitly separate 3D perception from spatial reasoning through struc-tured intermediate 3D evidence. Instead of requiring a single MLLM to jointly learn geometric perception and reasoning from large-scale 3D VQA data, DiSR assigns each capability to a specialized component: expert perception models are responsible for constructing structured 3D evidence, while an LLM focuses on reasoning solely over the resulting geo-metric representation. Given an input image I and a spatial reasoning question 
+
+Q, DiSR predicts the answer A through two stages: (1) struc-tured 3D evidence construction, and (2) reasoning over 3D evidence. Specifically, a question parser first identifies the relevant objects required for answering Q, and off-the-shelf perception models are employed to estimate object-level ge-ometric information from I, including 3D locations, object orientations, and object sizes. Then, the extracted geometric evidence is converted into a structured textual representation and provided to an LLM, which performs spatial reasoning and generates the final answer. Formally, the overall process can be formulated as: 
+
+A = fθ (E(I), Q ), (1) where E(I) denotes the structured 3D evidence recon-structed from the image, and fθ represents the reasoning model parameterized by θ. Unlike end-to-end methods that jointly optimize perception and reasoning, DiSR explicitly exposes the structured geometric evidence, enabling each component to specialize in its corresponding capability. 
+
+Structured 3D Evidence Construction 
+
+To initiate DiSR , we reconstruct the physical scene into struc-tured 3D evidence. Instead of learning implicit geometric representations within the MLLM, we leverage perception expert models specialized for 3D geometric estimation. 
+
+Question Parsing. The question parsing identifies the ob-jects required for answering the question and establishes the interface between language understanding and 3D percep-tion. Given a question Q, we use Qwen3-VL-8B-Instruct as an object planner fplan (·) to generate an object-centric plan: 
+
+P = fplan (Q) = {(qi : mi)}Ni=1 , (2) where each tuple contains a persistent object slot qi and its corresponding object reference mi. The slot identifier uniquely tracks the same object throughout the subsequent evidence extraction and reasoning, while the object reference specifies the object to be localized in the image. For example, a question involving a red chair and a table produces: 
+
+{q1 : “the red chair” , q2 : “table” }. (3) Structured 3D Evidence Construction  Reasoning over 3D Evidence               
+
+> (a) Input and Question (c) Reasoning over
+> Structured 3D Evidence
+> ••• On which side of the sofa is the TV?
+> Input RGB image + question
+> Question Parsing
+> Persistent Object Slots
+> q1=sofa
+> q2=TV
+> Object Grounding
+> Structured Textual
+> Evidence Interface
+> Interpretable
+> Intermediate
+> Representation
+> Serialized 3D Evidence E
+> q1: sofa |center, extent , front, left, size
+> q2: TV |center, extent , front, left, size
+> shared gravity -aligned coordinate system
+> ••• On which side
+> of the sofa
+> is the TV?
+> LoRA LLM
+
+✓ Answer: The TV is on                    
+
+> the sofa ’s Right side.
+> Reasoning over explicit
+> geometric evidence
+> Trainable LoRA Parameters
+> (b) Structured 3D Evidence Construction
+> Metric depth and
+> scene reconstruction Structured 3D Evidence E(I)
+> RGB
+> Metric depth
+> 3D reconstruction
+> Metric depth and
+> scene reconstruction
+> q1(sofa)
+> q2(TV)
+> front
+> left
+> Frozen Expert Perception Models
+> Structured 3D Evidence E(I)
+> Objects
+> q1: sofa
+> q2: TV
+> Per -object attributes
+> center extent
+> front left size
+> Global frame
+> shared gravity -aligned
+> coordinate system
+> Evidence form
+> 𝒆 𝒊 =𝒄 𝒊 ,𝒅 𝒊 ,𝝈 𝒊 ,𝝆 𝒊 ,𝒇 𝒊 ,𝒍 𝒊
+> 𝑬 𝑰 =𝒆 𝒊 𝒊 =𝟏
+> 𝑵
+> T
+
+Figure 2: Overview of DiSR. 
+
+Object Grounding. Given the object plan P , we take Qwen3-VL-8B-Instruct as the grounding module to local-ize each queried object reference mi in the image and iden-tify its corresponding region ri. The grounded regions are represented as: 
+
+R = {(qi : ri)}Ni=1 , (4) where the slot identifier qi preserves the correspondence be-tween the language query and the visual region. It bridges linguistic references, such as “the chair on the left” or “the object highlighted by the red box”, with localized visual targets. By retaining only the regions specified in P , DiSR 
+
+performs target-specific perception and avoids unnecessary computation cost on uninterested objects. 
+
+Reconstructing the Physical Scene to Derive Evidence. 
+
+Given the grounded regions R, DiSR uses frozen expert per-ception models to recover geometric information. Specifi-cally, SAM (Kirillov et al. 2023) extracts object masks, Met-ric3D (Yin et al. 2023) estimates metric depth, and WildCam-era (Zhu et al. 2023a) estimates intrinsic parameters and uses PerspectiveFields (Jin et al. 2023) to recover gravity-related camera orientation. The depth map is then back-projected and transformed into a shared, gravity-aligned coordinate frame. For each grounded mask region, DiSR extracts the associ-ated 3D points, removes unreliable outliers, and computes an object-centric 3D extent and center. In addition, Orien-tAnything (Wang et al. 2024) estimates object orientations, which are transformed into the same coordinate frame. The resulting object-centric scene representation is de-fined as: 
+
+E(I) = {ei}Ni=1 , ei = ( ci, di, σ i, ρ i, fi, li), (5) where ci ∈ R3 denotes the object center, di ∈ R3 denotes its 3D extent, σi and ρi represent object-level size descriptors, 
+
+fi and li denote the estimated front and left axes. Since all objects are represented in a shared gravity-aligned coordinate system, spatial comparisons can be performed directly from these geometric primitives without requiring the reasoner to interpret raw visual signals, thus eliminating large-scale 3D VQA training to learn implicit 3D geometry. 
+
+Reasoning over Structured 3D Evidence 
+
+After obtaining structured 3D evidence E, DiSR employs an LLM with LoRA to perform high-level spatial reasoning. The objective is not to learn geometric perception from raw visual inputs, but to infer spatial relationships and answer questions based on the explicit geometric evidence. To bridge the perception output and the language model, the structured evidence E is serialized into a textual descrip-tion with language: 
+
+ET = ϕ(E(I)) , (6) where ϕ(·) denotes the evidence serialization function. The resulting sequence contains object identities and their geo-metric attributes, which can be directly interpreted by the LLM. Given the question Q and serialized evidence ET , the LLM generates the answer: 
+
+A = fθ (ET , Q ). (7) Since the geometric information is explicitly provided, the LLM only needs to learn reasoning patterns over the structured 3D evidence. We adopt LoRA-based fine-tuning to efficiently adapt the pretrained LLM while preserving its general reasoning capability. 
+
+Data Collection and Training 
+
+Training Data Construction. Following previous work (Ma et al. 2026), we construct the training dataset from images in Open Images (Kuznetsova et al. 2018) by generating spatial reasoning questions and corresponding answers, resulting in a dataset D = {(I, Q, A )}. Since DiSR performs ques-tion parsing for evidence extraction and spatial reasoning as two sequential stages during inference, we decompose each training sample into two complementary supervision tasks. Specifically, the question parsing task learns to predict the parsing result (Q, P ). The reasoning task learns to gener-ate the answer conditioned on the extracted 3D evidence, 
+
+(Q, E T , A ). This decomposition enables the LLM to jointly learn accurate question parsing and reasoning over explicit geometric evidence. Since images are not required during training, we also construct synthetic data that approximates the distribution of the collected dataset. 
+
+Parameter-Efficient Fine-tuning. We adopt LoRA to effi-ciently fine-tune the reasoning LLM while keeping all expert perception models frozen. Given the constructed training data, the LLM is optimized using the standard autoregres-sive language modeling objective: 
+
+L = − 
+
+> |Y|
+
+X
+
+> t=1
+
+log pθ (yt | y<t , X ), (8) where X denotes the corresponding input prompt (i.e., the parsing or reasoning task), and Y denotes the target output sequence. During training, only the LoRA parameters are updated, resulting in an efficient adaptation of the pretrained LLM without modifying the perception modules. 
+
+Experiments 
+
+To validate the effectiveness of our DiSR , we evaluate our model on: 1) three spatial reasoning benchmarks; 2) five general reasoning benchmarks. In this section, we first intro-duce our experimental setup , then present results on spatial reasoning and general reasoning benchmarks , followed by ablation study for disentangled error analysis of perception and reasoning. 
+
+Experimental Setup 
+
+Evaluation Benchmarks. We evaluate DiSR on three rep-resentative spatial reasoning benchmarks. 3DSRBench (Ma et al. 2025a) provides a fine-grained evaluation of 3D spa-tial reasoning across height, location, orientation, and multi-object relations. CV-Bench-3D (Tong et al. 2024) evalu-ates qualitative depth and distance reasoning beyond two-dimensional image-plane cues. SPAR-Bench (Zhang et al. 2026) covers tasks of depth estimation, metric distance es-timation, and relational selection. The numerical tasks are evaluated using mean relative accuracy (MRA), while the relational-selection tasks are evaluated using accuracy. Moreover, we examine whether the fine-tuned DiSR mod-els retain strong general visual-reasoning capabilities on MMBench (Liu et al. 2024), GQA (Hudson and Manning 2019), POPE (Li et al. 2023b), SEED (Li et al. 2023a), and RealWorldQA (xAI 2024). Finally, we evaluate object-grounding performance on CV-Bench-3D. 
+
+Comparison Methods. We compare DiSR with three groups of representative baselines: (1) general-purpose open-source MLLMs, including LLaVA, Cambrian, and the Qwen-VL family; (2) proprietary MLLMs, including GPT-4o, Claude, Gemini, and QwenVLMax; and (3) spatially specialized models, including SpaceLLaVA, SpatialBot, SpatialLLM, SpatialRGPT, SpatialReasoner, and HiSpatial. 
+
+Implementation Details. We instantiate DiSR with Qwen3-VL-8B-Instruct, denoted as DiSR-8B-LoRA . Specifically, for object grounding in deriving 3D evidence, we use both the vision encoder and LLM backbone, while only the LLM is adopted for reasoning and question parsing. All expert perception modules remain frozen throughout training. We fine-tune the LLM by applying LoRA with rank 
+
+128 , scaling factor 256 , a learning rate of 2e − 5, and a maxi-mum sequence length of 1024 . A total of 0.33 M training data is used. As DiSR doesn’t need input images during training, a single RTX 4080 SUPER can provide enough memory to support 59 GPU hours of training. 
+
+Performance on Spatial Reasoning Benchmarks 
+
+Results on 3DSRBench. Table 1 compares 3DSRBench performance. DiSR-8B-LoRA achieves an overall accuracy of 67 .62% , significantly outperforming the strongest prior method HiSpatial by 3.77% . We observe that improvements are more pronounced on multi-object reasoning, where DiSR 
+
+models obtain around 63 .30% , exceeding HiSpatial by about 
+
+12.1% and SpatialReasoner by about 11.5% individually. These results indicate that complex reasoning over explicit 3D evidence is particularly effective for relations that require combining geometric information across multiple objects. 
+
+Results on SPAR-Bench. Table 2 reports performance com-parisons on SPAR-Bench. DiSR-8B-LoRA achieves the best overall score of 46 .33% , outperforming Qwen3-VL-8B-Instruct by 1.70% and the strongest prior spatial model HiS-patial by 3.55% . An interesting phenomenon is observed: 
+
+our DiSR achieves 49.37% for metric estimation tasks, sig-nificantly surpassing Qwen3-VL-8B-Instruct and HiSpatial by 15.82% and 20.27% , respectively. However, DiSR per-forms poorly on relational selection tasks. The reason behind this is that we follow SpatialReasoner for the training data construction, and the generated 0.33M training data can not cover the data distribution required for the relational selec-tion tasks. More diverse training data can definitely enhance the performance of DiSR .
+
+Results on CV-Bench-3D. 
+
+Table 3 reports the results on CV-Bench-3D. DiSR 
+
+only achieves comparable performance to Qwen3-VL-8B-Instruct. With a deep analysis, we observe the two important reasons: (I) as identified by previous work (Ma et al. 2026), CV-Bench-3D contains substantial 2D shortcuts, which al-low end-to-end MLLMs to infer answers without knowing the 3D geometry. (II) CV-Bench-3D suffers from low-quality images. It is challenging for current perception models to reconstruct accurate 3D evidence for small objects in low-quality images. Please refer to the Appendix for more detailed analysis. The contrast between CV-Bench-3D accuracy in Table 3 and the grounding results in Table 6 shows a surprising phe-nomenon: while HiSpatial achieves strong performance on CV-Bench-3D, it cannot even infer reliable object localiza-tion, leaving a mystery about how spatial reasoning per-forms in the model . In contrast, DiSR explicitly reconstructs structured 3D evidence and performs reasoning over this in-termediate representation, making the geometric reasoning process inspectable and allowing errors to be attributed to grounding, 3D modeling, or reasoning. In interactive applications, users can directly specify the queried objects instead of relying on model-predicted grounding. To simulate this setting, we replace the pre-dicted object boxes with ground-truth boxes while keeping the same DiSR-8B-LoRA checkpoint and reasoning pipeline. As shown in Table 3, the average accuracy increases from Table 1: Results on 3DSRBench and efficiency comparisons. Training efficiency is measured by GPU hours. “NR” indicates that the number is not reported. Method Overall Height Location Orientation Multi-Object Spatial Data Reported Training 
+
+Open-source generalist models 
+
+LLaVA-NeXT-8B 48.40 50.60 59.90 36.10 43.40 – –Qwen2.5-VL-7B-Instruct 48.40 44.10 62.70 40.60 40.50 – –Qwen3-VL-8B-Instruct 53.70 48.00 71.00 40.50 46.70 – –Qwen2.5-VL-72B-Instruct 54.90 53.30 71.00 43.10 46.60 – –
+
+Proprietary models 
+
+GPT-4o 44.20 53.20 59.60 21.60 39.00 NR NR Claude-3.5-Sonnet 48.20 53.50 63.10 31.40 41.30 NR NR Gemini-2.0-Flash Thinking 51.10 53.00 67.10 35.80 43.60 NR NR QwenVLMax 52.00 45.10 70.70 37.70 44.80 NR NR 
+
+Spatial specialist models 
+
+SpaceLLaVA 42.00 49.30 54.40 27.60 35.40 0.03M NR SpatialBot 41.00 40.40 54.40 31.90 33.50 NR A100 / 120h SpatialLLM 44.80 45.80 61.60 30.00 36.70 2M A100 / NR SpatialRGPT w/ depth 48.40 55.90 60.00 34.20 42.30 8.7M A100 / NR SpatialReasoner 60.30 52.50 75.20 55.20 51.80 0.05M H100 / NR HiSpatial-3B (RGB-XYZ) 63.85 70.29 66.17 76.76 51.20 2B H100 / 1536h 
+
+DiSR-8B-LoRA 67.62 62.75 72.85 69.40 63.30 0.33M RTX 4080S / 59h 
+
+Table 2: Results on SPAR-Bench.                                                        
+
+> Model Metric Estimation (MRA) Relational Selection (Acc.) Avg. Depth-OC Depth-OO Dist-OC Dist-OO Metric Avg. DistI-OO ObjRel-OO Rel. Avg.
+> Qwen2.5-VL-7B-Instruct 32.14 20.27 42.75 25.37 30.13 58.82 52.47 55.65 38.64 Qwen3-VL-8B-Instruct 47.06 17.80 19.08 50.25 33.55 72.35 61.26 66.81 44.63 SpatialReasoner 29.86 17.77 21.40 40.55 27.40 15.29 16.21 15.75 23.51 HiSpatial-3B (RGB-XYZ) 41.41 14.15 7.68 53.17 29.10 81.18 59.07 70.12 42.78
+> DiSR-8B-LoRA 57.20 27.35 67.66 45.26 49.37 54.12 26.37 40.25 46.33
+
+92.25% to 93.75%, with improvements of 1.34% and 1.66% on the Depth and Distance tasks, respectively. This con-trolled improvement identifies object grounding as a remain-ing performance bottleneck and demonstrates that stronger grounding models or user-provided object specifications can be incorporated without modifying the reasoning module. 
+
+Training Efficiency Discussion. DiSR is highly training-efficient. Specifically, it only fine-tunes the LoRA parame-ters using 0.33M training samples on a single RTX 4080 SUPER GPU for 59 hours. In contrast, HiSpatial fine-tunes the entire MLLM on 2 billion spatial QA pairs using 32 ×48 H100 GPU hours. Despite this substantial reduction in train-ing data, trainable parameters, and computational cost, DiSR 
+
+achieves superior spatial reasoning performance. These re-sults suggest that strong spatial reasoning does not neces-sarily require jointly learning 3D perception and reasoning through large-scale spatial supervision. Instead, by explicitly disentangling the two, specialized perception models can re-construct reliable geometric evidence, allowing the LLM to focus on high-level compositional reasoning over structured 3D representations. 
+
+Performance on General Reasoning Benchmarks 
+
+Spatial reasoning fine-tuning might improve domain-specific performance at the expense of the general visual understand-Table 3: Results on CV-Bench-3D. “w/ GT grounding” re-places model-predicted object boxes with ground-truth boxes to simulate user-specified targets. Method Depth ↑ Distance ↑ Avg. ↑                  
+
+> Qwen2.5-VL-7B-Instruct 84.50 80.00 82.25 Qwen3-VL-8B-Instruct 95.50 89.83 92.67 SpatialReasoner 87.00 72.83 79.92 HiSpatial-3B (RGB) --95.58 DiSR-8B-LoRA 92.83 91.67 92.25 DiSR-8B-LoRA w/ GT grounding 94.17 93.33 93.75
+
+ing capabilities inherited from the pretrained MLLM. To evaluate this trade-off, we assess DiSR on five general visual reasoning benchmarks. As shown in Table 4 , DiSR consis-tently achieves performance comparable to its base model, 
+
+i.e. , Qwen3-VL-8B-Instruct, indicating that the substantial gains on spatial reasoning are achieved while preserving the general reasoning capabilities of the pretrained MLLMs. In contrast, prior methods exhibit less favorable trade-offs. SpatialReasoner suffers a noticeable drop in general visual reasoning after fine-tuning on a relatively small 3D VQA dataset. HiSpatial is optimized on large-scale 3D VQA data and even improves over its base MLLM on general visual reasoning benchmarks. However, as shown in Table 6, both Table 4: Results on general multimodal reasoning bench-marks. Model MMBench GQA POPE SEED RealWorldQA HiSpatial-3B (RGB-XYZ) 69.67 61.50 87.97 63.51 58.95 SpatialReasoner 79.38 61.80 85.54 73.87 66.14 Qwen2.5-VL-7B-Instruct 84.02 61.23 87.61 77.64 68.76 Qwen3-VL-8B-Instruct 84.71 61.44 88.77 78.55 69.02 DiSR-8B-LoRA 84.62 61.20 88.72 78.95 68.76 Table 5: Interpretability and diagnosability of DiSR on CV-Bench-3D. Method Depth Distance DiSR-8B-LoRA 92.83 91.67 DiSR-8B-LoRA w/ gt of question parsing 92.33 92.83 DiSR-8B-LoRA w/ gt of object grounding 94.17 93.33 DiSR-8B-LoRA w/ gt of required 3D evidence 100.0 100.0 
+
+HiSpatial and SpatialReasoner experience a substantial de-cline in object grounding accuracy. These results demonstrate that the explicit disentanglement of perception and reasoning enables DiSR to specialize in spatial reasoning while retain-ing the broad visual reasoning capabilities inherited from the pretrained MLLM. 
+
+Ablation Study 
+
+Interpretability and Diagnosability of DiSR . By explicitly disentangling perception from reasoning, DiSR provides an interpretable reasoning pipeline in which errors can be at-tributed to individual components rather than an opaque end-to-end model. Since CV-Bench-3D provides ground-truth annotations for the intermediate 3D information required by 
+
+DiSR , we conduct a diagnosability analysis to identify the performance bottlenecks. Table 5 presents the results. Replacing the predicted ques-tion parsing with ground truth yields only marginal improve-ments, indicating that question parsing is not the primary source of error. In contrast, using ground-truth object ground-ing improves the accuracy of the Depth and Distance tasks by 1.34% and 1.66%, respectively, suggesting that more ac-curate object grounding—potentially enabled by stronger MLLMs—would further improve overall spatial reasoning performance. Finally, when the required 3D information is replaced with ground truth, DiSR achieves nearly 100% ac-curacy on both Depth and Distance, demonstrating that the reasoning module can reliably infer spatial relationships once provided with accurate 3D evidence. 
+
+Object Grounding Analysis. Table 6 reports category-conditioned object grounding on 8,548 unambiguous ex-amples constructed from COCO val2017 (Lin et al. 2014), retaining only image–category pairs with exactly one valid instance. Although DiSR fine-tunes the LLM with LoRA for question parsing and reasoning, DiSR-8B-LoRA preserves and slightly improves the grounding capability of Qwen3-VL-8B, achieving higher valid-box coverage and localization accuracy under the same semantic grounding instruction. In contrast, SpatialReasoner exhibits substantially lower IoU despite returning valid boxes for most examples while HiSpa-Table 6: Object grounding on the 8,548-example COCO val2017 unique-instance subset. Found is the percentage of examples for which a model returns a valid bounding box. All predictions are converted to original-image pixel coordi-nates before evaluation. Model Found ↑ mIoU ↑ IoU@0.50 ↑ IoU@0.75 ↑                    
+
+> Qwen2.5-VL-7B-Instruct 96.64 64.02 71.64 54.59 Qwen3-VL-8B-Instruct 89.67 71.05 78.81 66.39 SpatialReasoner 93.66 34.82 40.51 7.07 HiSpatial-3B (RGB-XYZ) fails –––DiSR-8B-LoRA 99.15 73.99 81.84 68.17
+
+tial even fails to return valid boxes. This discrepancy suggests that strong downstream spatial reasoning does not necessarily imply reliable object grounding, while the lightweight adap-tation used by DiSR retains the visual localization interface required for structured evidence construction. 
+
+Cross-backbone Evaluation. We evaluate the extensibility of DiSR by instantiating it with different backbone MLLMs. Besides Qwen3-VL-8B-Instruct, we adopt Qwen2.5-VL-7B-Instruct as the base MLLM. As shown in Table 7, DiSR 
+
+consistently achieves strong spatial reasoning performance across both backbones, demonstrating that the framework can seamlessly incorporate advances in foundation models without modifying its overall design. Moreover, a stronger backbone further improves spatial reasoning performance, primarily due to its enhanced general reasoning ability (Ta-ble 4) and more accurate object grounding capability (Ta-ble 6). These results highlight the modularity of DiSR , where improvements in the underlying MLLM can be directly trans-lated into stronger spatial reasoning performance. Table 7: Extensibility of DiSR .Base MLLM Height Location Orientation Multi-Object Overall Qwen2.5-VL-7B-Instruct 60.43 71.80 64.96 61.67 65.52 Qwen3-VL-8B-Instruct 62.75 72.85 69.40 63.30 67.62 
+
+Conclusion 
+
+We presented DiSR , a simple yet effective framework that explicitly disentangles 3D perception from spatial reason-ing through structured 3D evidence. By leveraging special-ized perception models to reconstruct the physical world into reliable 3D evidence and then training an LLM with LoRA to reason solely over explicit geometric evidence, 
+
+DiSR achieves state-of-the-art performance on multiple spa-tial reasoning benchmarks while requiring substantially less training data, fewer trainable parameters, and significantly lower computational cost than existing approaches. Beyond its strong empirical performance, the explicit separation of perception and reasoning improves interpretability, diagnos-ability, and modularity, demonstrating that disentangling per-ception and reasoning is a scalable and effective alternative paradigm for spatial intelligence. References 
+
+Achiam, J.; Adler, S.; Agarwal, S.; Ahmad, L.; Akkaya, I.; Aleman, F. L.; Almeida, D.; Altenschmidt, J.; Altman, S.; Anadkat, S.; et al. 2023. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 .Bai, S.; Cai, Y.; Chen, R.; Chen, K.; Chen, X.; Cheng, Z.; Deng, L.; Ding, W.; Gao, C.; Ge, C.; et al. 2025. Qwen3-vl technical report. arXiv preprint arXiv:2511.21631 .Chen, B.; Xu, Z.; Kirmani, S.; Ichter, B.; Sadigh, D.; Guibas, L.; and Xia, F. 2024. Spatialvlm: Endowing vision-language models with spatial reasoning capabilities. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 14455–14465. Chen, S.; Uy, M. A.; Song, C. H.; Ladhak, F.; Murali, A.; Qu, Q.; Birchfield, S.; Blukis, V.; and Tremblay, J. 2026a. Spacetools: Tool-augmented spatial reasoning via double in-teractive rl. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 37109–37120. Chen, Z.; Lu, X.; Zheng, Z.; Li, P.; He, L.; Zhou, Y.; Shao, J.; Zhuang, B.; and Sheng, L. 2026b. Geometrically-constrained agent for spatial reasoning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,38689–38699. Cheng, A.-C.; Yin, H.; Fu, Y.; Guo, Q.; Yang, R.; Kautz, J.; Wang, X.; and Liu, S. 2024. Spatialrgpt: Grounded spatial reasoning in vision-language models. Advances in Neural Information Processing Systems , 37: 135062–135093. Han, Y.; Zhou, E.; Rong, S.; An, J.; Wang, P.; Wang, Z.; Chi, C.; Sheng, L.; and Zhang, S. 2025. TIGeR: Tool-Integrated Geometric Reasoning in Vision-Language Models for Robotics. arXiv preprint arXiv:2510.07181 .Hong, Y.; Zhen, H.; Chen, P.; Zheng, S.; Du, Y.; Chen, Z.; and Gan, C. 2023. 3d-llm: Injecting the 3d world into large language models. Advances in Neural Information Process-ing Systems , 36: 20482–20494. Huang, J.; Yong, S.; Ma, X.; Linghu, X.; Li, P.; Wang, Y.; Li, Q.; Zhu, S.-C.; Jia, B.; and Huang, S. 2023. An embodied generalist agent in 3d world. arXiv preprint arXiv:2311.12871 .Hudson, D. A.; and Manning, C. D. 2019. Gqa: A new dataset for real-world visual reasoning and compositional question answering. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 6700–6709. Jin, L.; Zhang, J.; Hold-Geoffroy, Y.; Wang, O.; Blackburn-Matzen, K.; Sticha, M.; and Fouhey, D. F. 2023. Perspective fields for single image camera calibration. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 17307–17316. Kirillov, A.; Mintun, E.; Ravi, N.; Mao, H.; Rolland, C.; Gustafson, L.; Xiao, T.; Whitehead, S.; Berg, A. C.; Lo, W.-Y.; et al. 2023. Segment anything. In Proceedings of the IEEE/CVF international conference on computer vision ,4015–4026. Kuznetsova, A.; Rom, H.; Alldrin, N.; Uijlings, J.; Krasin, I.; Pont-Tuset, J.; Kamali, S.; Popov, S.; Malloci, M.; Kolesnikov, A.; et al. 2018. The open images dataset v4: Unified image classification, object detection, and visual rela-tionship detection at scale. arXiv preprint arXiv:1811.00982 .Li, B.; Wang, R.; Wang, G.; Ge, Y.; Ge, Y.; and Shan, Y. 2023a. Seed-bench: Benchmarking multimodal llms with generative comprehension. arXiv preprint arXiv:2307.16125 .Li, Y.; Du, Y.; Zhou, K.; Wang, J.; Zhao, X.; and Wen, J.-R. 2023b. Evaluating object hallucination in large vision-language models. In Proceedings of the 2023 conference on empirical methods in natural language processing , 292–305. Liang, H.; Shen, Y.; Deng, Y.; Xu, S.; Feng, Z.; Zhang, T.; Liang, Y.; and Yang, J. 2026. HiSpatial: Taming Hierarchi-cal 3D Spatial Understanding in Vision-Language Models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2502–2514. Lin, T.-Y.; Maire, M.; Belongie, S.; Hays, J.; Perona, P.; Ramanan, D.; Dollár, P.; and Zitnick, C. L. 2014. Microsoft coco: Common objects in context. In European conference on computer vision , 740–755. Springer. Liu, H.; Li, C.; Wu, Q.; and Lee, Y. J. 2023. Visual Instruc-tion Tuning. In Advances in Neural Information Processing Systems , volume 36, 34892–34916. Liu, Y.; Duan, H.; Zhang, Y.; Li, B.; Zhang, S.; Zhao, W.; Yuan, Y.; Wang, J.; He, C.; Liu, Z.; et al. 2024. Mmbench: Is your multi-modal model an all-around player? In European conference on computer vision , 216–233. Springer. Ma, C.; Lu, K.; Cheng, T.-Y.; Trigoni, N.; and Markham, A. 2024. Spatialpin: Enhancing spatial reasoning capabilities of vision-language models through prompting and interact-ing 3d priors. Advances in neural information processing systems , 37: 68803–68832. Ma, W.; Chen, H.; Zhang, G.; Chou, Y.-C.; Chen, J.; de Melo, C.; and Yuille, A. 2025a. 3dsrbench: A comprehensive 3d spatial reasoning benchmark. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,6924–6934. Ma, W.; Chou, Y.-C.; Liu, Q.; Wang, X.; de Melo, C.; Xie, J.; and Yuille, A. 2026. Spatialreasoner: Towards explicit and generalizable 3d spatial reasoning. Advances in Neural Information Processing Systems , 38: 140751–140774. Ma, W.; Ye, L.; de Melo, C. M.; Yuille, A.; and Chen, J. 2025b. Spatialllm: A compound 3d-informed design to-wards spatially-intelligent large multimodal models. In Pro-ceedings of the Computer Vision and Pattern Recognition Conference , 17249–17260. Tong, S.; Brown, E.; Wu, P.; Woo, S.; Middepogu, M.; Akula, S. C.; Yang, J.; Yang, S.; Iyer, A.; Pan, X.; et al. 2024. Cambrian-1: A fully open, vision-centric exploration of mul-timodal llms. Advances in Neural Information Processing Systems , 37: 87310–87356. Wang, Z.; Zhang, Z.; Pang, T.; Du, C.; Zhao, H.; and Zhao, Z. 2024. Orient anything: Learning robust object orienta-tion estimation from rendering 3d models. arXiv preprint arXiv:2412.18605 .xAI. 2024. RealWorldQA. https://x.ai/blog/grok-1.5v. Xu, R.; Wang, X.; Wang, T.; Chen, Y.; Pang, J.; and Lin, D. 2024. Pointllm: Empowering large language models to un-derstand point clouds. In European Conference on Computer Vision , 131–147. Springer. Yin, W.; Zhang, C.; Chen, H.; Cai, Z.; Yu, G.; Wang, K.; Chen, X.; and Shen, C. 2023. Metric3d: Towards zero-shot metric 3d prediction from a single image. In Proceedings of the IEEE/CVF international conference on computer vision ,9043–9053. Zhang, J.; Chen, Y.; Xu, Y.; Huang, Z.; Mei, J.; Chen, C.; Zhou, Y.; Yuan, Y.-J.; Cai, X.; Huang, G.; et al. 2026. From flatland to space: Teaching vision-language models to per-ceive and reason in 3d. Advances in Neural Information Processing Systems , 38. Zhu, S.; Kumar, A.; Hu, M.; and Liu, X. 2023a. Tame a wild camera: In-the-wild monocular camera calibration. 
+
+Advances in Neural Information Processing Systems , 36: 45137–45149. Zhu, Z.; Ma, X.; Chen, Y.; Deng, Z.; Huang, S.; and Li, Q. 2023b. 3d-vista: Pre-trained transformer for 3d vision and text alignment. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision , 2911–2921. 
+
+A Additional Results on 3DSRBench 
+
+Fine-grained Relation Analysis. Table A1 presents fine-grained comparisons across the 12 relation types in 3DSR-Bench. HiSpatial achieves strong performance on relations involving height, camera depth, and single-object orienta-tion, including Higher , Closer to camera , In front of , On the left , and Viewpoint , benefiting from its large-scale spa-tial training. In contrast, DiSR consistently excels at multi-object spatial relations, achieving the best performance on all five such categories. Specifically, DiSR-Qwen3 leads on 
+
+Closer to , Facing , Viewpoint toward object , and Same direc-tion , while DiSR-Qwen2.5 performs best on Parallel . These relations require aggregating geometric information across multiple objects or reasoning in object-dependent coordinate systems, which is challenging to learn solely from images. The superior performance of DiSR on these tasks highlights the advantage of explicit 3D evidence for reliable and com-positional spatial reasoning. 
+
+B Shortcut and Error Analysis on CV-Bench-3D 
+
+Although CV-Bench-3D is designed to evaluate spatial rea-soning beyond two-dimensional image-plane cues, its Dis-tance and Depth subsets still contain strong correlations be-tween simple 2D box geometry and the ground-truth an-swers. To better understand these effects, we first analyze task-specific 2D heuristics for each subset and then exploit the explicit intermediate representations in DiSR to identify the remaining sources of error. 
+
+Distance: Image-Plane Proximity 
+
+The Distance subset evaluates whether a model can deter-mine which of two candidate objects is closer to a reference object in 3D space. However, in many samples, the object that is closer to the reference object in 3D also exhibits a smaller 2D center distance. As a result, models may achieve high accuracy by exploiting 2D spatial correlations rather than recovering the underlying 3D relationship, making the reported performance on this subset an imperfect measure of true 3D reasoning ability. 
+
+2D Proximity Heuristic. Following the analysis of Spa-tialReasoner, we consider a simple heuristic that uses neither depth nor reconstructed 3D geometry. Let cr denote the 2D center of the red reference box, and let cb and cg denote the centers of the blue and green candidate boxes, respec-tively. The heuristic selects the candidate with the smaller image-plane distance to the reference: 
+
+ˆy2D = arg min 
+
+> o∈{ b,g }
+
+∥cr − co∥2 . (9) Despite its simplicity, this rule obtains 80.17% accuracy on the 600 Distance questions of CV-Bench-3D. In contrast, it obtains only 34.30% on the “Multi-Object Closer to" rela-tion of 3DSRBench, where image-plane proximity is sub-stantially less predictive of the annotated 3D relationship. Table A1: Fine-grained relation accuracy (%) on 3DSRBench. The best and second-best results in each row are shown in bold 
+
+and underlined, respectively. Category Relation SpatialReasoner HiSpatial-3B DiSR-Qwen2.5 DiSR-Qwen3 Height Higher 51.70 70.29 60.43 62.75 Location Above 70.70 47.71 69.36 70.38 Closer to camera 80.10 86.29 76.70 80.68 Next to 75.50 62.86 66.96 62.24 Orientation In front of 63.70 77.71 71.22 75.29 On the left 64.20 85.14 70.20 77.08 Viewpoint 36.40 67.43 53.35 55.69 Multi-Object Closer to 54.90 73.14 75.14 77.14 
+
+Facing 68.20 52.57 67.34 70.81 
+
+Viewpoint toward object 34.40 32.57 46.94 50.73 
+
+Parallel 50.10 47.43 62.54 57.82 Same direction 55.50 50.29 56.10 59.59 
+
+2D-Consistent and 2D-Conflict Subsets. To separate samples where image-plane cues correlate with the under-lying 3D relation from those where they fail, we partition the 600 Distance questions into two disjoint subsets. The 
+
+2D-consistent subset consists of 481 samples where the 2D heuristic prediction, ˆy2D , agrees with the ground-truth an-swer, whereas the remaining 119 samples form the 2D-conflict subset where the heuristic produces the opposite prediction. We also report the accuracy for the two subsets. 
+
+Discussion on Results. Table A2 jointly reveals a cross-benchmark discrepancy and substantial shortcut dependence within CV-Bench-3D Distance. The 2D heuristic achieves 80.17% accuracy on CV-Bench-3D but only 34.30% on the corresponding 3DSRBench, indicating that image-plane proximity is substantially more predictive on CV-Bench-3D. Qwen3-VL-8B-Instruct similarly drops from 98.96% on the 2D-consistent subset to 52.94% on the 2D-conflict subset. In contrast, DiSR-8B-LoRA improves conflict accu-racy to 74.79% and consistently achieves the strongest result, 77.14%, on the corresponding 3DSRBench. These results indicate that reasoning over explicit 3D evidence is a more reliable alternative for spatial intelligence. Figure A3 provides qualitative examples that complement the quantitative analysis. In the CV-Bench-3D example, the correct answer can be inferred almost directly from the rel-ative positions of the highlighted 2D bounding boxes, indi-cating the presence of strong image-plane cues. In contrast, applying the same 2D heuristic to the 3DSRBench example leads to an incorrect prediction, despite all queried objects being clearly visible. This discrepancy highlights the dif-ference in shortcut availability across benchmarks and mo-tivates our further analysis of 2D shortcut dependence in CV-Bench-3D. 
+
+Depth: Bottom-Position Shortcut 
+
+The Depth subset evaluates whether a model can determine which of two highlighted objects is closer to the camera. Although this task requires camera-depth reasoning, the an-notated depth relation is strongly correlated with the vertical positions of the object boxes. In many ground-plane scenes, the object closer to the camera is projected lower in the im-age, creating a potentially strong image-plane shortcut. 
+
+2D Bottom-Position Heuristic. Let ybot  
+
+> r
+
+and ybot  
+
+> b
+
+denote the bottom coordinates of the red and blue object boxes, respectively, where the image y-coordinate increases down-ward. We define a simple 2D heuristic that selects the ob-ject with the larger bounding-box-bottom coordinate, corre-sponding to a lower position in the image: 
+
+ˆybottom = arg max 
+
+> o∈{ r,b }
+
+ybot  
+
+> o
+
+. (10) Despite using neither depth information nor reconstructed 3D geometry, this heuristic correctly answers 512 of the 600 Depth questions, achieving 85.33% accuracy. We therefore partition the samples into 512 2D-consistent cases, for which the heuristic agrees with the ground-truth answer, and 88 2D-conflict cases, for which it selects the incorrect object. Figure A4 provides representative examples from the two subsets. In the 2D-consistent example, the table has a lower bounding-box-bottom position than the bookcase and is also annotated as the object closer to the camera. The bottom-position heuristic therefore produces the correct answer with-out using explicit depth information. In the 2D-conflict ex-ample, the chair has a lower bounding-box-bottom position than the hanging lamp, causing the same heuristic to select the chair, whereas the annotated closer object is the lamp. These examples illustrate both the strong predictive corre-lation captured by the heuristic and the cases in which this image-plane cue conflicts with the underlying camera-depth relation. 
+
+Discussion on Results. Table A3 confirms that CV-Bench-3D Depth contains a strong bottom-position shortcut. The simple 2D heuristic correctly answers 512 of the 600 ques-tions, indicating that the annotated closer object is usually projected lower in the image. Figure A4 qualitatively illus-trates both sides of this correlation: the cue directly yields the correct answer in a 2D-consistent sample but becomes Table A2: Analysis of distance-related reasoning on CV-Bench-3D and 3DSRBench. The CV-Bench-3D Distance subset is divided according to whether the 2D bounding-box-center heuristic agrees with the ground-truth answer. The final column reports accuracy on the corresponding Multi-Object Closer to relation of 3DSRBench.                      
+
+> Method CV-Bench-3D Distance 3DSRBench Overall 2D-Consistent (481) 2D-Conflict (119) Multi-Object Closer to 2D Heuristic 80.17 100.00 0.00 34.30 SpatialReasoner 72.83 75.26 63.03 54.90 Qwen3-VL-8B-Instruct 89.83 98.96 52.94 61.40 DiSR-8B-LoRA 91.67 95.84 74.79 77.14
+
+Table A3: Accuracy (%) on the CV-Bench-3D Depth subset after dividing the samples according to whether the 2D bounding-box bottom-position heuristic agrees with the ground-truth answer. The heuristic obtains 100.00% on the 2D-consistent subset and 0.00% on the 2D-conflict subset by construction. The best result among the learned models in each column is shown in 
+
+bold .               
+
+> Method Overall 2D-Consistent (512) 2D-Conflict (88) 2D Heuristic 85.33 100.00 0.00 SpatialReasoner 87.00 87.30 85.23 Qwen3-VL-8B-Instruct 95.50 96.09 92.05
+> DiSR-8B-LoRA 92.83 93.55 88.64
+
+misleading in a 2D-conflict sample. Qwen3-VL-8B-Instruct and DiSR-8B-LoRA retain 92.05% and 88.64% accuracy, respectively, on the 2D-conflict subset, showing that both models can often re-cover the correct camera-depth relation even when the bottom-position cue is misleading. Moreover, Qwen3-VL-8B-Instruct outperforms DiSR-8B-LoRA on both the 2D-consistent and 2D-conflict subsets. Its overall advantage therefore cannot be explained solely by stronger exploitation of the bottom-position shortcut. The object-size analysis in Table A4 instead shows that the remaining errors of DiSR-8B-LoRA are concentrated in samples containing small tar-get objects, for which automatically constructed object-level 3D evidence is less reliable. 
+
+Structured 3D Evidence for Small Objects 
+
+Table 5 in the main paper identifies that the performance bottleneck of DiSR on CV-Bench-3D lies in the inaccurate 3D evidence. As we observe that the images in CV-Bench-3D are often in low-resolution, we further investigate whether structured 3D evidence will become less reliable when the queried object occupies only a small image region. For each question, we measure the image-plane size of the ground-truth answer object using its annotated 2D bounding box: 
+
+sans = wans hans 
+
+W H , (11) where W and H denote the image width and height, re-spectively. The 600 Depth samples are sorted according to 
+
+sans and divided into five equally sized groups of 120 sam-ples, ranging from the smallest to the largest answer objects. 
+
+Discussion on Results. Table A4 shows that the lower per-formance of DiSR is caused by samples with small target ob-jects. For the smallest-object group, where the objects occupy only 0.236% of the image area, Qwen3-VL-8B-Instruct out-performs DiSR-8B-LoRA by 5.00%, while the 3D-evidence construction error rate reaches 15.00%. In contrast, for the largest-object group, where objects occupy 14.453% of the image area, DiSR achieves comparable accuracy to Qwen3-VL-8B-Instruct, with the 3D-evidence construction error rate reduced to only 1.67%. Figure A5 presents four representa-tive failure cases involving small image-plane target objects. Across these examples, the queried objects occupy only a limited image region, making object-level depth and geo-metric estimation particularly challenging. All four exam-ples are selected from samples that remain incorrect under GT Object Grounding but are recovered with GT 3D Evi-dence. This pattern indicates that the remaining errors arise from inaccurate object-level geometry rather than incorrect object references. These examples qualitatively support the size-conditioned trend reported in Table A4. 
+
+C Reproducibility Details 
+
+Optimization. We use a QLoRA-style setup in both stages. The frozen backbone is loaded with 4-bit NF4 quanti-zation, double quantization, and bfloat16 compute, while only the LoRA parameters are optimized. LoRA is applied to q_proj , k_proj , v_proj , o_proj , gate_proj ,
+
+up_proj , and down_proj , with rank 128, scaling fac-tor 256, dropout 0.05, and no trainable bias. We use 
+
+paged_adamw_8bit with β1 = 0 .9, β2 = 0 .999 , ϵ =10 −8, zero weight decay, and a maximum gradient norm of 1.0. The learning rate follows a cosine schedule after a 3% linear warmup. Training uses bfloat16, gradient checkpoint-ing, and a single GPU. The random seed is set to 42. Table A4: Depth accuracy (%) stratified by the image-plane size of the ground-truth answer object. The 600 samples are divided into five equally sized groups of 120 samples. “DiSR w/ GT Object Grounding” uses ground-truth object regions while retaining automatically constructed 3D evidence. “DiSR w/ GT 3D Evidence” additionally replaces the automatically constructed evidence with ground-truth 3D evidence, achieving 100% accuracy in every size group.                                   
+
+> Answer-object size Median box Qwen3-VL-8B DiSR-8B DiSR w/ GT Object DiSR w/ GT 3D area (%) Instruct LoRA Grounding Evidence Smallest 20% 0.236 89.17 84.17 85.00 100.00 Small 0.786 97.50 95.00 95.00 100.00 Medium 2.184 95.83 92.50 93.33 100.00 Large 5.618 96.67 94.17 95.00 100.00 Largest 20% 14.453 98.33 98.33 98.33 100.00
+
+Table A5: Training hyperparameters for the reported DiSR-8B model.                           
+
+> Setting DiSR-8B Stage-1 training instances 112,157 Stage-2 training instances 216,000 Epochs per stage 1Maximum sequence length 1,024 Per-device batch size 1Gradient accumulation 16 Effective batch size 16 Stage-1 learning rate 2×10 −5
+> Stage-2 learning rate 2×10 −5
+> Stage-1 optimizer steps 7,010 Stage-2 optimizer steps 13,500 Warmup ratio 0.03 Stage-1 warmup steps 211 Stage-2 warmup steps 405 Optimizer paged_adamw_8bit
+> Learning-rate scheduler cosine Weight decay 0Maximum gradient norm 1.0 LoRA rank / scaling 128 / 256 LoRA dropout 0.05 Random seed 42
+
+Perception Modules. All expert perception models re-main frozen during training and evaluation. The stack uses SAM 2.1 HQ with a Hiera-L backbone for object masks, Metric3D v2 with a ViT-Giant backbone for metric depth, Perspective Fields with the ParamNet-360Cities checkpoint and WildCamera with its all-data checkpoint for camera ge-ometry, and Orient Anything with a DINOv2-L backbone for object orientation. No expert model is fine-tuned on the evaluation benchmarks. 
+
+Software and Compute. DiSR-8B is trained with Python 3.10.20, PyTorch 2.6.0+cu118, Transformers 4.57.6, PEFT 0.19.1, Accelerate 1.14.0, and bitsandbytes 0.49.2 on a single NVIDIA RTX 4080 SUPER under Linux kernel 5.15.0-78-generic. Stages 1 and 2 require 19.50 and 39.25 GPU-hours, respectively, for a total of 58.75 GPU-hours. Figure A3: Qualitative examples illustrating the 2D shortcut in CV-Bench-3D Distance and its failure to transfer reliably to 3DSRBench. Left: In the CV-Bench-3D Distance example, the keyboard occupies an image-plane region close to and partially overlapping the red reference box around the monitor, whereas the chair is projected substantially farther away. The 2D proximity heuristic therefore selects the keyboard, matching the annotated answer as well as the predictions of Qwen3-VL-8B-Instruct and DiSR-8B-LoRA. Right: In the 3DSRBench Multi-Object Closer to example, the center of the yellow-taxi box lies closer to the police-officer box in the image plane than the center of the camera box. Nevertheless, the annotated 3D answer is the camera, demonstrating that image-plane proximity is not a reliable proxy for the underlying 3D relation. Bounding boxes in the 3DSRBench image are added only for visualization and are not part of the original benchmark input. Figure A4: Representative examples from the 2D-consistent and 2D-conflict subsets of CV-Bench-3D Depth analyzed in Table A3. Left: In the 2D-consistent example, the table has a lower bounding-box-bottom position than the bookcase and is also annotated as the object closer to the camera. The bottom-position heuristic therefore produces the correct answer without using explicit depth information. Right: In the 2D-conflict example, the chair has a lower bounding-box-bottom position than the hanging lamp, causing the same heuristic to select the chair, whereas the annotated closer object is the lamp. These examples illustrate when the bottom-position shortcut agrees with the underlying camera-depth relation and when it becomes misleading. Figure A5: Four representative failure cases involving small image-plane target objects from CV-Bench-3D Depth, corresponding to the size-stratified analysis in Table A4. Across these examples, Qwen3-VL-8B-Instruct produces the correct answer, whereas DiSR-8B-LoRA makes an incorrect prediction. All four examples are selected from samples that remain incorrect under GT Object Grounding but are recovered with GT 3D Evidence, indicating errors in the automatically constructed object-level geometry.
