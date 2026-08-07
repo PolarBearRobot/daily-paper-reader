@@ -1,0 +1,297 @@
+{
+  "date": "20260807",
+  "date_label": "",
+  "generated_at": "2026-08-07 01:32:09 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.04196v1",
+      "route": "202608/07/2608.04196v1-simdex-mining-similar-egocentric-videos-for-cross-embodiment-dexterous-manipulation",
+      "title": "SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "大规模第一人称人类视频挖掘用于灵巧操作VLA后训练",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04396v1",
+      "route": "202608/07/2608.04396v1-cofactvla-deconfounding-vision-language-action-models-via-counterfactual-intervention",
+      "title": "CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过反事实干预诊断并消除VLA模型中的因果混淆",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04404v1",
+      "route": "202608/07/2608.04404v1-faster-wam-efficient-inference-time-future-conditioning-for-robust-world-action-models",
+      "title": "Faster-WAM: Efficient Inference-Time Future Conditioning for Robust World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "世界动作模型的效率与未来条件化",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04510v1",
+      "route": "202608/07/2608.04510v1-guard-grounding-uncertainty-and-ablation-based-risk-detection-for-diffusion-based-vlas",
+      "title": "GUARD: Grounding Uncertainty and Ablation-Based Risk Detection for Diffusion-Based VLAs",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于消融的扩散式VLA故障检测",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04633v1",
+      "route": "202608/07/2608.04633v1-mind-vla-instruction-aware-spatial-representation-alignment-for-vision-language-action-models",
+      "title": "Mind-VLA: Instruction-Aware Spatial Representation Alignment for Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向视觉-语言-动作模型的指令感知空间表示对齐",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04657v1",
+      "route": "202608/07/2608.04657v1-mobilewam-bridging-world-action-models-to-mobile-manipulation-with-chain-of-foresight",
+      "title": "MobileWAM: Bridging World Action Models to Mobile Manipulation with Chain-of-Foresight",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将世界动作模型扩展到移动全身操作",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04692v1",
+      "route": "202608/07/2608.04692v1-suppression-sticks-locality-is-fragile-a-closed-loop-target-and-control-audit-of-task-vector-negation-in-vla-policies",
+      "title": "Suppression Sticks, Locality Is Fragile: A Closed-Loop Target-and-Control Audit of Task-Vector Negation in VLA Policies",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "对VLA策略中任务向量取反的闭环目标-控制审计，促进可解释性",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04996v1",
+      "route": "202608/07/2608.04996v1-dreamwam-beyond-rgb-future-prediction-for-world-action-models",
+      "title": "DreamWAM: Beyond RGB Future Prediction for World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为世界动作模型提出超越RGB的结构化未来预测",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.05042v1",
+      "route": "202608/07/2608.05042v1-bridgevla-a-data-efficient-generalizable-and-memory-augmented-vision-language-action-framework-for-3d-manipulation",
+      "title": "BridgeVLA++: A Data-Efficient, Generalizable, and Memory-Augmented Vision-Language-Action Framework for 3D Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向3D操作的VLA框架，具备数据高效与记忆增强",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2607.26985v1",
+      "route": "202608/07/2607.26985v1-symmgrid-super-scaling-on-robot-learning-with-parallelized-symmetries-and-egocentric-exocentric-visual-perception",
+      "title": "SymmGrid: Super-Scaling On-Robot Learning with Parallelized Symmetries and Egocentric-Exocentric Visual Perception",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于对称性的轨迹级增强框架，大幅扩展机器人本体学习数据",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04428v1",
+      "route": "202608/07/2608.04428v1-deltoris-enabling-real-time-vla-inference-in-embodied-ai-via-bit-level-sparsity-and-speculative-inference",
+      "title": "Deltoris: Enabling Real-time VLA Inference in Embodied AI via Bit-level Sparsity and Speculative Inference",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向具身AI的实时VLA推理，利用比特级稀疏和推测推理",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04765v1",
+      "route": "202608/07/2608.04765v1-explicit-language-memory-for-long-horizon-planning-in-vision-language-action-models",
+      "title": "Explicit Language Memory for Long-Horizon Planning in Vision-Language-Action Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "提出带显式语言记忆的层次化长时程VLA架构",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.05137v1",
+      "route": "202608/07/2608.05137v1-smartmage-dynamic-modality-orchestration-for-3d-scene-understanding",
+      "title": "SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向具身智能的3D场景理解，动态模态编排",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04425v1",
+      "route": "202608/07/2608.04425v1-ssc-a-verifiable-structured-representation-for-bimanual-manipulation-labelling",
+      "title": "SSC: A Verifiable Structured Representation for Bimanual Manipulation Labelling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "用于双手机器人操作标注的可验证结构化表示",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04533v1",
+      "route": "202608/07/2608.04533v1-egoafford-task-oriented-affordance-grounding-via-egocentric-referring-segmentation",
+      "title": "EgoAfford: Task-Oriented Affordance Grounding via Egocentric Referring Segmentation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "连接第一视角观察与任务导向可供性的基准",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04842v1",
+      "route": "202608/07/2608.04842v1-rora-realistic-object-reconstruction-with-articulation",
+      "title": "RORA: Realistic Object Reconstruction with Articulation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "从单段视频重建带关节物体的真实到仿真资产",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.02547v1",
+      "route": "202608/07/2608.02547v1-why-does-action-chunking-improve-behavioral-cloning-performance-in-robotic-control",
+      "title": "Why Does Action Chunking Improve Behavioral Cloning Performance in Robotic Control?",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "行为克隆中动作分块与表示学习假设",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    },
+    {
+      "paper_id": "2608.04575v1",
+      "route": "202608/07/2608.04575v1-physmind-from-video-to-executable-worlds-for-training-free-physical-reasoning",
+      "title": "PhysMind: From Video to Executable Worlds for Training-Free Physical Reasoning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将视频转化为可执行世界，可用于生成机器人可执行动作数据",
+      "first_seen_at": "2026-08-07 01:32:09 UTC",
+      "updated_at": "2026-08-07 01:32:09 UTC"
+    }
+  ]
+}

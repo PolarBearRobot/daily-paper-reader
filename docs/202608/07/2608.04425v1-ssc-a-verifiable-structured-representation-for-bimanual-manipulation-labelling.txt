@@ -1,0 +1,611 @@
+Title: SSC: A Verifiable Structured Representation for Bimanual Manipulation Labelling
+
+URL Source: https://arxiv.org/pdf/2608.04425v1
+
+Published Time: Thu, 06 Aug 2026 00:27:43 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# SSC: A Verifiable Structured Representation for Bimanual Manipulation Labelling 
+
+Yupu Lu 
+
+School of Computing and Data Science The University of Hong Kong, HKSAR 
+
+luyp16@connect.hku.hk 
+
+Shuang Wu 
+
+Artificial Intelligence Laboratory (Leibniz), HKSAR 
+
+wushuangust@gmail.com 
+
+Sihan Chen, Ruihua Han 
+
+School of Computing and Data Science The University of Hong Kong, HKSAR 
+
+Yichen Zhang, Marcus Kalander 
+
+Artificial Intelligence Laboratory (Leibniz), HKSAR 
+
+Jia Pan 
+
+School of Computing and Data Science The University of Hong Kong, HKSAR 
+
+panj@connect.hku.hk 
+
+Abstract: Subtask labels decompose a long-horizon manipulation demonstra-tion into shorter semantic segments for policy training and evaluation. Natural-language descriptions are easy to read, but their linguistic variability makes au-tomatic verification difficult. Rigid template formats, such as BEHAVIOR-1K’s 
+
+skill annotation , are linguistically over-segmented, hindering both readabil-ity and annotation consistency. We propose the Structured Subtask Chain (SSC) , a state-transition representation that bridges these extremes. A demon-stration is a sequence of Structured Subtask Template (SST) entries. Each SST stores core action components (subject, predicate, object), flexible conditions (ad-verbial modifiers such as spatial or instrumental phrases), a base-motion field sep-arate from arm actions, and an after-state scene graph. Built on this format, SSC supports three vision-language (VL)–assisted functions: rendering SSTs as natu-ral language, checking the assembled chain against four state-transition rules, and completing underspecified fields through a query resolution cascade. We instanti-ate the pipeline on BEHAVIOR-1K (50 tasks, 3 episodes per task, 2,357 annotated action cells) for logic verification and content completion, evaluating 13 selected state-of-the-art VL models as candidate verifiers and reporting labelling anoma-lies. 
+
+Keywords: Structured Subtask Chain, Structured Subtask Template, Subtask La-belling, Vision-Language Verifier, Bimanual Manipulation, BEHAVIOR-1K 
+
+# 1 Introduction 
+
+Large-scale imitation learning for robotic manipulation, especially recent vision-language-action (VLA) generalist policies such as π0.7 [1] or LingBot-VLA [2], increasingly depend on demonstra-tion datasets pre-segmented into dense, semantically-labelled subtasks. The representation of those labels determines what downstream consumers can do with them: hierarchical policies need struc-tured arm and object fields, VLA training-data curators need labels that admit scalable automatic checks, and human reviewers need labels that compose back into readable task descriptions. Two families of subtask-label representations dominate today, and each fails on at least one of these axes. Natural-language descriptions are readable, but have no structural invariant and are hard arXiv:2608.04425v1 [cs.RO] 5 Aug 2026 to verify autimatically because of their linguistic variability [3]. Rigid template formats , such as BEHAVIOR-1K’s skill annotation [4], are structured but suffer from two parallel issues: over-segmentation into many narrow fields and complex linguistic logic, which cause verification issues and leave key components unfilled in some tasks. Together these issues affect both readability and cross-task consistency. We propose the Structured Subtask Chain (SSC) (Sec. 3), a state-transition representation that oc-cupies the structured-yet-flexible middle ground: a demonstration is a chain of Structured Subtask Template (SST) entries, each pairing grammatical action fields and flexible modifiers, along with separate base motion and an after-state scene graph describing current situation. Around this representation we build a three-stage labelling pipeline (Sec. 4): (i) SST construc-tion records unresolved fields as typed pending queries; (ii) a three-level cascade resolves them by trajectory inference, opportunistic annotation lookup, and typed VL queries; and (iii) consistency checking validates the assembled chain against four state-transition invariants (hold/release symme-try, object-identity continuity, gripper-event–window alignment, and bimanual hand-over legality), providing automatic invariant-based verification of the chain. We evaluate SSC on BEHAVIOR-1K as a case study (Sec. 5) over 50 household tasks, 3 episodes per task, and 13 VL models from five providers, reporting per-model verifier accuracy, task performance, and anomalies raised by the consistency checker. 
+
+# 2 Related Work 
+
+Subtask-Conditioned Policies for Long-Horizon Manipulation. Recent vision-language-action (VLA) foundation models, of which π0.7 [1] and LingBot-VLA [2] are a prominent example, have rapidly adopted subtask decomposition for general manipulation, targeting on long-horizon tasks [5, 6]. A parallel keypose-policy line predicts explicit sub-goals before low-level trajectory generation [7, 8, 9, 10]. These works all motivate structured subtask reasoning, which our pipeline makes explicit and checkable, including arm assignment for bimanual demonstrations. 
+
+Manipulation Datasets and the Annotation Bottleneck. Manipulation datasets cover simulated platforms [11, 12, 4], real-robot teleoperation [13, 14, 3], human bimanual demonstrations [15, 16, 17], and instruction-following benchmarks with long-horizon language-conditioned episodes [18, 19]. Their annotations expose heterogeneous structure, such as language descriptions, subtask-level language, task hierarchies, action grammars, or dialogues, largely operating at the task or cross-subtask level. The SSC representation introduced in this paper sits at a complementary, within-subtask level, helping oragnize and verify the subtask labels in a template but maintain contents flexibility. 
+
+Subtask Labelling: VL Annotators and Temporal Action Segmentation. Two types of ap-proaches have produced complementary labelling tools. VL-based annotators leverage pretrained VL models to propagate language onto unlabelled demonstrations or jointly identify keyframes with skill language [20, 21, 22, 23]. Temporal action segmentation treats labelling as a discriminative video task with multi-stage temporal convolutions, query transformers, and supporting annotation interfaces [24, 25, 26, 27]. Our SSC format complements both lines with a structured state-transition representation and a four-invariant consistency check (Sec. 4.4). 
+
+# 3 Framework Formalism 
+
+We model a manipulation demonstration as a state-transition system , similar to the state-transition view in world-model design [28]. A demonstration is an alternating sequence of states and actions, 
+
+g0
+
+> A1
+
+−−→ g1
+
+> A2
+
+−−→ g2
+
+> A3
+
+−−→ · · · AK−1
+
+−−−−→ gK−1,
+
+2where a state gk is a scene-graph snapshot recording which objects are held by which arm, and an action set Ak describes the structural change between consecutive states. With this state-transition view in place, the pipeline annotates each transition with structured labels and resolves any resid-ual ambiguity by progressively richer information sources. The full Python schema is given in Appendix A. 
+
+3.1 Structured Subtask Template and Chain 
+
+An Structured Subtask Template (SST) entry Sk is a record carrying everything required to charac-terise one contiguous interval of the demonstration: 
+
+Sk = ( duration k, motion k, A k, g k, Q k ), (1) where duration k = (sk, e k] is a half-open frame range, motion k ∈ {idle , move } records whether the robot base translates during the interval, Ak is an ordered list of action entries de-scribing the transition from gk−1 to gk, gk is the scene-graph snapshot of the after-state of Sk,
+
+Qk is a list of pending queries that record any residual ambiguity in the entry (see Sec. 4.3), and 
+
+S0 = ( [0 , 0] , idle , ∅, g 0, ∅ ) is a trivial state. The Structured Subtask Chain (SSC) is the dense sequence {Sk}K−1 
+
+> k=0
+
+. The induced sequence of after-states g0, g 1, . . . , g K−1 is the state trajectory of the demonstration, and is the quantity our pipeline maintains as a running variable across the entire labelling process. 
+
+Grammatical decomposition of an action entry. Each action entry a ∈ Ak decomposes one observed action into grammatical components: a subject (arm ∈ { left , right , coop , unsure }), a 
+
+predicate (an action type ∈ { grasp , tool use , contact , idle } + an action verb ), an object 
+
+(action obj ), and conditions (adverbial modifiers such as spatial and instrumental modifiers on the action and on the object, e.g. from breakfast table or with knife ; conditions are intentionally flexible and admit several correct phrasings around the same physical action). The structured fields compose directly into a natural-language sentence ( “right arm picks book from breakfast table” ), so an SSC can be reconstructed as a human-readable transcript or audited field-by-field as machine-readable structure. 
+
+Motion is separate from arm-side actions. motion k is kept outside the action list because base translation and arm manipulation can occur independently and are inferred from disjoint signals. A subtask in which the robot drives forward while one arm holds an object can merge the two streams into one single move and hold phrase in the natural-language description. 
+
+Scene-Graph State Space. A scene-graph snapshot g is a triple 
+
+g = ( left( g), right( g), same( g) ) , (2) where left( g), right( g) ∈ O ∪ {⊥} are the object identifiers held by each hand (with ⊥ denoting an empty hand) and same( g) ∈ { T, F, ?} records whether the two hands hold the same physical object (which can be true, false, or unresolved when both hands hold same-named objects whose identity cannot be inferred from kinematics alone). Up to renaming of objects, the state space contains exactly seven configurations (Table 1). 
+
+# 4 Methodology 
+
+4.1 Pipeline Overview 
+
+The SSC pipeline runs in three stages (Fig. 1). (i) SST construction (Sec. 4.2) parses each subtask annotation and the underlying trajectory into an SST entry, recording any fields that cannot be deter-mined at this stage as typed pending queries. (ii) The three-level resolution cascade (Sec. 4.3) settles those queries by preferring trajectory inference over annotation lookup and annotation lookup over vision-language (VL) queries. (iii) Consistency checking (Sec. 4.4) validates the assembled chain 3Table 1: The seven scene-graph configurations. D? is the only configuration with unresolved state; the resolution cascade of Sec. 4.3 promotes D? to either Dd or S by a VL query. 
+
+Config left( g) right( g) same( g) Description 
+
+E ⊥ ⊥ F Both hands empty 
+
+L oA ⊥ F Only left holds 
+
+R ⊥ oB F Only right holds 
+
+D oA oB̸ = oA F Different objects 
+
+Dd oA oA (instance) F Same-named, confirmed different instances 
+
+S oX oX T Same physical object (co-grasp) 
+
+D? oA oA ? Same-named, identity unresolved 
+
+against four state-transition invariants. Stages (i) and (ii) are interleaved in an online architecture: each SST entry is fully resolved before the next is built, so the resolved scene-graph state at entry k
+
+propagates into the trajectory inferences applied to entry k + 1 .
+
+Sk−1 SST construction     
+
+> duration k,Ak,Qk
+
+Label parsing 
+
+> duration, verb, object
+
+Traj. parsing 
+
+> gripper events, motion
+
+L1: Traj. inference 
+
+> heuristics
+
+L2: Annotations 
+
+> extra info (optional)
+
+L3: VL query 
+
+> main resolution
+
+Consistency check  
+
+> four invariants
+
+Sk
+
+Figure 1: Per-subtask processing flow. For each subtask interval, SST construction parses the anno-tation and trajectory into an entry Sk with pending queries Qk; the cascade resolves Qk by Level 1 (trajectory inference), optionally Level 2 (annotation lookup) when dataset metadata supports it, and Level 3 (VL queries) for residual ambiguity; the consistency checker validates Sk against four state-transition invariants; the resolved after-state gk in Sk then becomes the before-state for Sk+1 .
+
+4.2 SST Construction 
+
+We assume each subtask annotation interval contains at most one stateful action per arm; intervals containing more than one sequential stateful action by the same arm must be split upstream. Each annotation then passes through three steps that together populate every field of Sk.
+
+Label parsing extracts the action verb, the action type, the action object, any spatial or instrumental conditions, and the acting arm when the label states it explicitly; the parser patterns are dataset-specific to the labelling style. 
+
+Trajectory parsing extracts per-arm gripper open/close events from the gripper-command stream and classifies each subtask’s base motion as idle or move from the smoothed lower-body signal. 
+
+SST construction assembles the entry in two steps. First, it advances the running scene-graph state gk
+
+under the parsed action case: persistent acquire/release, stateless contact, or transient manipulation (whose temporary hold is cleared before the next entry). Second, it records every field that the parsed inputs cannot uniquely determine into Qk as a typed query ( arm assignment , same object , or 
+
+empty hand ), each flagged with whether VL resolution is required. Related verb vocabulary, the parsed action logic, and the typed query schema are detailed in Ap-pendix E. 
+
+4.3 State Resolution Cascade 
+
+SST construction emits each entry Sk with most fields populated but with Qk recording any residual ambiguity. The cascade resolves Qk in three levels of increasing cost. 4Level 1 (L1): Trajectory inference. L1 combines trajectory signals with the running scene-graph state to settle queries that can be resolved or verified from trajectory data. In the current implemen-tation, L1 targets arm assignment queries on grasp and release transitions with gripper events. A single arm’s gripper close or open event identifies that arm as the acting one and confirms which arm holds, or just released, which object ; a simultaneous bimanual gripper event identifies both arms as acting. L1 also recognises a cooperative release from the scene-graph state alone, a release of an object that was previously co-grasped, and aligns action entry to reflect this cooperative behavior. 
+
+Level 2 (L2, optional): Annotation lookup. When the dataset supplies extra metadata that can disambiguate same-object identity, for example, type tags on the action, prefixes on object names, or instance-level object identifiers, L2 consults this metadata to resolve queries before reaching the VL layer. This level is optional: it is skipped when the dataset lacks reliable metadata for the queried field, and on a per-field basis when the metadata signal is unreliable. 
+
+Level 3 (L3): Vision-language queries. L3 handles residual queries that L1 and any available L2 metadata cannot resolve. The query kind determines the prompt template: an arm assignment 
+
+query asks “which arm performs this action?”, and a same object query asks “are the two hands on the same physical object or two same-named instances?”. The full template text and JSON response schema are given in Appendix F and can be extended to new query types as needed. 
+
+Ordering and online execution. Within each SST entry, the cascade resolves pending queries in dependency order. It first answers queries that determine the scene graph, then answers queries whose prompt depends on that fixed before- or after-state. Construction and cascade execution are interleaved per entry. After Qk is resolved, gk becomes the before-state of Sk+1 , so resolved decisions made at Sk can support deterministic inference at the next entry and avoid re-raising downstream queries. The snapshot/re-advance mechanic that implements this online interleaving is described in Appendix E. Fig. 2 illustrates the workflow on a three-subtask trace where a single L3 resolution at an acquire subtask deterministically settles downstream release of the same object via L1.            
+
+> S20 :Both arms pick toy.
+> arm = ? ,same = ?
+> L3: Query step
+> arm = coop ,same = T
+> S21 :Navigate.
+> same = T(inherited)
+> S22 :Both arms release toy.
+> arm = coop (no query)
+> propagate
+
+Figure 2: A three-subtask trace of the online cascade. Setup: at S20 both arms acquire a same-named object; trajectory and annotation alone cannot tell whether they hold one physical instance ( S) or two (Dd). Resolution: the cascade falls through to Level 3, issues a same object query, and commits 
+
+same = T as the after-state of S20 . Consequence: the resolved state propagates through S21 and into the before-state of S22 , so Level 1 deterministically infers a cooperative release ( arm = coop )at S22 with no further VL call. A pipeline that resolved each subtask in isolation would re-raise the same-object query at S22 .
+
+4.4 Subtask Chain Consistency Checking 
+
+An SSC carries enough state information to validate its own consistency. The assembled chain is checked against four state-transition invariants, and any violation is flagged as an anomaly rather than silently overwritten: (I1) Hold/release symmetry — every grasp acquisition of an object by an arm must be matched by a subsequent release of the same object by the same arm, or by a coopera-tive release of an object acquired via arm = coop ; (I2) Object-identity continuity — a held object persists into the next entry unless a release-class verb targets the holding arm; (I3) Gripper-event– window alignment — for every grasp/release action, the gripper close/open event that physically realises it must fall inside the action’s annotated frame range (sk, e k]; an event lying outside the window flags an annotation-timing anomaly; (I4) Bimanual hand-over legality — a hand over 
+
+requires a release event on the giver arm and a close event on the receiver arm within the same 5window, with the object moving from the giver’s slot to the receiver’s slot. The transition tables that ground these invariants are given in Appendix C, and Appendix D establishes that the I1–I4 set is complete under the framework’s stated assumptions, extendable to future development as needed. These four invariants operate on the state trajectory rather than on specific verbs. In Sec. 5, we there-fore report two complementary measures: a local per-action accuracy on the ( arm , action type ,
+
+action verb , action obj ) tuple, which scores label-by-label correctness against a reference SSC; and a global SSC anomaly count that totals I1–I4 violations across the chain (evaluated per arm and per entry, yielding a vector of anomaly counts indexed by invariant type). The two are independent: an SSC can be locally accurate but globally inconsistent (e.g. a release that does not match any acquire) or globally consistent but locally wrong (e.g. a systematic misnaming of one object), so reporting both surfaces failure modes that either metric alone would miss. 
+
+# 5 Experiments 
+
+We conduct a case study to (i) present how the pipeline works end-to-end, (ii) comprehensively check the anomalies it surfaces in the human annotations, and (iii) evaluate the performance of VL models as L3 verifiers. 
+
+5.1 Dataset and Evaluation Protocol 
+
+We evaluate the pipeline on BEHAVIOR-1K [4], a simulated bimanual platform (R1Pro with two 7-DOF arms, mobile base, and torso) recorded at 30 Hz over 50 household manipulation tasks; the dataset’s annotation schema and the per-cascade-level input mapping are summarised in Ap-pendix B. For each task we score first three episodes ( ep0 , ep1 , ep2 ), yielding 2,357 annotated action cells in total (786, 791, and 780 action cells per episode respectively). 
+
+Operating mode. We adopt the metadata-minimal VL-only mode (cascade Level 1 → Level 3) as the main reporting mode: the pipeline then relies only on the trajectory and the VL veri-fier, which requires no extra metadata and isolates the VL model’s contribution. In parallel, the annotation-augmented VL (AVL) mode (Level 1 → Level 2 → Level 3), which additionally con-sumes BEHAVIOR-1K’s structured fields ( skill type , memory prefix , spatial prefix ) when available, is conducted as an ablation that quantifies the lift reliable annotations can buy when present; full results are in Appendix I. 
+
+Reference annotation. For each (task, episode, action) cell we build a reference label in two stages. (i) A panel of VL models evaluates the cell and casts one vote per model on the cell’s arm and same-object assignment; the majority answer across the panel is recorded as a candidate label. (ii) A human reviewer inspects every candidate against the recorded video and overrides it when the panel majority disagrees with the visible action. The resulting annotated reference SSC is viewed as the ground truth against which all systems are scored. Within this reference we define the VL trimmed-hard subset of 138 cells, comprising 134 panel-disagreement cells from (i) and 4 retained-ambiguity cells from (ii). We view this subset as the hard tier used throughout Sec. 5.2–5.4. The corresponding 56-cell AVL counterpart is defined in Appendix I. 
+
+Models. We test 13 VL models in both modes; each is referred to by a short tag throughout the pa-per: Alibaba qwen3-vl-plus (qwen3vlp) , qwen3-vl-flash (qwen3vlf) , qwen-vl-max (qwenvlx) , ByteDance doubao-seed-2.0-pro (dbao2p) , Google gemini-2.5-pro (gem25p) , gemini-2.5-flash (gem25f) , gemini-3.1-pro-preview (gem31p) ,
+
+gemini-3.5-flash (gem35f) , Moonshot kimi-k2.5 (kimi25) , OpenAI gpt-5.4 (gpt54) ,
+
+gpt-5.4-mini (gpt54mi) , gpt-5.5 (gpt55) , o4-mini (o4mi) .Each (task, episode, model, mode) tuple is run once, totalling 3,900 successful runs (50 tasks × 3episodes × 13 models × 2 modes) with zero failures. 65.2 Per-Model Action-Level Accuracy 
+
+Table 2 reports the overall and hard-tier action-level accuracy of each model under the VL-only operating mode. The AVL ablation test is reported in Appendix I. Table 2: Per-model VL-only action-level accuracy on BEHAVIOR-1K (50 tasks × 3 episodes, 2,357 annotated action cells). Models are ordered left to right by trimmed-hard accuracy on the 138-cell VL hard subset; best per row in bold.                            
+
+> Model gpt55 gem35f gpt54 gem31p dbao2p gem25p qwen3vlf kimi25 gem25f qwenvlx gpt54mi o4mi qwen3vlp
+> Overall (%) 99.19 99.15 99.11 99.07 99.02 99.02 98.90 98.73 98.51 98.13 98.01 98.01 97.84 Hard/138 (%) 86.23 85.51 84.78 84.78 83.33 83.33 81.16 78.26 74.64 68.12 65.94 65.94 65.94
+
+The leaderboard is led by gpt55 (86.23%) and gem35f (85.51%), with gpt54 and gem31p (both 84.78%) close behind, and dbao2p and gem25p tied at 83.33%. The top six models lie within ∼3 pp of one another on the 138-cell hard subset, so single-model selection is unlikely to be the dominant lever for further improvement. At the bottom of the column, qwen3vlp , gpt54mi , and o4mi all sit at 65.94%, about 20 pp below the leader. 
+
+5.3 Per-Task Difficulty Tiers 
+
+Per-model accuracy aggregates across 50 tasks; we now drill into where the residual hard cells live on the 138-cell VL trimmed-hard subset, with detailed tables in Appendix H. 
+
+(i) Global vote-margin view. The trimmed-hard subset is anchored to the original 13-model panel; on its 134 genuine disagreements, the pool’s vote margin (majority minus runner-up, out of 13) splits into decisive (margin ≥ 6, 93 cases, 69%), intermediate (margin 3–5, 29 cases, 22%), and tight 
+
+(margin ≤ 2, 12 cases, 9%) bands; the intermediate band is the main lever for ensemble selection, and the tight band accounts for most residual ensemble error. 
+
+(ii) Per-task tier view. Classifying the same 138 cells by the number of production-pool models that solve them yields a 21-cell hardest cohort across three tiers: a universal-failure tier of 6 cells (0/13 solve), a near-universal-failure tier of 5 cells (1–2/13), and a moderate-difficulty tier of 10 cells (3– 6/13); the remaining 117 cells are resolved by a pool majority. One Tier-1 cell has an unresolved reference arm, so per-model totals in Appendix H are reported over 20 scored cells. The hardest cohort concentrates on bimanual coordinated open / close / push actions on large con-tainers (toolbox, fridge, oven, laptop) — a single, recognisable failure mode that no model in the 13-model pool solves on any Tier-1 cell and that accounts for the residual ∼4–5% gap the strongest ensembles also cannot close. It is the most concrete improvement target for future verifier work. 
+
+5.4 Multi-VLM Ensemble Exploration 
+
+Canonical multi-model ensembles can further stabilise VL verification. Several top trio candidates balance accuracy and provider diversity on the 138-cell VL trimmed-hard subset, with dbao2p + qwen3vlf + gem35f (89 .13% ) and gpt54 + qwenvlx + gem35f (88 .41% ) as representative ex-amples. Full exploration is in Appendix J. 
+
+5.5 SSC Logic Completeness and Anomaly Reports 
+
+We apply the I1–I4 consistency checks of Sec. 4.4 to the annotated reference SSC across the 150 task–episode pairs (50 tasks × 3 episodes). The checker flags 31 action cells out of 2,357, distributed as 18 annotation-timing , 9 not-released-at-end , and 4 release-without-hold anomalies; Table 3 lists the affected tasks and per-episode cell counts. 
+
+Findings. Two patterns split the 31 anomalies (Table 3): four tasks are out-of-scope under assump-tions A1 (grasp-only holding) and A2 (empty terminal states), correctly flagged rather than silently 7Table 3: Per-task anomaly breakdown for the annotated reference SSC over the 50-task evaluation set (3 episodes each). n/Ep. reports cell-level anomaly counts per episode ( ep0/ep1/ep2 ); all rows sum to the headline 18 + 9 + 4 = 31. Verdict marks out-of-scope cases (the trajectory violates a framework assumption) and annotation faults (the GT label or interval is incorrect).                                                     
+
+> Task n/Ep. Anomaly kind Root cause Verdict
+> 0024 4/4/4 annotation timing Hugging; no gripper-close event (I3) Out-of-scope 0030 1/1/1 not released at end Cooperative hold at episode end (I1) Out-of-scope 0038 1/1/1 not released at end Cooperative hold at episode end (I1) Out-of-scope 0039 1/1/1 not released at end Cooperative hold at episode end (I1) Out-of-scope 0002 0/0/1 release without hold Misaligned window cascades to release (I1) Annotation fault 0026 1/0/1 release without hold Misaligned window cascades to release (I1) Annotation fault 0036 0/1/0 release without hold Misaligned window cascades to release (I1) Annotation fault 0002 0/0/1 annotation timing Gripper event outside annotated window (I3) Annotation fault 0026 1/0/1 annotation timing Gripper event outside annotated window (I3) Annotation fault 0033 0/1/0 annotation timing Gripper event outside annotated window (I3) Annotation fault 0034 1/0/0 annotation timing Gripper event outside annotated window (I3) Annotation fault 0036 0/1/0 annotation timing Gripper event outside annotated window (I3) Annotation fault
+
+coerced (Figure 4 illustrates one of each in Appendix D.2); the remaining five tasks contain anno-tation faults where the GT skill window does not contain the gripper event that realises the action, firing I3. Figure 3 illustrates two annotation-side cases.      
+
+> frame 7289 7336 7431 frame 0 235 780
+
+Figure 3: Two representative annotation-side anomalies surfaced by the SSC consistency checker. 
+
+Left (Task 26) : the GT labels two consecutive subtasks over the intervals [7289 , 7336] and 
+
+[7336 , 7431] , but both candle releases actually occur within [7289 , 7336] . I3 fires since no grip-per event is found in the second subtask. Right (Task 34) : the GT subtask is annotated over [0 , 235] 
+
+for picking up poster, but the actual grasp event happens around frame 780, far outside the annotated window, so I3 fires. Both anomalies are surfaced for human review rather than silently coerced. 
+
+# 6 Conclusion 
+
+We introduced the Structured Subtask Chain (SSC), a state-transition representation pairing a gram-matical decomposition of each bimanual subtask with a scene-graph snapshot, together with a three-stage labelling pipeline (SST construction, a three-level resolution cascade, consistency checking against four state-transition invariants) that supplies automatic invariant-based verification of the as-sembled chain within the stated assumptions. A case study on BEHAVIOR-1K with 13 VL models shows that VL models can serve as competent L3 verifiers, provider-diverse ensembles add a mod-est lift, and the consistency checker independently surfaces out-of-scope behaviours and annotation faults that per-action accuracy alone would miss. 
+
+Limitations and future work. The framework’s coverage is bounded by the assumptions in Ap-pendix D.3, so out-of-scope behaviours (e.g. gripper-less holding) are flagged rather than silently handled. As a batch feasibility study, this work suggests model-selection guidance for related task families, where consistent strong performance of gpt55 and gpt54 is observed in future work as well. Paired with a temporal segmentation front end, the same pipeline could extend from verifier 
+
+to auto-annotator +verifier on datasets without subtask annotations, broadening its applicability. 8Acknowledgments 
+
+# References 
+
+[1] P. Intelligence, B. Ai, A. Amin, R. Aniceto, A. Balakrishna, G. Balke, K. Black, G. Bokinsky, S. Cao, T. Charbonnier, et al. π0.7: A steerable generalist robotic foundation model with emergent capabilities. arXiv preprint arXiv:2604.15483 , 2026. [2] W. Wu, F. Lu, Y. Wang, S. Yang, S. Liu, F. Wang, Q. Zhu, H. Sun, Y. Wang, S. Ma, et al. A pragmatic vla foundation model. arXiv preprint arXiv:2601.18692 , 2026. [3] T. Jiang, T. Yuan, Y. Liu, C. Lu, J. Cui, X. Liu, S. Cheng, J. Gao, H. Xu, and H. Zhao. Galaxea open-world dataset and g0 dual-system vla model. arXiv preprint arXiv:2509.00576 , 2025. [4] C. Li, R. Zhang, J. Wong, C. Gokmen, S. Srivastava, R. Mart´ ın-Mart´ ın, C. Wang, G. Levine, M. Lingelbach, J. Sun, et al. Behavior-1k: A benchmark for embodied ai with 1,000 everyday activities and realistic simulation. In Conference on Robot Learning , pages 80–93. PMLR, 2023. [5] I. Liu, A.-C. Cheng, R. Yan, G. Chen, R.-Z. Qiu, X. Zou, S. Yi, H. Yin, X. Wang, and S. Liu. Long-horizon manipulation via trace-conditioned vla planning. arXiv preprint arXiv:2604.21924 , 2026. [6] I. Larchenko, G. Zarin, and A. Karnatak. Task adaptation of vision-language-action model: 1st place solution for the 2025 behavior challenge, 2025. URL https://arxiv.org/abs/ 2512.06951 .[7] X. Ma, S. Patidar, I. Haughton, and S. James. Hierarchical Diffusion Policy for Kinematics-Aware Multi-Task Robotic Manipulation. In IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 18081–18090, 2024. [8] Z. Xian, N. Gkanatsios, T. Gervet, T.-W. Ke, and K. Fragkiadaki. ChainedDiffuser: Unifying Trajectory Diffusion and Keypose Prediction for Robotic Manipulation. In Conference on Robot Learning , 2023. [9] D. Yu, H. Xu, Y. Chen, Y. Ren, and J. Pan. Bikc: Keypose-conditioned consistency policy for bimanual robotic manipulation. arXiv preprint arXiv:2406.10093 , 2024. [10] H. Xu, Y. Chen, D. Yu, Y. Ren, and J. Pan. Bikc+: Bimanual hierarchical imitation with keypose-conditioned coordination-aware consistency policies. IEEE Transactions on Automa-tion Science and Engineering , 23:1064–1079, 2025. [11] S. James, Z. Ma, D. R. Arrojo, and A. J. Davison. RLBench: The robot learning benchmark and learning environment. IEEE Robotics and Automation Letters , 5(2):3019–3026, 2020. doi:10.1109/LRA.2020.2974707. URL https://arxiv.org/abs/1909.12271 .[12] T. Mu, Z. Ling, F. Xiang, D. Yang, X. Li, S. Tao, Z. Huang, Z. Jia, and H. Su. ManiSkill: Generalizable manipulation skill benchmark with large-scale demonstrations. In Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks , 2021. URL 
+
+https://arxiv.org/abs/2107.14483 .[13] H.-S. Fang, H. Fang, Z. Tang, J. Liu, J. Wang, H. Zhu, and C. Lu. RH20T: A comprehensive robotic dataset for learning diverse skills in one-shot. In IEEE International Conference on Robotics and Automation , pages 653–660, 2024. doi:10.1109/ICRA57147.2024.10611615. URL https://arxiv.org/abs/2307.00595 .[14] K. Wu, C. Hou, J. Liu, Z. Che, X. Ju, Z. Yang, M. Li, et al. RoboMIND: Benchmark on multi-embodiment intelligence normative data for robot manipulation. In Robotics: Science and Systems , 2025. URL https://arxiv.org/abs/2412.13877 .9[15] H. Kuehne, A. Arslan, and T. Serre. The language of actions: Recovering the syntax and se-mantics of goal-directed human activities. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 780–787, 2014. [16] X. Zhan, L. Yang, Y. Zhao, K. Mao, H. Xu, Z. Lin, K. Li, and C. Lu. Oakink2: A dataset of bimanual hands-object manipulation in complex task completion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 445–456, 2024. [17] D. Carmona and H. Yu. Bicap: A novel bi-modal dataset of daily living dual-arm manipulation actions. The International Journal of Robotics Research , 44(6):891–907, 2025. [18] M. Shridhar, J. Thomason, D. Gordon, Y. Bisk, W. Han, R. Mottaghi, L. Zettlemoyer, and D. Fox. ALFRED: A benchmark for interpreting grounded instructions for everyday tasks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recogni-tion , pages 10740–10749, 2020. URL https://openaccess.thecvf.com/content_ CVPR_2020/html/Shridhar_ALFRED_A_Benchmark_for_Interpreting_Grounded_ Instructions_for_Everyday_Tasks_CVPR_2020_paper.html .[19] A. Padmakumar, J. Thomason, A. Shrivastava, P. Lange, A. Narayan-Chen, S. Gella, R. Pi-ramuthu, G. Tur, and D. Hakkani-Tur. TEACh: Task-driven embodied agents that chat. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 36, pages 2017–2025, 2022. doi:10.1609/aaai.v36i2.20097. URL https://ojs.aaai.org/index.php/AAAI/ article/view/20097 .[20] T. Xiao, H. Chan, P. Sermanet, A. Wahid, A. Brohan, K. Hausman, S. Levine, and J. Tomp-son. Robotic skill acquisition via instruction augmentation with vision-language models. In Robotics: Science and Systems , 2023. URL https://instructionaugmentation. github.io/ .[21] A. Kuramshin, O. Aslan, C. Neary, and G. Berseth. Task robustness via re-labelling vision-action robot data. In Workshop on Making Sense of Data in Robotics: Composition, Curation, and Interpretability at Scale at CoRL 2025 .[22] L. Kou, F. Ni, Y. Zheng, P. Han, J. Liu, H. Cui, R. Liu, and J. Hao. RoboAnnotatorX: A comprehensive and universal annotation framework for accurate understanding of long-horizon robot demonstration. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 10353–10363, 2025. URL https://openaccess.thecvf.com/ content/ICCV2025/html/Kou_RoboAnnotatorX_A_Comprehensive_and_Universal_ Annotation_Framework_for_Accurate_Understanding_ICCV_2025_paper.html .[23] L. Kou, F. Ni, Y. Zheng, J. Liu, Y. Yuan, Z. Dong, and J. Hao. KISA: A unified keyframe identifier and skill annotator for long-horizon robotics demonstrations. In Proceedings of the 41st International Conference on Machine Learning , 2024. URL https://openreview. net/pdf?id=oCI9gHocws .[24] Y. A. Farha and J. Gall. Ms-tcn: Multi-stage temporal convolutional network for action seg-mentation. In Proceedings of the IEEE/CVF conference on computer vision and pattern recog-nition , pages 3575–3584, 2019. [25] T. Wang and S. Todorovic. Timestamp query transformer for temporal action segmentation. In 
+
+Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision , pages 5016–5025, 2026. [26] G. Ding, F. Sener, and A. Yao. Temporal action segmentation: An analysis of modern tech-niques. IEEE Transactions on Pattern Analysis and Machine Intelligence , 46(2):1011–1030, 2023. 10 [27] S. Stanovcic, D. Sliwowski, and D. Lee. ATLAS: An annotation tool for long-horizon robotic action segmentation. arXiv preprint arXiv:2604.26637 , 2026. URL https://arxiv.org/ abs/2604.26637 .[28] S. Hao, Y. Gu, H. Ma, J. Hong, Z. Wang, D. Wang, and Z. Hu. Reasoning with language model is planning with world model. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 8154–8173, 2023. 11 A SSC Data Schema 
+
+The five core record types of the SSC representation are summarised below in Python dataclass notation; the reference implementation lives in src/sst.py . Internal-only fields (resolution flags, propagation tracking) are omitted for brevity. 
+
+@dataclass class ActionEntry: arm: str # "left" | "right" | "coop" | "unsure" action_type: str # "idle" | "grasp" | "contact" | "tool_use" action_verb: Optional[str] # normalised verb stem (e.g., "pick") action_obj: Optional[str] # primary object action_obj_cond: List[str] # object features or part of object action_dscp: str # natural-language description action_cond: List[str] # tools / spatial / instrumental conditions @dataclass class SceneGraph: obj_in_left_hand: Optional[str] obj_in_right_hand: Optional[str] holding_same_object: Union[bool, str] # True | False | "unsure" @dataclass class PendingQuery: kind: str # "arm_assignment" | "same_object" | "empty_hand" target_action_idx: Optional[int] requires_vl: bool reason: str # human-readable explanation @dataclass class SubtaskEntry: # the SST st_duration: Tuple[int, int] # (start_frame, end_frame) st_idx: int # 0-based subtask index st_motion: str # "idle" | "move" st_motion_cond: List[str] # spatial conditions for base motion actions: List[ActionEntry] # 0, 1, or 2 concurrent actions actions_gripper: Optional[Dict[str, str]] # e.g., {"left": "close"} scene_graph: SceneGraph # after-state of this subtask pending_queries: List[PendingQuery] @dataclass class StructuredSubtaskChain: # the SSC task_name: str task_duration: Tuple[int, int] object_list: List[str] action_dscp_list: List[str] subtasks: List[SubtaskEntry] 
+
+# B BEHAVIOR-1K Dataset Structure 
+
+BEHAVIOR-1K [4] provides simulated demonstrations on the R1Pro bimanual platform (two 7-DOF arms, 1-DOF torso, mobile base) recorded at 30 Hz across 50 household manipulation tasks; for the case study we use the first three episodes ( ep0 , ep1 , ep2 ) of each task. Per episode, the dataset provides synchronised RGB streams (head, two wrist cameras, third-person), the full robot proprioception (joint positions, per-arm gripper command, base velocity), and a JSON annotation file containing the per-subtask schedule. Each skill annotation entry carries the fields below. 
+
+"skill_annotation": [ { "skill_idx": int, # 0-based subtask index "frame_duration": [start, end], # half-open frame range "skill_description": [str, ...], # NL label, e.g. "left pick bowl" "skill_type": [str, ...], # canonical action category, e.g. "pick" 
+
+12 "object_id": [str, ...], # instance ids of action target objects "memory_prefix": [str, ...], # same-object hints, e.g. "the other" "spatial_prefix": [str, ...], # spatial modifiers, e.g. "near", "on top of" }, ... ] 
+
+The resolution cascade’s three levels consume disjoint slices of this structure: L1 reads the per-arm gripper-command channel from the trajectory to detect open/close events; L2 reads skill type ,
+
+memory prefix , and spatial prefix when available; L3 reads RGB frames sampled from 
+
+frame duration . The label-parser mapping from skill description onto the universal verb table is detailed in Appendix E. 
+
+# C State Transitions 
+
+This appendix enumerates the admissible state transitions between scene-graph configurations (Ta-ble 1). The transition set captures the gripper-mediated holding regime: in the present pipeline, every 
+
+grasp -group acquire or release is triggered by a gripper close or open event, and the consistency-checking module of Sec. 4.4 validates assembled SSCs against this set. Configurations that arise from holding without an active gripper grasp are discussed as a limitation in Appendix D.3. Table 4: Acquire transitions (gripper close). 
+
+Transition Gripper signal Actions created 
+
+E → L left close 1 (arm=left) 
+
+E → R right close 1 (arm=right) 
+
+E → D both close, different objects 2 (arm=left, arm=right) 
+
+E → S both close, same physical object 1 (arm=coop) 
+
+E → D? both close, same-named obj, unresolved 1 (arm=unsure) 
+
+L → D right close, different object 1 (arm=right) 
+
+R → D left close, different object 1 (arm=left) 
+
+L → S right close, same object (co-grasp) 1 (arm=right or coop) 
+
+R → S left close, same object (co-grasp) 1 (arm=left or coop) 
+
+Table 5: Release transitions (gripper open). 
+
+Transition Gripper signal Actions created 
+
+L → E left open 1 (arm=left) 
+
+R → E right open 1 (arm=right) 
+
+D → L right open 1 (arm=right) 
+
+D → R left open 1 (arm=left) 
+
+D → E both open 2 (arm=left, arm=right) 
+
+Dd → E both open 2 (confirmed separate instances) 
+
+S → E both open 1 (arm=coop) 
+
+S → L/R one arm open, co-held object cooperative release: both arms cleared 
+
+D? → E (unresolved) both open 1 (arm=unsure) 
+
+Table 6: Hand-over, stateless, and tool-release transitions. 
+
+Transition Trigger Actions created 
+
+L → R left open + right close (simultaneous) 1 (hand over, giver=left) 
+
+R → L right open + left close (simultaneous) 1 (hand over, giver=right) self-loop contact verb (push, press, tap, . . . ) 1 (no state change) self-loop tool use verb (chop, stir, sweep, . . . ) 1 (no state change) 
+
+L/R → E tool-release verb (insert, hang, attach) 1 (releases held tool) 
+
+The state-transition invariants of Sec. 4.4 are evaluated against this transition set: an SSC is flagged when the observed (or predicted) transition between gk−1 and gk is absent from the tables above, or when the gripper signature recorded in the SST does not match the trigger column of the corre-sponding row. 13 D Completeness Argument and Scope 
+
+This appendix establishes that the transition set of Appendix C is complete within the frame-work’s stated assumptions , and enumerates the assumptions themselves so that future relaxations can re-verify completeness against an expanded state space. The argument has three parts: per-configuration enumeration of admissible transitions (Sec. D.1), a discussion of the coverage bound-ary and documented out-of-scope cases (Sec. D.2), and an explicit assumption table (Sec. D.3). 
+
+D.1 Per-Configuration Transition Enumeration 
+
+For each of the seven scene-graph configurations (Table 1) we enumerate every possible next-state under the gripper-event signal alphabet (close left, close right, close both, open left, open right, open both, no change). Cooperative-release transitions from configuration S are explicitly listed, as is the deferred-resolution behaviour of D?.
+
+From E (both empty). Five possible next-states: E → L (left close, 1 action arm=left); E → R
+
+(right close, 1 action arm=right); E → D (both close, distinct objects, 2 actions); E → S (both close, same physical object, 1 action arm=coop); E → D? (both close, same-named objects with unresolved identity, 1 action arm=unsure). Self-loop on idle yields zero actions. 
+
+From L (left holds). Six possible next-states: L → E (left open, 1 action); L → D (right close on a distinct object, 1 action arm=right); L → S (right close on the same object, co-grasp, 1 action arm=right or arm=coop depending on cooperative inference); L → R (left open + right close, 1 hand-over action giver=left or 1 pick-up action arm=right); self-loop with contact or tool-use verbs (1 stateless action); idle self-loop (0 actions). The simultaneous-both-close case ( L → D′ for some D′
+
+that re-occupies the left hand) is excluded by assumption A3 (one object per hand). 
+
+From R (right holds). Mirror of L; six possible next-states under the symmetric gripper signals. 
+
+From D (different objects, different names). Five possible next-states: D → R (left open, 1 release action arm=left); D → L (right open, 1 release action arm=right); D → E (both open, 2 release actions); self-loop with contact/tool-use verbs on either held object (1 stateless action); idle self-loop. 
+
+From Dd (same-named, confirmed-different instances). Same behaviour as D for releases ( both open → 2 actions; single open → 1 action); the distinction from D is purely informational (it records that the same-object resolver previously concluded “different”), so transition semantics are inherited from D row-by-row. 
+
+From S (same physical object, co-grasp). Two stateful next-states plus a cooperative-release branch: S → E (both open simultaneously, 1 release action arm=coop); S → L or S → R (one arm opens) is the cooperative-release case — when the object was acquired via arm=coop, both arms must be cleared regardless of which gripper opens first, so the framework deterministically transitions to E rather than L or R. Contact and tool-use verbs on the co-held object remain stateless. 
+
+From D? (same-named, identity unresolved). Resolution-before-transition: the cascade of Sec. 4.3 promotes D? to either Dd or S before downstream consumers see it. If the resolver fails (neither L2 annotation lookup nor L3 VL backend produces a decisive same-object answer), the SST keeps D? and any release transition emits a single arm=unsure release action; the chain is then flagged at the consistency-checking stage rather than silently coerced to one or the other branch. 
+
+D.2 Coverage Boundary and Open Cases 
+
+The per-configuration enumeration of Sec. D.1 is exhaustive within the assumptions of Sec. D.3: ev-ery (gk−1, gripper-signal ) pair admissible under those assumptions has a defined outcome (A1–A6). 14 In verb-level terms, the covered set includes single-arm and bimanual acquire/release, coopera-tive release from S, hand-over, stateless contact and tool-use actions, tool-release verbs ( insert ,
+
+hang , attach ) that clear the held tool, and transient verbs ( open , close , pull , turn ) whose temporary holds are auto-cleared at the subtask boundary. Violations of asuumptions A1–A5 are not silently coerced but are raised as named anomalies by the consistency checker; A6 (contact is stateless) is enforced by the verb-to-state mapping rather than by an anomaly check. For exam-ple, on BEHAVIOR-1K we observe a representative case of each: holding without an active grasp (A1, task 24), non-empty terminal states (A2, tasks 30, 38, 39), partial gripper opening below the open/close threshold (A4, task 26), and gripper events lying outside their annotated subtask interval (A5, task 34); the residue is small and resolvable by a brief manual review pass. A category should be marked by the present transition set is the multi-phase transition within a single annotation interval — for example, an “open door” action can mean ”push door to open”, but also can decompose into grasp-handle, pull, and release-handle as three sub-phases under one GT skill. We currently model such actions as a single transient verb.  
+
+> task 0024 ep0 st19 , frame 11380 task 0030 ep0 , episode-end frame 9650
+
+Figure 4: Two illustrative out-of-scope cases surfaced by the consistency checker. Left (A1, task 0024) : the robot hugs an oatmeal box between two open grippers without any close event, so no gripper signal places the acquire inside the annotated window and anomaly I3 fires. Right (A2, task 0030) : at the end of the episode the lighter and the holder remain in the grippers, so the trajectory ends with a non-empty terminal state and anomaly I1 fires (a hold never matched by a release). 
+
+D.3 Assumptions and Their Scope 
+
+Each assumption defines a boundary of the framework. Within these boundaries, the transition logic is complete — every admissible state × gripper-signal combination has a defined outcome; outside, violations are flagged rather than silently handled. The set of assumptions is fixed for the present version; future relaxations must re-verify completeness on the expanded state space. 
+
+Known contract–implementation gaps. The contract above states violations should be flagged rather than silently ignored; the present implementation does not fully satisfy this in three places, which we record as known limitations rather than design choices. (g1) An acquire targeting an arm that already holds an object silently overwrites the held object rather than raising an A3/A5 anomaly; a stricter version would emit the anomaly first and require explicit override to continue. 
+
+(g2) Heuristic arm assignment for contact and tool-use actions (the free-arm fallback used when no annotation spatial prefix is available) is applied without a low-confidence flag, so downstream consumers cannot distinguish a heuristic decision from a high-confidence one. (g3) Base-mode construction uses best-guess running state for arm-side fields that depend on prior holding; if a same-object resolution arrives later, those earlier fields are not re-visited unless they were explicitly marked unsure. These gaps do not violate the completeness statement above (every transition has 15 Table 7: Framework assumptions and their relaxation paths. Within these assumptions the transition logic of Appendix C is complete; outside them, the consistency-checking module of Sec. 4.4 raises a typed anomaly.                           
+
+> ID Assumption Completeness impact Relaxation path
+> A1 Grasp-only holding Without this, holding cannot be detected from gripper signals alone. Add force-based or VL-based holding detection as a fourth signal level. A2 Empty start and end states Lets the chain validate the complete transi-tion sequence. Accept non-empty boundary states and validate against aprovided initial state. A3 One object per arm Caps the state space at the seven configu-rations of Table 1. Extend the scene graph to lists per arm; significant complexity increase. A4 Binary gripper (open vs closed) Enables clean open/close event detection from the gripper command stream. Add threshold hysteresis or a continuous gripper-state model. A5 Action-state cou-pling Every grasp action produces a correspond-ing state change. Add an “attempted but failed” action outcome to the action schema. A6 Contact is stateless Contact and tool-use verbs do not modify the holding state. Already partially relaxed via tool-release verbs (insert ,
+> hang ,attach ).
+
+a defined outcome), but they mean the boundary between “confidently resolved” and “heuristically resolved” is not visible to downstream consumers; closing the gaps is a target for future versions. 
+
+# E SST Construction and Cascade 
+
+This appendix expands the implementation details that Sec. 4 cites by reference: the universal verb vocabulary the label parser maps onto, the gripper-event detector, the verb-to-state-transition map-ping used during SST construction, the typed pending-query schema, and the snapshot/re-advance mechanic that interleaves the cascade with construction. The BEHAVIOR-1K–specific parser details are isolated in their own paragraph. 
+
+Universal verb vocabulary. The framework defines four action types, into which any dataset’s verbs are mapped by a flat lookup table. The mapping is dataset-agnostic: a new verb is supported by adding one row to the table, without changing any other component of the pipeline. The four types and their canonical members — as defined in our implementation — are: • idle (base motion or navigation): idle , move , move to , navigate , navigate to .• grasp (gripper finger movement that acquires, releases, or transiently engages an object), with three sub-roles: acquire — grasp , pick , pick up , pick up from ,
+
+pinch , hold ; release — release , place , place on , place in , place on next to ,
+
+place in next to , place next to , place under , hand over , hand over to , drop ;
+
+transient (may include ”engage then release” within the same subtask) — open door ,
+
+close door , open drawer , close drawer , open lid , close lid , pull , pull tray ,
+
+turn , turn to .• contact (gripper tip directly touches an object without using a held tool; stateless under scene-graph semantics): push , push to , push tray , press , dig , poke , tap , turn on ,
+
+turn off , turn on switch , turn off switch , tip , tip over .• tool use (gripper uses a held object to act on another object), with two sub-roles: 
+
+persistent (the tool is retained after the action) — smash , stir , chop , slice , pour ,
+
+sweep , sweep surface , sweep off , spray , ignite , wipe , wipe hard , plus the generic 
+
+open /close when invoked with a held tool; tool-release (the tool is transferred to the tar-get) — insert , hang , attach .16 This four-way division is intentionally narrow and aligned with the scene-graph semantics of Ta-ble 1; extending the vocabulary to a new dataset typically reduces to adding verbs into one of these four types. 
+
+BEHAVIOR-1K label parser. On the BEHAVIOR-1K data used in our evaluation, the label parser maps each skill annotation string to (verb, object, conditions) by pattern-matching against the verb table above. Where BEHAVIOR-1K attaches instance indices to same-named ob-jects (e.g. pillar candle 89 versus pillar candle 90 ), the parser preserves the index so that downstream resolution can distinguish them. A new dataset with a different annotation convention requires only its own small body of pattern-matching rules over the same verb table, and these can be assembled and validated with lightweight scripting at low engineering cost. 
+
+Gripper-event detector. Per-arm gripper open and close events are extracted from the gripper-command stream by detecting sign-flips between non-zero command values. We prefer this command-based detector to a finger-width threshold because some simulation environments do not uniformly model the kinematic finger response (virtually-attached objects, empty grasps); the command-based detector recovers events that the kinematic detector silently drops. 
+
+Verb-to-state-transition mapping. SST construction walks the parsed action sequence under the following mapping over the sub-roles defined above. Grasp-acquire verbs acquire the named object on the assigned arm; grasp-release verbs clear the object from the assigned arm; grasp-transient 
+
+verbs impose a single-subtask hold that is auto-cleared at the subtask boundary; tool-release verbs clear the held tool from the assigned arm without acquiring the target. Persistent tool-use and contact 
+
+verbs are stateless: they leave the holding state unchanged. 
+
+Typed pending-query schema. Each open question in Qk is recorded as a tuple of (query kind, target action index, requires vl flag, free-text reason). Three query kinds arise in practice. An 
+
+arm assignment query records that the acting arm is ambiguous; it is resolved by L1 when only one arm’s gripper transitioned, by L2 when the dataset’s coordination metadata disambiguates, and by L3 otherwise. A same object query records that both arms hold same-named objects whose identity is ambiguous (the D? configuration of Table 1); it is resolved by L2 when instance-level metadata is present, and by L3 otherwise. An empty hand query records that an action is annotated against an empty hand, which is an annotation artefact rather than a perceptual ambiguity; it is resolved deterministically and the requires vl flag is set to false so no VL call is issued. 
+
+Online cascade interleaving. Construction and cascade are interleaved per SST entry in a snapshot/re-advance pattern. For each new entry Sk we (i) build the entry without committing state, (ii) snapshot the current scene-graph context, (iii) tentatively advance through Ak, (iv) run the cascade on any pending queries in Qk, (v) restore the snapshot, and (vi) re-advance through Ak with the resolved values preserved. The resulting after-state gk becomes the before-state for Sk+1 , so L2 or L3 resolutions at Sk immediately enable L1 inferences at Sk+1 .
+
+# F VL Prompt Templates 
+
+This appendix lists the prompts used by the L3 VL layer of the cascade. The cascade issues only two prompt types: arm assignment (which arm performs an action) and same object (whether two same-named held objects are the same physical instance); the third typed query, empty hand ,is resolved deterministically without a VL call (Sec. 4.3). All templates are applied identically across the 13 VL models; per-model prompt tuning is intentionally not performed, so per-model accuracy in Sec. 5.2 and Appendix G reflects each model’s behaviour under a single shared prompt configuration. 
+
+System prompt. Both query types use the same system prompt: 17 You are a robot-manipulation expert analyzing bimanual robot video. Answer strictly in JSON. 
+
+Each query is paired with a 6-camera grid extracted from the subtask’s frame range: the start, middle, and end frames of the interval, encoded as a single multi-image input. The grid is constructed identically for every model; provider-specific image-passing conventions are handled by a thin client wrapper that does not modify the prompt text. 
+
+arm assignment template. The prompt is composed at query time from the SST entry’s struc-tured fields (action verb, target object, conditions, scene-graph snapshot) and the task-level object inventory. Curly-braced fields are placeholders: 
+
+In these frames from task ’ {task name }’: Now robot is {action description }{ conditions }.{other arm context }
+
+Which arm performs this action --- left, right, or coop? IMPORTANT: Only these objects exist in the scene: {object list }. Do NOT identify or reference objects not in this list. Respond in JSON format: 
+
+{"arm": "left" | "right" | "coop" | "unsure", "confidence": "high" | "medium" | "low", "reasoning": "brief explanation" }
+
+The other arm context field is populated from the entry’s scene-graph snapshot only when the holding state is confirmed (not unsure and no pending uncertain objects); it states what the non-acting arm is currently holding (e.g. “ Left arm is currently holding bowl. ”) to give the model context for free-arm reasoning. The field is omitted when the scene graph is uncertain, to avoid feeding a guess back into the query. 
+
+same object template. The prompt branches on the candidate arm assignment of the action un-der test ( coop , single-arm, or unspecified): 
+
+Branch (a): both arms acting on the same-named object In these frames from task ’ {task name }’: Both arms are {action description }.Are they co-grasping the SAME physical {object name }, or are they each holding a DIFFERENT {object name } instance? Branch (b): one arm acquiring while the other already holds In these frames from task ’ {task name }’: 
+
+{Left|Right } arm is {action description }. {Right|Left } arm already holds a {object name }.Is the {left|right } arm picking the EXACT SAME physical {object name }
+
+that the {right|left } arm holds, or a DIFFERENT one? Branch (c): arm assignment not yet resolved In these frames from task ’ {task name }’: Both arms are reportedly holding a ’ {object name }’. Are they holding the SAME physical ’ {object name }’ cooperatively, or TWO DIFFERENT ’ {object name }’ instances? 
+
+All three branches share a common tail with the scene-object disclaimer and JSON response schema: 
+
+IMPORTANT: Only these objects exist in the scene: {object list }. Do NOT identify or reference objects not in this list. Respond in JSON format: 
+
+{"same object": true | false, "confidence": "high" | "medium" | "low", "reasoning": "brief explanation" }
+
+Resolution ordering and parsing. Within each SST entry, the cascade issues same object 
+
+queries before arm assignment queries (Sec. 4.3); a confirmed same-object answer can resolve an arm-assignment query deterministically without a further VL call, while the reverse ordering 18 would force the model to pick an arm under same-object ambiguity and frequently produce nonsen-sical answers. The JSON response is parsed by a tolerant extractor that handles Markdown code blocks, leading or trailing prose, and partial JSON with missing closing braces; runs that fail to produce a valid JSON object after extraction are counted as model-side failures and contribute to the run-to-run instability scores reported in Appendix G. 
+
+# G Preliminary Model Selection 
+
+The 13-model production pool was assembled in two stages. First, we selected 10 models from a 15-model preliminary panel covering every VL model we could access with stable serving at the time. We evaluated that panel on the same 50 BEHAVIOR-1K tasks and pipeline (3 runs each, both modes, scored against an earlier 99-cell evaluation tier of the annotated reference SSC). The two modes follow the convention used throughout this paper: VL denotes vision-language verification only (cascade Level 1 → Level 3); AVL denotes annotations + VL (cascade Level 1 → Level 2 → Level 3). Table 8 records the per-model accuracy observed under that pipeline and indicates which 10 models were carried forward as the initial production pool. The second stage extended this 10-model pool with three new flagship models ( gpt-5.5 , gemini-3.1-pro-preview , gemini-3.5-flash ) once they became available and passed the same stability checks; these are evaluated under the same pipeline configuration on the same 50 tasks and 3 episodes. The hard-cell definitions of Sec. 5.1 (138 cells VL trimmed-hard, 56 cells AVL trimmed-hard) are anchored to the original 10-model panel so that per-model and per-trio metrics remain comparable as the pool grows; the three new models are scored on these same cells. We emphasise that these preliminary numbers reflect what this particular pipeline and prompt con-figuration produced from each model on a single dataset, and do not necessarily characterise each model’s general capability. Several confounds may depress a model’s score in this table: (a) prompt templates, query schema, and JSON output contract were not tuned per model and may suit some families better than others; (b) BEHAVIOR-1K is a simulated environment whose visual appearance differs from real-world manipulation footage, which can disadvantage models whose pre-training emphasises real-world video; (c) service availability at the time of the preliminary sweep varied across providers. Selection for the production pool was therefore based on observed run-to-run stability and stable serving at panel scale , not on the absolute preliminary accuracy. The five models excluded from the production pool were dropped on three considerations, all related to pipeline-level stability rather than to inherent model capability. (i) Run-to-run stability under shared prompts. The two Anthropic models ( claude-sonnet-4.6 , claude-opus-4.7 ) exhib-ited the largest VL-only standard deviation across runs (8.5% for claude-sonnet-4.6 ), driven primarily by JSON-output compliance failures on a small but consistent set of cases. This is a prompt- and decoding-side artefact that may resolve with model-specific tuning (different JSON schema, repair pass, or system message). However, given the high per-call cost of these models at the panel scale we use here, and the larger scale we envision for downstream applications, model-specific tuning is not an economical option; we therefore excluded these models rather than carry an unstable signal into the production panel. (ii) Service stability at panel scale. The two xAI models ( grok-4 , grok-4-fast ) returned transient service errors during repeated 50-task sweeps. Stable serving is itself a prerequisite at the panel scale we use here and at the larger scale we en-vision for downstream applications, so we excluded these models on infrastructure grounds rather than on inherent capability. (iii) Substitutability across a model family. gpt-4o was excluded once gpt-5.4 became available: we retained one OpenAI flagship plus the mini variant rather than both flagships to control the panel size, without prejudice to gpt-4o ’s standalone behaviour. The retained 10 models span five providers (OpenAI, Google, Alibaba, ByteDance, Moonshot). After the second-stage extension that added gpt-5.5 (OpenAI), gemini-3.1-pro-preview 
+
+(Google), and gemini-3.5-flash (Google), the 13-model production pool covers the same five providers (4 OpenAI + 4 Google + 3 Alibaba + 1 ByteDance + 1 Moonshot), which is sufficient for the provider-diverse ensemble exploration of Sec. 5.4. Anthropic and xAI are absent from the 19 Table 8: Preliminary per-model accuracy under our pipeline and prompt configuration on the 99-cell evaluation tier of an earlier annotated reference SSC (15 models, 3 runs, both modes). The right-most column records whether the model was carried forward into the initial 10-model production pool, with a one-phrase reason for non-retention. The three new models added in the second-stage pool extension ( gpt-5.5 , gemini-3.1-pro-preview , gemini-3.5-flash ) are absent from this preliminary panel because they were released after this evaluation cycle. These numbers reflect what this pipeline produced from each model under a single shared prompt set and should not be read as a characterisation of model capability.                                                  
+
+> Model VL (%) AVL (%) Retained?
+> gpt-5.4 96.3 99.7 yes
+> qwen3-vl-plus 93.9 98.3 yes
+> kimi-k2.5 93.9 98.7 yes
+> gemini-2.5-pro 93.6 96.3 yes
+> doubao-seed-2.0-pro 93.3 96.6 yes
+> qwen-vl-max 91.9 96.0 yes
+> gpt-4o 90.9 91.6 no (OpenAI family already represented by gpt-5.4 )
+> qwen3-vl-flash 90.5 95.3 yes
+> o4-mini 90.4 95.3 yes
+> claude-sonnet-4.6 90.2 88.9 no (run-to-run instability under our prompts)
+> gemini-2.5-flash 89.9 93.6 yes
+> grok-4 88.9 92.9 no (serving unstable at panel scale)
+> gpt-5.4-mini 88.6 93.9 yes
+> claude-opus-4.7 83.8 87.9 no (run-to-run instability under our prompts)
+> grok-4-fast 75.4 80.8 no (serving unstable at panel scale)
+
+production pool but remain candidates for re-inclusion once model-specific prompt tuning and serv-ing stability issues are revisited. Finally, we note that the three second-stage additions ( gpt-5.5 ,
+
+gemini-3.1-pro-preview , gemini-3.5-flash ) are included as soon as they became available following their recent public release, so the final 13-model panel reflects the latest flagship VL models available at the time of writing. 
+
+# H Per-Case Difficulty of the Trimmed-Hard Subset 
+
+This appendix breaks down the 138-cell VL trimmed-hard subset (Sec. 5.1) by action verb, pool-vote margin, and representative case examples, to characterise where the residual difficulty for VL verifiers lives. The breakdown aggregates across all three episodes. 
+
+Verb composition. Of the 138 trimmed-hard cells, 134 are panel-disagreement cells and the re-maining 4 are retained-ambiguity cells (the pool majority agrees with the human reference but ex-hibits run-to-run instability). Table 9 reports the verb distribution of the 134 disagreement cases. Disagreements concentrate on bimanual primitives rather than on single-arm pick-and-place: push 
+
+and sweep together account for two thirds of the hard cases, and another quarter come from articu-lated actions on containers ( open , close ) and tool-use ( turn on ). 
+
+Pool-vote margin. The pool’s vote margin on the 134 disagreements (votes for the majority an-swer minus the runner-up, out of 10) distributes as: decisive (margin ≥ 6): 93 cases (69%); inter-mediate (margin 3–5): 29 cases (22%); tight (margin ≤ 2): 12 cases (9%). Any reasonable trio resolves the decisive cases correctly by majority vote; the intermediate cases are the main lever for ensemble selection; the tight cases are where the pool itself is nearly split and majority voting may pick either side, and these account for most residual ensemble error. 
+
+Representative tight-margin cases. Table 10 lists five representative tight-margin disagreements drawn from episode 0. Four of the five involve the coop vs single-arm boundary on bimanual tool-use or large-object manipulation; the fifth illustrates a handedness-mirror failure where the visible arm and the reference arm differ because of camera-frame orientation. 20 Table 9: Verb composition of the 134 disagreement cases that drive the trimmed-hard subset. The majority-arm distribution across the 134 cases is coop : 55 (41%), left : 41 (31%), right : 38 (28%); the dominant axis of ambiguity is single-arm versus coop .                                   
+
+> Verb Disagreements Share Typical ambiguity
+> push 47 35.1% one arm bracing while the other pushes, vs. coop sweep 41 30.6% broom: left guides, right sweeps, vs. coop close 16 11.9% door / cabinet kinematic single-arm vs. cooperative
+> open 75.2% dual-handle vs. single-handle openings
+> place 75.2% placement onto a large object: coop vs. anchor arm
+> turn on 75.2% one arm holds the appliance, the other operates the control
+> pick 64.5% dual-hold pick of a long or heavy object
+> other 32.2% hang ,tip ,release
+> Total 134 100%
+
+Table 10: Representative tight-margin disagreements from one episode. The Cell column uses the short form st<i>.a<j> , where st<i> is the i-th subtask within the episode and a<j> is the j-th action within that subtask (zero-indexed); e.g. st1.a0 is the first action of subtask 1. Pool votes are counts across the 10 single-model verifiers (C = coop , L = left , R = right ); Ref. is the reference acting arm.                                  
+
+> Task Cell Action Pool votes Ref. Source of difficulty
+> 0013 st1.a0 open car lid C:5 / L:3 / R:2 Ccooperative open vs. split biman-ual lift 0036 st46.a0 sweep floor with broom C:6 / R:4 Cbroom needs both hands; active side is right 0036 st48.a0 sweep floor with broom C:5 / R:5 Cmargin 0: fully tied on broom-sweep boundary 0029 st34.a0 push laptop to bed edge R:5 / C:4 / L:1 Rhalf the pool sees a bracing left hand 0049 st26.a0 open fridge right door R:6 / L:4 Rhandedness mirror: labels read opposite arm
+
+Categories of residual difficulty. The verb composition and margin distribution together identify three sources of residual difficulty in the trimmed-hard subset. (a) Bimanual tool-use and large-object manipulation (push, sweep, place on a large surface): the single-arm vs coop boundary depends on whether the supporting or bracing arm is treated as participating in the action or merely steadying the body. This is a labelling-convention question as much as a perceptual one, and ac-counts for the bulk of the hard subset. (b) Articulated contact on containers and controls (open, close, turn on): the acting arm is sometimes visually obvious and sometimes occluded by the con-tainer, and coordinated open or close of dual-handle objects can be labelled as either single-arm or 
+
+coop depending on the dataset’s convention. Categories (a) and (b) account for roughly 80% of the hard subset and reflect inherent ambiguity in the dataset’s labelling convention. 
+
+Per-case tiers under the 13-model production pool 
+
+To complement the aggregate breakdown above, we list the hardest cells in the VL trimmed-hard subset under the 13-model production pool of Sec. 5.2. Each cell is scored as “solved” by a given model when the majority of its three independent runs match the reference label, and “not solved” otherwise; the rightmost column reports the count of solving models out of 13. Cases are then tiered by this count: Tier 1 (zero solvers; universally hard for the production pool) and Tier 2 (1– 2 solvers; near-universally hard) are listed in Table 11; Tier 3 (3–6 solvers, i.e. at most half the pool; moderately hard) is listed in Table 12. Cells with seven or more solvers are resolved by any reasonable provider-diverse trio under majority voting and are not detailed individually here. 21 Table 11: Tier 1 (top block) and Tier 2 (bottom block) under the 13-model VL production pool: cells solved by 0–2 of the 13 production models. Column codes: DB= dbao2p , G54= gpt54 ,G5m= gpt54mi , O4= o4mi , Q3= qwen3vlp , Q3f= qwen3vlf , QM= qwenvlx , GP= gem25p ,GF= gem25f , KM= kimi25 , G55= gpt55 , G31= gem31p , G35= gem35f (⋆ marks the three models added in the second-stage pool extension). G: reference acting arm (C = coop , R = right , L = 
+
+left , ? = unresolved). Src : hum = human override, vlM = original 10-model VL pool majority. ✓=the model solved the cell on a majority of its three runs. The row marked † (ep0 0034 st1 pick poster ) has an unresolved reference arm (G=?) and is recorded for completeness but excluded from the per-model totals in Table 12.                                                                    
+
+> Ep+Task ST Action G Src DB G54 G5m O4 Q3 Q3f QM GP GF KM G55 ⋆G31 ⋆G35 ⋆n/13
+> Tier 1: universal failure (0/13).
+> ep0 0019 2open toolbox Chum 0ep0 0019 20 close toolbox C hum 0ep0 0029 38 close laptop Chum 0ep0 0049 26 open fridge Chum 0ep1 0019 1push toolbox Chum 0ep1 0049 12 open fridge Chum 0
+> Tier 2: near-universal failure (1/13–2/13).
+> ep0 0034 †1pick poster ?hum ✓1ep1 0029 35 push laptop Rhum ✓1ep2 0049 22 open fridge Chum ✓1ep2 0049 58 close oven Chum ✓1ep2 0029 37 close laptop Chum ✓✓2
+
+Table 12: Tier 3 under the 13-model VL production pool: cells solved by 3–6 of the 13 production models (at most half the pool). Conventions follow Table 11. The bottom row reports each model’s total solve count across the 20 cells of Tables 11 and 12 combined, excluding the †-marked row in Table 11 whose reference arm is unresolved.                                                                                                                           
+
+> Ep+Task ST Action G Src DB G54 G5m O4 Q3 Q3f QM GP GF KM G55 ⋆G31 ⋆G35 ⋆n/13
+> ep0 0013 1open car CvlM ✓✓✓✓✓✓6ep0 0033 11 push teddy bear Rhum ✓✓✓✓✓5ep0 0049 64 close oven Chum ✓✓✓✓✓✓6ep1 0049 4push carving knife R vlM ✓✓✓✓✓5ep1 0049 58 close oven Chum ✓✓✓✓✓5ep2 0016 3pick storage box Chum ✓✓✓✓✓5ep2 0016 5place storage box Chum ✓✓✓✓✓5ep2 0019 2open toolbox Chum ✓✓✓✓✓✓6ep2 0029 33 push laptop Chum ✓✓✓3ep2 0036 1push garden chair CvlM ✓✓✓✓✓✓6
+> Total over 20 cells (Tier 1+2+3, excl. †): 7464146524536—
+
+Headline. On the 20 hardest cells (excluding the †-marked row in Table 11), dbao2p leads at 7/20, followed by gpt54mi , qwenvlx , and the new gem35f at 6/20. The new gpt55 solves 5/20 and gem31p solves 3/20, neither approaching dbao2p ’s coverage on the residual VL-hard cells. 
+
+qwen3vlp scores only 1/20 under VL — the worst pool member on these cases — despite topping the AVL trimmed-hard column in Appendix I: its strength is concentrated on easier cases after the annotation layer resolves, not on the residual VL-hard cells. All six Tier-1 cells involve coordinated bimanual open, close, or push actions on large containers such as toolboxes, fridges, ovens, and laptops. The failure mode persists after adding the three new flagship models: they add Tier-3 coverage (the storage box pair, push teddy bear , and one open car cell) but solve no Tier-1 cell. The residual cohort is the source of the ∼4–5% gap that the strongest trios cannot close on the 138-cell subset, and is the most concrete improvement target for future verifier work. 
+
+# I AVL Mode Ablation: What Annotation Lookup Adds 
+
+When the dataset supplies structured metadata that can disambiguate same-object identity and bi-manual coordination (Sec. 4.3), the cascade’s optional Level 2 stage consumes it. This appendix quantifies what L2 buys on BEHAVIOR-1K relative to the VL-only mode of Sec. 5.2, treating AVL as an ablation of the main VL-only reporting. We define the AVL trimmed-hard subset of 56 cells 22 analogously to the 138-cell VL trimmed-hard set (Sec. 5.1): cells on which the 13-model panel under AVL mode does not produce the correct label by majority vote, retaining only those that remain hard once Level-2 annotation lookup is enabled. Table 13 repeats the VL-only rows from Table 2, then adds two AVL views: performance on the 56-cell AVL-hard subset, and cross-mode performance on the same 138 VL-hard cells (the only apples-to-apples comparison between the two modes). Table 13: Per-model accuracy under both operating modes, plus cross-mode AVL scored on the 138-cell VL-hard subset. Models are listed in the same left-to-right order as Table 2 (VL trimmed-hard ranking); the first two rows are copied from Table 2 for ease of comparison. The bottom row reports 
+
+∆ (AVL on VL-hard − VL Hard/138) in percentage points, the apples-to-apples gain from enabling Level 2 on each model’s same hard cells. Best per row in bold.                                                                            
+
+> Model gpt55 gem35f gpt54 gem31p dbao2p gem25p qwen3vlf kimi25 gem25f qwenvlx gpt54mi o4mi qwen3vlp
+> VL Overall (%) 99.19 99.15 99.11 99.07 99.02 99.02 98.90 98.73 98.51 98.13 98.01 98.01 97.84 VL Hard/138 (%) 86.23 85.51 84.78 84.78 83.33 83.33 81.16 78.26 74.64 68.12 65.94 65.94 65.94 AVL Overall (%) 99.70 99.70 99.62 99.62 99.32 99.32 99.32 99.36 99.19 99.32 99.07 98.98 99.70
+> AVL Hard/56 (%) 87.50 87.50 83.93 85.71 71.43 71.43 71.43 73.21 66.07 71.43 60.71 57.14 87.50
+> AVL on VL-hard/138 (%) 95.65 95.65 94.93 95.65 91.30 90.58 89.86 90.58 87.68 89.86 85.51 85.51 95.65
+> ∆vs VL (pp) +9 .4 +10 .1 +10 .2 +10 .9+8 .0+7 .3+8 .7+12 .3 +13 .0+21 .7+19 .6 +19 .6+29 .7
+
+What annotation lookup buys. The cross-mode row of Table 13 makes the comparison fair: AVL predictions are scored on the same 138 cells used by the VL row above it, so the row immediately above is the apples-to-apples gain from enabling Level 2. The strongest single model gpt55 climbs from 86.23 % under VL to 95.65 % under AVL — a lift of +9 .4 pp. The model ordering reshuffles between modes: qwen3vlp sits at the bottom of the VL column (65.94 %) but jumps to a three-way tie at the top of the AVL trimmed-hard column (87.50 %) alongside gpt55 and gem35f , reflecting a model-specific bias in same-object reasoning that the L2 lookup absorbs when the dataset’s metadata is reliable. The annotation-driven swing on the shared 138-cell subset (last row of Table 13) is largest for qwen3vlp (+29 .7 pp) and qwenvlx (+21 .7 pp), and smallest for the newer flagships ( gpt55 :
+
++9 .4 pp; gem35f : +10 .1 pp), suggesting that the newer models already extract much of the signal from raw VL grids that the annotation layer would otherwise contribute. 
+
+q3vlp asymmetry: verification, not reasoning. qwen3vlp ’s extreme VL →AVL gap ( 65 .94% →
+
+95 .65% on the 138-cell subset, +29 .7 pp) reflects a difference in what the two modes actually test, rather than a step-change in model capability. 
+
+Mode mechanism. The model’s per-action stochasticity is ∼ 1% under VL but below 0.1% under AVL: L2 annotation overrides dominate the AVL decision path, so the model is effectively asked “do you accept this annotation?” rather than “which arm performs this action?”. The VL flip pattern is approximately symmetric (left →right balances right →left across episodes), consistent with the model guessing on cells it cannot confidently resolve. The 56-cell AVL trimmed-hard subset is also the residual after annotation has already settled the easier ambiguities, so a high AVL rank on those 56 cells is a strictly easier benchmark than a high VL rank on the 138-cell hard subset. 
+
+Practical implication. qwen3vlp ’s AVL strength reflects verification behaviour rather than fresh VL reasoning on hard frames; it should be paired with a stronger VL reasoner when included in an ensemble. 
+
+Worked-example trio under AVL. The worked-example trio gpt54 + qwenvlx + gem35f 
+
+(Sec. 5.4) reaches 89 .29% (50 /56 ) on AVL trimmed-hard with weakest-member accuracy 71 .43% ,making it the only top-15 VL trio that also appears in the top-15 of the AVL leaderboard (Ap-pendix J); this is why it was chosen as the worked example in the main text. 
+
+Caveat on the lift. The AVL gain is opportunistic and depends on whether the dataset ships with structured metadata that maps reliably onto same-object identity and bimanual coordination. On BEHAVIOR-1K each of skill type , memory prefix , and spatial prefix is unevenly popu-23 lated (Sec. 5.1), so the AVL numbers in this appendix are an upper bound on what L2 can recover from the dataset metadata that is actually present. Datasets without such metadata fall through to L1 → L3 and the VL-only column of Table 2 applies. 
+
+# J Ensemble Exploration: Top Provider-Diverse Trios 
+
+This appendix lists the top-15 three-model ensembles from the 13-model production pool, ranked by accuracy on the 138-cell VL trimmed-hard subset. We use the trio leaderboard to characterise the ensemble landscape rather than to select a single optimal trio; the gaps between adjacent ranks are typically a single cell out of 138, which sits within the run-to-run variation we observe per (model, cell). For each trio we annotate whether it is provider-diverse (at most one model per provider, under the convention used by Sec. 5.4) and whether it also appears in the top-15 of the AVL trimmed-hard leaderboard (56-cell denominator). Table 14: Top-15 three-model ensembles on the 138-cell VL trimmed-hard subset. Div : Y = 3-provider-diverse (at most one model per provider), N = two of the three members share a provider. 
+
+AVL T15 : Y = trio appears in the top-15 of the AVL trimmed-hard leaderboard (56-cell denomina-tor), N = not present. Provider abbreviations: B=ByteDance, O=OpenAI, A=Alibaba, G=Google, M=Moonshot.                                                                                   
+
+> Rank Trio Providers VL Hard (138) Div AVL T15
+> 1gpt54mi + gpt55 + gem35f O+O+G 89.86% (124/138) NN2dbao2p + qwen3vlf + gem35f B+A+G 89.13% (123/138) YN2dbao2p + qwenvlx + gem35f B+A+G 89.13% (123/138) YN4dbao2p + gpt54mi + gem35f B+O+G 88.41% (122/138) YN4gpt54 + qwenvlx + gem35f ⋆O+A+G 88.41% (122/138) YY4qwen3vlf + gpt55 + gem35f A+O+G 88.41% (122/138) YN4qwenvlx + gpt55 + gem35f A+O+G 88.41% (122/138) YN8dbao2p + gpt54 + gem31p B+O+G 87.68% (121/138) YN8dbao2p + qwenvlx + gpt55 B+A+O 87.68% (121/138) YN8dbao2p + qwenvlx + gem31p B+A+G 87.68% (121/138) YN8gpt54 + qwen3vlf + gem25p O+A+G 87.68% (121/138) YN8gpt54 + gem25p + gpt55 O+G+O 87.68% (121/138) NN8gpt54 + gpt55 + gem31p O+O+G 87.68% (121/138) NN8gpt54 + gpt55 + gem35f O+O+G 87.68% (121/138) NN8gpt54 + gem31p + gem35f O+G+G 87.68% (121/138) NN
+> ⋆
+
+Worked example used in Sec. 5.4, chosen because it is the only top-15 VL trio that also appears in the top-15 of the AVL leaderboard, providing both-mode coverage from a single trio. 
+
+Three observations. First, the gap between the leading trio (89.86%) and rank 15 (87.68%) is 3 cells out of 138, comparable to the variation a single model exhibits across reruns on the same cells, so the leaderboard reads more naturally as a top-cluster than as a strict ranking. Second, 10 of the 15 top-VL trios are 3-provider-diverse and 5 are not; the non-diverse trios concentrate two OpenAI or two Google models, reflecting the strong individual performance of the four new flagship members ( gpt55 , gem31p , gem35f , and the established gpt54 ). Third, the cross-mode overlap is sparse: of the 15 trios listed here, only gpt54 + qwenvlx + gem35f also appears in the top-15 of the AVL trimmed-hard leaderboard. Trio selection therefore does not transfer cleanly between modes: a trio optimised for VL-only accuracy is unlikely to be optimal under AVL, and vice versa. This is an additional reason why we treat the worked example as a representative reference rather than as a canonical recommendation; a definitive ensemble selection would require multi-dataset, larger-run-count validation that lies outside the scope of this work. 24

@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-05</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-07</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 23 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 18 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>14</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>9</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-05 21:28:01 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-07 01:32:09 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日精读9篇、速读14篇，聚焦视觉导航与全身操作两大前沿方向。最值得关注的是UniNav统一世界-动作扩散模型（9.0）与RoboReact生成式视频技能蒸馏方法（9.0），后者为通用机器人操纵提供了新思路。建议普通读者先读这两篇9分论文，再搭配速读中关于VLA本体感觉与鲁棒微调的研究。</p>
+<p>今日精读9篇、速读9篇，核心聚焦具身智能中的视觉-语言-动作模型（VLA）与灵巧操作，共18篇论文。</p>
+<p>最值得关注两篇9分精读：SiMDex通过相似视频挖掘实现跨本体灵巧操作，CofactVLA用反事实干预去混淆VLA模型；速读中Deltoris与SymmGrid分别主打实时推理和训练规模化。</p>
+<p>建议重点跟进VLA模型的高效推理与因果解耦方向，同时留意视频数据驱动操作迁移的潜力。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -74,9 +76,9 @@
     <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="UniNav: A Unified World-Action Diffusion Model for Visual Navigation">UniNav: A Unified World-Action Diffusion Model for Visual Navigation</span></li><li><span class="dpr-home-dashboard-paper-title" title="RoboReact: Agentic Skill Distillation from Generated Egocentric Videos for Generalizable Whole-Body Manipulation">RoboReact: Agentic Skill Distillation from Generated Egocentric Videos for Generalizable Whole-Body Manipulation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions">Unified Visuomotor Targets: Supervising VLAs Beyond Physical Actions</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation">SiMDex: Mining Similar Egocentric Videos for Cross-Embodiment Dexterous Manipulation</span></li><li><span class="dpr-home-dashboard-paper-title" title="CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention">CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention</span></li><li><span class="dpr-home-dashboard-paper-title" title="Faster-WAM: Efficient Inference-Time Future Conditioning for Robust World Action Models">Faster-WAM: Efficient Inference-Time Future Conditioning for Robust World Action Models</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">data <strong>3</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>5</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>3</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -84,12 +86,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">14 篇</strong>
+    <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="How Should Vision-Language-Action Models Use Proprioceptive State?">How Should Vision-Language-Action Models Use Proprioceptive State?</span></li><li><span class="dpr-home-dashboard-paper-title" title="Structure-Aware Robust Fine-Tuning: Defending Vision-Language-Action Robots Against Physical Attention Hijacking">Structure-Aware Robust Fine-Tuning: Defending Vision-Language-Action Robots Against Physical Attention Hijacking</span></li><li><span class="dpr-home-dashboard-paper-title" title="Continue or Replan? Bernoulli-Continuation Policy Learning for Adaptive Horizon Execution">Continue or Replan? Bernoulli-Continuation Policy Learning for Adaptive Horizon Execution</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SymmGrid: Super-Scaling On-Robot Learning with Parallelized Symmetries and Egocentric-Exocentric Visual Perception">SymmGrid: Super-Scaling On-Robot Learning with Parallelized Symmetries and Egocentric-Exocentric Visual Perception</span></li><li><span class="dpr-home-dashboard-paper-title" title="Deltoris: Enabling Real-time VLA Inference in Embodied AI via Bit-level Sparsity and Speculative Inference">Deltoris: Enabling Real-time VLA Inference in Embodied AI via Bit-level Sparsity and Speculative Inference</span></li><li><span class="dpr-home-dashboard-paper-title" title="Explicit Language Memory for Long-Horizon Planning in Vision-Language-Action Models">Explicit Language Memory for Long-Horizon Planning in Vision-Language-Action Models</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>10</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">data <strong>4</strong></span><span class="dpr-home-dashboard-tag">model <strong>3</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
 </section>
 </div>
 

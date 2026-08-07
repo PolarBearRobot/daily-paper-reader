@@ -1,0 +1,241 @@
+Title: RORA: Realistic Object Reconstruction with Articulation
+
+URL Source: https://arxiv.org/pdf/2608.04842v1
+
+Published Time: Thu, 06 Aug 2026 01:15:03 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> THIS WORK HAS BEEN SUBMITTED TO THE IEEE FOR POSSIBLE PUBLICATION. 1
+
+# RORA: Realistic Object Reconstruction with Articulation 
+
+Hyesung Lee, Youngseon Lee, Kyutae Lee, Dongjun Lee, and Yongseok Lee ∗
+
+Abstract —Replicating real-world environments into simulation by realistic visual representation like NeRF and 3D Gaussian Splatting (3DGS) has emerged as an effective strategy to reduce the sim-to-real gap in robot learning. However, implementing object articulation during the real-to-sim process is still achallenging task. Existing motion tracking or learning based ar-ticulation methods shows low success rates on complex kinematic structures having multiple joints. Furthermore, those methods require scan of dynamic motion of objects, which makes recon-struction process much complicated. In this work, we propose the first end-to-end pipeline that reconstructs simulation-ready assets with accurate articulation from a single static object video input through suggestion based human-in-the-loop process. Our approach exports a hybrid representation combining 3DGS for photorealistic rendering and mesh-based geometry for physical interaction. In the reconstruction process, our pipeline performs convex decomposition followed by user grouping for intuitive part segmentation, subsequently binding 3D Gaussians to the corresponding mesh parts. An Automatic Joint Suggestion Algo-rithm then calculates candidate joint axes from local boundary geometries and presents them to users for efficient articulated asset reconstruction. We have shown that our method achieves precise articulation results on partnet-mobility-v0 dataset and real objects. Additionally we presented a potential usage of our framework on robot learning, deploying the reconstructed assets in Unreal Engine and NVIDIA Isaac Sim, demonstrating real-time dexterous hand manipulation tasks. 
+
+I. I NTRODUCTION 
+
+In data driven robot learning such as Humanoid manip-ulation, precise simulation and reducing sim-to-real gap is important. Replicating a real world environment into simu-lation is an effective strategy to reduce the gap, enabling visually realistic and time efficient data collection [1]–[4]. Recent studies suggest that rendering a scene using Gaussian Splatting (GS) can enhance the sim-to-real success rate and improve data efficiency [5]–[7]. At this point, the object articulation is equally important, as many real world objects have internal kinematics. However, bringing articulated assets into simulation still remains a challenging task. Some object articulation methods are presented to recon-struct kinematics of real objects. Some conventional studies suggest that VLM decide the joint type and location by actor-critic iteration [8]–[10]. Other studies find the joint properties through the object movements [11], [12]. However, both methods are not readily usable for transferring real objects, 
+
+Hyesung Lee, Youngseon Lee, and Dongjun Lee are with the Department of Mechanical Engineering, Seoul National University, Seoul, Korea. Kyutae Lee and Yongseok Lee are with the Department of Robotics and Mechatronics Engineering, DGIST, Daegu, Korea. 
+
+> ∗
+
+Corresponding author: Yongseok Lee (email: yslee@dgist.ac.kr). 
+
+Fig. 1. The Conceptual overview of RORA framework. Our pipeline recon-structs real objects into simulation-ready, articulated asset. It exports hybrid representation coupling Gaussian Splatting (GS) and meshes. Users can easily import articulated object in simulation environment for robot manipulation tasks. 
+
+since they show low accuracy on multi-joint objects or require multiple scanning of an object with various joint states. We propose Realistic Object Reconstruction with Artic-ulation (RORA) , which is end-to-end pipeline for real-to-sim object reconstruction from a video of static scene. As illustrated in Fig. 1, this framework exports realistic movable objects in mesh and Gaussian Splatting format. RORA uses a suggestion based, human-in-the-loop (HIL) process to reconstruct articulated objects through interactive user feedback. First, the framework infers joint candidates based on local geometric features. User can then fine tune joint placements to get higher precision. This framework are applicable on multi-joint objects, and even those with chained parent-child linkages, while taking similar time than arXiv:2608.04842v1 [cs.RO] 5 Aug 2026 2 THIS WORK HAS BEEN SUBMITTED TO THE IEEE FOR POSSIBLE PUBLICATION. 
+
+the conventional baselines. [8], [12] Notably, since our joint estimation depends on static geometry, RORA requires only a single video scan of an static object. Through the process, users can promptly import the ar-ticulated objects into the simulation. We open the source code in public, also share the asset storage to collect and distribute reconstructed assets for the advancement of robotics researches. The main contributions of this work are as follows: 1) Simple Scanning Process: An end-to-end articulation pipeline driven by a single static video scan, requiring no manual joint manipulation during data capture. 2) Handling Multi Joint and Chained Kinematics: Based on local geometry and human feedback, RORA accu-rately recovers complex kinematic structures, including branching structure (1-to-N connections) and chained linkages (1-to-1-to-1 chains) 3) Readily Simulatable Asset Generation: This framework exports simulation-ready objects, which can be imported directly into simulation. (e.g. Isaac Sim, UnReal Engine) The source code and asset storageare opened in public. II. R ELATED WORKS 
+
+A. Gaussian–Mesh Reconstruction 
+
+Recent advances in 3D Gaussian Splatting (3DGS) based reconstruction have enabled high quality representations of spatial scenes. [13]–[15]. To leverage these photorealistic capabilities for interactive objects in simulation, several ap-proaches have suggest methods to physically interact with these 3DGS. [16]–[18]. In the robotics domain, Gaussian Splatting (GS) is widely adopted to mitigate the sim-to-real gap through photorealistic simulation. For robust policy optimization and zero-shot transfer, frameworks like RE3SIM [2], RialTo [1], and SplatSim [5] leverage high-fidelity GS rendering to minimize visual discrepancies during training, enabling high-fidelity rollouts for reinforcement and imitation learning tasks. However, these scanning pipelines focus on reconstructing a static object as a solid mesh; they lack the kinematic information within the object, which is the joint semantics required to interact with individual movable subparts. 
+
+B. Motion-Based Articulation 
+
+One branch of articulation recovers kinematic constraints by observing object’s motion. PARIS [11] detects a single joint through two-state RGB image input. PARIS* and DTA [19] overcame a single-joint restriction, utilizing dual RGB-D scans to find multiple joints. Recently, ScrewSplat [12] leverages screw theory to optimize screw-axis primitives with part-aware 3D Gaussians and jointly trains them on multi-state RGB observations, which can extend articulation for multi-joints without depth information. While motion-based approaches are capable of modeling joint in arbitrary objects, they mandate multi-state observa-tions. User must manually capture multiple configurations, which is impractical for real-to-sim workflows and frequently faces failure on complex multi-joint objects or chain linked ob-jects which one joint trajectories affect others. Our framework removes this operational bottleneck by predicting potential joint axes from a single static capture. 
+
+C. VLM and Learning-Based Articulation 
+
+Modern method incorporate Vision-Language-Model (VLM) having semantic knowledge to automate the articulation process. Articulate-Anything [8] formulates a VLM-driven actor-critic loop to optimize joint parameters connected to 3D asset library. Articulate-Anymesh [9] transform a solid mesh into movable object, leveraging open-vocabulary part segmentation and prompting Vision-Language-Model of visual clues. URDFormer [10] and URDF-Anything+ [20] autoregressively synthesize part shpaes and joint configuration from a single image through utilizing Vision Transformer (ViT) model. Although highly automated, these learning-driven ap-proaches are bounded to their trained datasets and under-lying model libraries. Consequently, out-of-distribution real-world objects often yield failure on link placement and joint allocation. In contrast, our approach infers joint candidates directly from local boundary geometries, and couples this with lighweight human-in-the-loop adjustment, enabling robust and readily made simulation asset construction for arbitrary ob-jects. III. M ETHODS 
+
+Fig. 2 shows the overall pipeline of RORA, which consists of 6 stages: (1) initial-reconstruction, (2) refinement, (3) decomposition, (4) segmentation, (5) articulation, (6) export stage. The segmentation and articulation stage include user feedback for HIL process. Through these stages, users can promptly build articulated assets. 
+
+A. Initial Reconstruction & Refinement Stage 
+
+We used GS2Mesh pipeline [16] to generate initial Gaus-sian Splatting and mesh representation from a single video. GS2Mesh pipeline optimize 3DGS to get stereo images of the scene. Using marching cubes algorithm, [21] the framework generates the mesh from Gaussian Splats from the depth in-formation from images. The framework also support Segment Anything Model 2 (SAM2), [22] it can discriminate object from background by generating filtering mask. To extract the gaussian splats belonging to the object, we have used filtering by visibility count. For each Gaussian, the number is counted if the point is projected inside the SAM2 mask. The Gaussians counted more than visibility threshold ratio, which is configurable hyperparameter, are filtered as object. The initially reconstructed mesh contains defects such as holes at the bottom due to the occlusion and floating fragments from the mesh generation artifacts. To repair the mesh, the refinement stage transforms the incomplete mesh into water-tight surface. The watertightness is a prerequisite for following tasks of graph analysis. The refinement process begins with spatial alignment. First, the plane normal of the bottom hole is computed through Principal Component Analysis (PCA). The 3 
+
+> Fig. 2. Overall pipeline of our reconstruction framework. The method is composed of 6 stages. The process is semi-automated human-in-the-loop process, taking human feedback in segmentation and articulation stage
+
+Algorithm 1 Mesh Preprocessing Pipeline  
+
+> 1:
+
+Filter isolated fragments whose diameter is under threshold  
+
+> 2:
+
+Reconstruct surface by Screened Poisson Reconstruction [23]  
+
+> 3:
+
+Remove vertices below ground level ( z < 0) 
+
+> 4:
+
+Reduce face count by Quadric Edge Collapse Decimation [24]  
+
+> 5:
+
+Use Isotropic remsehing for uniform triangle quality  
+
+> 6:
+
+Flatten bottom region and fills the large ground-contact hole  
+
+> 7:
+
+Perform global hole-filling for watertight geometry  
+
+> 8:
+
+Restore vertex properties from the original mesh 
+
+mesh is then reoriented to an upright position by aligning this normal vector with the global z-axis and move plane center to the global origin. After alignment, the geometry is cleaned through the series of refinement steps to make watertight form. 
+
+B. Decomposition & Segmentation Stage 
+
+In decomposition stage, the mesh is decomposed into mul-tiple convex fragments, which will be combined into semantic groups by user feedback. This stage is based on assumption that the movable subparts appear geometrically extruded. It ap-plies Approximate Convex Decomposition (ACD) algorithm, [25] automatically dividing mesh into non-overlapping convex fragments whose union mostly covers up the entire object mesh. Automatic segmentation models often fail on capturing part-level semantics when subparts share similar appearance of color or texture. [3] To overcome these ambiguities and ensure semantically accurate decomposition, we used a lightweight human-in-the-loop process. A user simply assigns group num-bers (i = 1 , 2, 3, ... ) to the decomposed fragments to from distinct subparts. Vertices on the original mesh are mapped to their corresponding fragment groups, the vertices not covered in any convex fragments are allocated to the nearest group by 
+
+L2 distance. To Align 3DGS points with mesh geometry, Gaussian points are subsequently bound to these mesh subparts using a k-nearest-neighbors (KNN) voting strategy. Each Gaussians search for its k-closest mesh vertices and take the majority part ID, which is a unified part segmentation for both mesh and Gaussian Splatting format. 4 THIS WORK HAS BEEN SUBMITTED TO THE IEEE FOR POSSIBLE PUBLICATION.  
+
+> Fig. 3. Overview of the Automatic Joint Suggestion Algorithm in Articulation Stage. From the segmented mesh, boundary cycles are extracted. Considering local geometry around each boundary, unidirectional connections (normal and intersection vectors) are estimated. Best-matched unidirectional pairs are fused into bidirectional connections, adding a cross-product vector. The resulting vectors of bidirectional connections are suggested as candidate joint axes.
+
+C. Articulation & Export Stage 
+
+Once part segmentation is complete, our framework auto-matically estimates joint axes through Automatic Joint Sug-gestion Algorithm , proposing joint candidates for user to minimize manual effort. The systematic workflow is visualized in Fig. 3 and Fig. 4. The algorithm consists of 4 key steps: boundary detection, axis estimation, bidirectional fusion, and joint suggestion. 
+
+1) Boundary Detection : To identify boundaries for each subpart i, we extract a set of boundary cycles Ci from the mesh graph G = ( V, E ), where each cycle c ∈ C i belongs to a specific subpart i. First, we isolate boundary vertices VB,i ⊂
+
+V belonging to subpart i and adjacent to any other subpart 
+
+j(̸= i). An induced subgraph GB,i ⊂ G is then constructed from VB,i and their interconnecting edges. Subsequently, the framework iteratively prunes vertices with a degree less than two, as they cannot form a closed loop. Second, a Depth-First Search (DFS) traverses GB to enumerate all simple candidate cycles. Finally, a greedy selection strategy sorts these cycles by edge length in descending order and retains a cycle only if the fraction of its edges not yet included in previously selected cycles exceeds a uniqueness threshold τ (default = 0.5). 
+
+2) Axis Estimation : For each boundary cycle c ∈ C i of subpart i, our framework constructs a unique unidirectional connection ua, forming the subpart-specific connection set 
+
+Ui = {ua}. Each connection ua = ( oa, na, xa) consists of a joint origin oa (the centroid of the vertices in cycle c), a normal vector na derived from single-plane estimation, and an intersection vector xa derived from multi-plane estimation, considering both a simple planar and corner geometries. For each boundary cycle c ∈ C i, we compute separating hyperplanes between the target subpart i (vertices labeled as 
+
++1 ) and neighboring subparts (vertices labeled as −1) within a k-hop distance local geometry L from c. Two types of vector estimation are applied to every boundary.  
+
+> •
+
+Single-plane Estimation: For simple planar boundaries, a linear Support Vector Machine (SVM) is fitted to the local neighborhood L, where the normalized normal vector of the separating hyperplane becomes n. 
+
+> •
+
+Multi-plane Estimation: For non-planar boundaries, an Expectation-Maximization (EM) framework coordinates 
+
+K = 2 hyperplanes (wk, b k)2 
+
+> k=1
+
+to understand corner geometries. The E-step assigns the vertices to each plane. For convex boundaries, ( +1 ) points are assigned to all planes while ( −1) negative points are partitioned to their most-violating plane. For concave boundaries, by duality, (+1 ) points are assigned to their closest supporting plane and ( −1) points to all planes. Following M-step SVM retraining, the configuration yielding higher classification accuracy is selected, defining the intersection line of the two hyperplanes as x.
+
+3) Bidirectional Fusion : Because boundaries are detected independently per subpart, a single physical interface between subpart i and j may yield inconsistent or count-mismatched unidirectional connections between two sides. To integrate these discrepancies, we isolate the subset Ui→j ⊆ Ui of connections from subpart i to j and pair them with Uj→i ⊆ U j .Each paired unidirectional connection is merged into a 
+
+bidirectional connection B = ( o, n, x, p). Here, the joint origin o, normal vector n, and intersection vector x are computed as the averages of the respective vectors from the paired connection, while p = n × x forms the cross-product vector. These three vectors ( n, x, p) serve as the primary candidate axes for joint suggestion. 
+
+4) Joint Suggestion : While primary joint candidates are derived from direct physical connection between subparts, complex topologies often involve multiple boundary connec-tions for a single subpart pair (i, j ). (e.g. a toolbox handle attached at two distinct points in Fig. 4) To handle these multi-boundary cases, we evaluate the number of bidirectional con-nections between part i and j and apply geometric heuristics below to suggest additional joint candidates.  
+
+> •
+
+Two Connections: An additional vector is placed at the midpoint of the two connection origins, with its axis 5
+
+> Fig. 4. An example of additional candidate generation in the Joint Suggestion stage, highlighted between Part 1 and Part 5. Two bidirectional connections exist between those parts, which means two physical interfaces. By rules, an additional vector connecting the two centroids is suggested as a joint candidate.
+
+oriented along the line connecting them. Fig. 4 shows the example for this case.  
+
+> •
+
+Three or More Connections: The joint origin is placed at the arithmetic mean of all connection origins, and its axis is aligned with the average of their normal vectors. In the final export stage, our framework converts the esti-mated joints and the hybrid representation of meshes and 3D Gaussian Splats into a simulation-ready asset. An interactive graphical user interface (GUI) presents the estimated joint candidates, allowing the user to select the active joint axis, assign the joint type ( fixed, revolute, or prismatic ), and adjust minor spatial deviations. After user confirmation, the system automatically generates a unified URDF file encoding the articulated kinematics. Con-currently, the 3D Gaussian Splats are bound to the correspond-ing mesh subparts and registered to their respective kinematic links, enabling photorealistic rendering of the articulated asset within physics simulation environments. IV. E XPERIMENTS 
+
+In this section, we evaluate the effectiveness of our frame-work through both quantitative benchmarks and real-world de-ployment. First, we present a quantitative comparison against conventional real-to-sim baselines across three criteria: geom-etry metric, visual metric, and execution time. Second, we demonstrate that our reconstructed assets can be integrated as interactive object under the physics simulation platforms for real-time robotic teleoperation and manipulation tasks. 
+
+A. Quantitative Evaluation on Benchmark 
+
+Experimental Setup We evaluate our pipeline against two state-of-the-art articulation baselines on the PartNet-Mobility dataset [26]. Articulate-Anything (AA) [8], which leverages a Vision-Language Model (VLM) prior, and ScrewSplat [12], which optimizes extended 3D Gaussians with screw axes from multi-view sequences of different configurations. ( Note that while the original Articulate-Anything paper uses Gemini-1.5-Flash, we used Gemini-2.5-Flash as its internal VLM agent for our experiments. )
+
+Dataset The input data for each framework are configured to match their respective requirements. Both baselines require dy-namic scenes that includes movement of the target object joint. Specifically, Articulate-Anything was given with a 15-second continuous motion video of partwise movement, whereas ScrewSplat was given 240 multi-view images captured across 5 discrete articulated states. In contrast, our method used only 48 multi-view images of a single static configuration. We evaluate all methods across objects in three difficulty levels categorized by kinematic complexity:  
+
+> •
+
+Category I: Single Joint Objects — 6 items  
+
+> •
+
+Category II: Multiple Joints Objects — 6 items  
+
+> •
+
+Category III: Chained Linkage Objects — 4 items 
+
+Evaluation Metrics We compare each framework using two evaluation criteria.  
+
+> •
+
+Geometry Metrics: evaluates joint estimation precision against ground-truth in three categories: (1) Type error 
+
+(count of misclassified or omitted joints); (2) Angular error (angular deviation between estimated and GT axes, bounded in [0 ◦, 90 ◦]); and (3) Positional error (ℓ2 dis-tance in orthogonal direction between predicted and GT origins for revolute joints).  
+
+> •
+
+Visual Metrics: Evaluates visual accuracy of the asset articulated to test configuration against a reference GT rendering using peak signal-to-noise ratio ( PSNR ), struc-tural similarity index (SSIM ), and learned perceptual image patch similarity ( LPIPS ). 
+
+Evaluation Results The quantitative comparisons are pre-sented in Table I (geometry metrics) and Table II (visual metrics), with corresponding qualitative rendering examples in Fig. 5. Additionally, Table III shows the operational runtime for each pipeline.     
+
+> TABLE I GEOMETRY METRIC COMPARISON ON PART NET -M OBILITY BENCHMARK .
+
+Category Method Type ↓ Angle ( ◦) ↓ Pos (m) ↓
+
+Cat. I (Simple) AA 0.000 17.560 0.066 ScrewSplat 0.167 6.282 0.232 
+
+Ours 0.000 0.220 0.005 
+
+Cat. II (Multi) AA 1.667 12.857 0.370 ScrewSplat 2.000 39.953 0.549 
+
+Ours 0.167 1.425 0.066 
+
+Cat. III (Chain) AA 1.500 22.545 1.367 ScrewSplat 2.000 62.820 0.636 
+
+Ours 0.000 0.849 0.028     
+
+> TABLE II VISUAL METRIC COMPARISON ON PART NET -M OBILITY BENCHMARK .
+
+Category Method PSNR (dB) ↑ SSIM ↑ LPIPS ↓
+
+Cat. I (Simple) AA 24.107 0.944 0.076 ScrewSplat 26.334 0.963 0.045 
+
+Ours 28.346 0.975 0.023 
+
+Cat. II (Multi) AA 22.068 0.930 0.113 ScrewSplat 21.941 0.953 0.075 
+
+Ours 25.989 0.973 0.029 
+
+Cat. III (Chain) AA 21.895 0.949 0.132 ScrewSplat 25.172 0.961 0.073 
+
+Ours 29.606 0.983 0.017 6 THIS WORK HAS BEEN SUBMITTED TO THE IEEE FOR POSSIBLE PUBLICATION.  
+
+> Fig. 5. The rendering comparison on the PartNet-Mobility benchmark. Two representative examples are displayed for each category. For each baseline and our framework, the left image shows the object at the zero configuration, while the right image shows the articulated state adjusted for visual quality evaluation against the ground truth (GT). TABLE III RUNTIME COMPARISON
+
+Metric AA ScrewSplat Ours 
+
+Operation breakdown 
+
+Initial generation – – 05:22 User interaction – – 00:42 System processing 11:35 06:56 01:19 
+
+Total time ↓ 11:35 06:56 07:23 
+
+Table I demonstrates that our method outperforms both baselines across all categories. While all frameworks show acceptable performance on simple single-joint objects (Cate-gory I), existing baselines shows catastrophic failures on more complex multi-joint (Category II) and chained linkage objects (Category III). Especially in Category III, joint movements are hierarchically dependent, the location of joints are changing as a parental joint moves, even the trajectory of linkages are not linear. Existing baselines fail to isolate these cascading dependencies and fails to detect its movement. In contrast, our method could reconstruct most physical joints, showing the smallest angular error and positional error. As shown in Table II, our method consistently achieves the best performance across all visual metrics. The degradation in baseline scores directly affected from their failed joint estimations. Specifically, Articulate-Anything often retrieves mismatched meshes, leading to severe discrepancy of geomet-rical fidelity and rendering results when joints are moved. ScrewSplat produces high-quality rendering results on zero configuration, but it fails to capture the kinematic structure separately for each joint, or sometimes overcounts the joints, which is the cause of low visual metric score on complex cate-gories. Comparably, our framework can segment and articulate joint accurately through geometry based joint suggestion and user feedback, its results have high articulation accuracy and visually resemble results through Gaussian Splatting render-ing. Thus it shows almost identical rendering result to the reference even in unseen configurations. While human-in-the-loop workflows are often assumed to bring large time overhead, our runtime breakdown in Table III demonstrates that our pipeline achieves similar efficiency to fully automated baselines. Articulate-Anything incurs sig-nificant latency by waiting for responses during its actor-critic reasoning loops (limited 5 iterations at maximum), showing runtime varies depending on how many iteration loops have run. ScrewSplat operates in consistent processing time, averaging 06:56 optimizing extended GS. In compari-son, our framework achieves an average total runtime of 7 min 23 s, (composed of initial GS2Mesh generation, GUI user interaction, and system processing for remaining stages) where active human interaction takes only 42 seconds due to our suggestion-based user interaction, requiring minimal user effort. Consequently, our method delivers high-precision articulation without incurring a time penalty. 7  
+
+> Fig. 6. Qualitative comparison on real-world objects. Columns depict object motions following joint constraints, where yellow arrows indicate revolute joint axes. The two leftmost columns show the results of Articulate-Anything [8] alongside their ground truth images.
+> Fig. 7. The dexterous manipulation demo under the simulation. Upper two images shows the operation in Unreal Engine, Lower two images shows the operation in the Isaac Sim environment. In this experiment, the robot hand is triggering the spray, and robot hand is rotating the handle of coffee grinder.
+
+B. Real-World Asset Generation and Simulated Robot Manip-ulation 
+
+As shown in Fig. 6, our pipeline successfully reconstructs real-world objects photorealistic, preserving fine visual ele-ments such as text labels and detailed surface textures. 1
+
+Beyond static visual fidelity, our segmented 3DGS representa-tion and simulatable URDF meshes accurately replicate real-
+
+> 1Interactive articulation results are available at our project page: https:// mirecodes.github.io/rora/
+
+world kinematic constraints, demonstrating highly realistic movements across diverse joint configurations. Precise articulation results are important for sim-to-real transfer in robotic applications, yet the limitations of existing methods are clear. Articulate-anything fails when processing real-world objects from the mesh placement due to the out-of-dataset problem, and VLM still cannot capture movements when multiple joints are moving together as seen in quantative experiment. On the other hand, ScrewSplat is applicable for arbitrary objects, but it depends on the precise camera trajecto-ries during scanning, which requires complex setup to record camera position. In contrast, our method operates well on real-world inputs through standard camera devices, reconstructing complex articulation topologies that baseline methods cannot handle. To confirm the practical utility of our assets for data col-lection under simulation, we deployed them into two distinct simulation platforms (Fig. 7). First, we imported the assets into the HERMES Simulator [27] built on Unreal Engine 5.3, enabling dexterous teleoperation with an Inspire Hand via the VIST hand tracking interface [28]. With this setup, operators can collect demonstration data with real world objects in simu-lation. Second, we deployed the assets in NVIDIA Isaac Sim on a Fourior GR-1 platform, where bimanual robotic hands were controlled in real time using Meta Quest controllers. This allowed operators to naturally interact with the objects as they would in physical reality. These deployments demonstrate that our real-to-sim pipeline effectively bridges the domain gap, providing realistic, articulated assets in simulated envi-ronments for advanced robotic applications. 8 THIS WORK HAS BEEN SUBMITTED TO THE IEEE FOR POSSIBLE PUBLICATION. 
+
+V. C ONCLUSION 
+
+In this paper, we presented a semi-automated end-toe-nd pipeline to reconstruct real-world objects with articulation from a single video input into a hybrid representation of 3D Gaussian Splats and meshes. Our framework enables users to get simulation-ready asset with minimal human interaction through simple segmentation and suggestion based joint artic-ulation. The experiment have proven that this framework has high articulation accuracy and visual fidelity compared to the other articulation baselines. One practical application of our framework is real-to-sim pipeline for robot learning under simulation for realistic envi-ronment. We demonstrated that the reconstructed assets can be deployed for robot manipulation, such as 5-finger hand dexterous teleoperation and humanoid manipulation, in Unreal Engine and NVIDIA Isaac Sim. The generated assets support stable physical interactions through the interactive URDF-mesh structures and realistic rendering through the 3DGS representation. Ultimately, we expect that this framework alleviates the bottleneck of manual asset creation, significantly accelerating data collection and environment setup for robot simulation. Our framework has some limitations. The part segmentation and joint suggestion pipeline relies on geometric features, it fails to distinguish the movable part on non-extruded components or extremely small subparts relative to whole object scale. Furthermore, sharing the fundamental limitation of Gaussian Splatting, our initial reconstruction stage fails on reflective or transparent surfaces. (e.g. glassy, reflective surface) In future work, we plan to deploy the reconstructed real-world assets to train humanoid robot and show the im-provement on success rate for articulated object after sim-to-real transfer. Additionally, we aim to host a asset sharing platform for the robotics community, enabling users to share the custom high-fidelity articulated assets to further advance of manipulation research. REFERENCES [1] M. Torne, A. Simeonov, Z. Li, A. Chan, T. Chen, A. Gupta, and P. Agrawal, “Reconciling reality through simulation: A real-to-sim-to-real approach for robust manipulation,” Robotics: Science and Systems ,2024. [2] X. Han, J. Yu, M. Liu, Y. Chen, X. Lyu, Y. Tian, B. Wang, W. Zhang, and J. Pang, “Re 3sim: Generating high-fidelity simulation data via 3d-photorealistic real-to-sim for robotic manipulation,” in In Proc. of International Conference on Robotics and Automation , 2026. [3] Y. Lee, H. Kim, H. Ji, J. Heo, Y. Lee, J. Kang, J. Lee, and D. Lee, “Human-in-the-loop gaussian splatting for robotic teleoperation,” IEEE Robotics and Automation Letters , vol. 11, no. 1, pp. 105–112, 2026. [4] Y. Lee, H. Park, H. Kim, H. Ji, D. Yee, and D. Lee, “Human-in-the-loop object segmentation for 3d gaussian splatting via finger-based vr interface,” Advanced Intelligent Systems , vol. n/a, no. n/a, p. e202501025, 2026. [5] M. N. Qureshi, S. Garg, F. Yandun, D. Held, G. Kantor, and A. Silwal, “Splatsim: Zero-shot sim2real transfer of rgb manipulation policies using gaussian splatting,” in In Proc. of International Conference on Robotics and Automation , 2025. [6] Y. Wu, L. Pan, W. Wu, G. Wang, Y. Miao, F. Xu, and H. Wang, “Rl-gsbridge: 3d gaussian splatting based real2sim2real method for robotic manipulation learning,” in In Proc. of International Conference on Robotics and Automation , 2025, pp. 192–198. [7] X. Li, J. Li, Z. Zhang, R. Zhang, F. Jia, T. Wang, H. Fan, K.-K. Tseng, and R. Wang, “Robogsim: A real2sim2real robotic gaussian splatting simulator,” 2025. [8] L. Le, J. Xie, W. Liang, H.-J. Wang, Y. Yang, Y. J. Ma, K. Vedder, A. Kr-ishna, D. Jayaraman, and E. Eaton, “Articulate-anything: Automatic modeling of articulated objects via a vision-language foundation model,” in In Proc. of International Conference on Learning Representations ,2025. [9] X. Qiu, J. Yang, Y. Wang, Z. Chen, Y. Wang, T.-H. Wang, Z. Xian, and C. Gan, “Articulate anymesh: Open-vocabulary 3d articulated objects modeling,” 2025. [10] Z. Chen, A. Walsman, M. Memmel, K. Mo, A. Fang, K. Vemuri, A. Wu, D. Fox, and A. Gupta, “Urdformer: A pipeline for constructing articulated simulation environments from real-world images,” in In Proc. of Robotics: Science and Systems , 2024. [11] J. Liu, A. Mahdavi-Amiri, and M. Savva, “PARIS: Part-level recon-struction and motion analysis for articulated objects,” in In Proc. of International Conference on Computer Vision , 2023. [12] S. Kim, J. Ha, Y. H. Kim, Y. Lee, and F. C. Park, “Screwsplat: An end-to-end method for articulated object recognition,” in In Proc. of Conference on Robot Learning , 2025. [13] W. Zhang, Y.-S. Liu, and Z. Han, “Neural signed distance function inference through splatting 3d gaussians pulled on zero-level set,” in 
+
+In Proc. of Advances in Neural Information Processing Systems , 2024. [14] C. Sun, J. Choe, C. Loop, W.-C. Ma, and Y.-C. F. Wang, “Sparse voxels rasterization: Real-time high-fidelity radiance field rendering,” in In Proc. of Conference on Computer Vision and Pattern Recognition ,vol. abs/2412.04459, 2025. [15] M. Yu, T. Lu, L. Xu, L. Jiang, Y. Xiangli, and B. Dai, “Gsdf: 3dgs meets sdf for improved rendering and reconstruction,” in In Proc. of Advances in Neural Information Processing Systems , 2024. [16] Y. Wolf, A. Bracha, and R. Kimmel, “GS2Mesh: Surface reconstruction from Gaussian splatting via novel stereo views,” in In Proc. of European Conference on Computer Vision , 2024. [17] A. Gu´ edon and V. Lepetit, “Sugar: Surface-aligned gaussian splatting for efficient 3d mesh reconstruction and high-quality mesh rendering,” in In Proc. of Conference on Computer Vision and Pattern Recognition ,2024, pp. 5354–5363. [18] Y. Jiang, C. Yu, T. Xie, X. Li, Y. Feng, H. Wang, M. Li, H. Lau, F. Gao, Y. Yang, and C. Jiang, “Vr-gs: A physical dynamics-aware interactive gaussian splatting system in virtual reality,” In Proc. of SIGGRAPH Conference , 2024. [19] Y. Weng, B. Wen, J. Tremblay, V. Blukis, D. Fox, L. Guibas, and S. Birchfield, “Neural implicit representation for building digital twins of unknown articulated objects,” 2024. [20] Z. Wu, Y. Xin, C. Hou, M. Chen, Y. Lyu, J. Zhang, and S. Zhang, “Urdf-anything+: Autoregressive articulated 3d models generation for physical simulation,” 2026. [21] W. E. Lorensen and H. E. Cline, “Marching cubes: A high resolution 3d surface construction algorithm,” in In Proc. of Conference on Computer Graphics and Interactive Techniques , ser. SIGGRAPH ’87. New York, NY, USA: Association for Computing Machinery, 1987, p. 163–169. [22] N. Ravi, V. Gabeur, Y.-T. Hu, R. Hu, C. Ryali, T. Ma, H. Khedr, R. R¨ adle, C. Rolland, L. Gustafson, E. Mintun, J. Pan, K. V. Alwala, N. Carion, C.-Y. Wu, R. Girshick, P. Doll´ ar, and C. Feichtenhofer, “Sam 2: Segment anything in images and videos,” 2024. [23] M. Kazhdan and H. Hoppe, “Screened poisson surface reconstruction,” vol. 32, no. 3, Jul. 2013. [24] M. Garland and P. S. Heckbert, Surface Simplification Using Quadric Error Metrics , 1st ed. New York, NY, USA: Association for Computing Machinery, 1997. [25] X. Wei, M. Liu, Z. Ling, and H. Su, “Approximate convex decomposition for 3d meshes with collision-aware concavity and tree search,” ACM Trans. Graph. , vol. 41, no. 4, Jul. 2022. [26] F. Xiang, Y. Qin, K. Mo, Y. Xia, H. Zhu, F. Liu, M. Liu, H. Jiang, Y. Yuan, H. Wang, L. Yi, A. X. Chang, L. J. Guibas, and H. Su, “SAPIEN: A simulated part-based interactive environment,” in In Proc. of Conference on Computer Vision and Pattern Recognition , June 2020. [27] H. Ji, H. Kim, J. Lee, S. Lee, S. An, J. Heo, Y. Lee, Y. Lee, and D. Lee, “Gpu-accelerated subsystem-based admm for large-scale inter-active simulation,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) , 2025, pp. 13 868–13 874. [28] Y. Lee, W. Do, H. Yoon, J. Heo, W. Lee, and D. Lee, “Visual-inertial hand motion tracking with robustness against occlusion, interference, and contact,” Science Robotics , vol. 6, no. 58, p. eabe1315, 2021.
