@@ -1,0 +1,365 @@
+Title: PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph
+
+URL Source: https://arxiv.org/pdf/2608.01905v1
+
+Published Time: Tue, 04 Aug 2026 02:03:21 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph 
+
+# Zhenhao Zhang 1, Jiajun Zhang 1, Wei MIN 2, Yebin Liu 1∗
+
+> 1
+
+Tsinghua University 2Shadow AI 
+
+Abstract 
+
+Hand-object interaction (HOI) is a fundamental human be-havior with broad applications in AR/VR, digital humans, and embodied interaction. Existing methods typically require pre-defined object geometry, object trajectories, or task-specific conditions, limiting their use with natural real-world inputs. To address this, we study a more practical problem of syn-thesizing 3D hand-object interaction sequences from a single RGB photograph and an open-vocabulary language instruc-tion, and introduce PhotoHOI. PhotoHOI first uses a vision-language model to parse the input image and instruction into a structured task specification, including the interaction object, target region, and spatial relation. It then recovers a compact task-relevant 3D scene and plans a smooth collision-aware object trajectory based on the recovered object states, sup-port relations, and surrounding scene geometry. To synthesize hand motion that generalizes to real-world photographs and unseen objects, it learns transferable task-conditioned con-tact and contact-conditioned grasp priors from large-scale affordance and HOI data. The grasp is further refined in a learned latent space, constraining the optimization to a plau-sible hand-pose manifold. Experiments on GRAB and H2O demonstrate improved contact quality and reduced penetra-tion over representative baselines. Results on real-world pho-tographs further demonstrate higher task success and scene consistency, together with generalization to unseen objects and open-vocabulary instructions. 
+
+# Introduction 
+
+Hand-object interaction (HOI) is a common form of human interaction in daily life and has broad applications in AR/VR (Höll et al. 2018; Mangalam et al. 2024; Tang, Li, and Fu 2023), digital humans (Xu et al. 2025; Chen et al. 2025a), and embodied manipulation (Wang et al. 2022; Xu et al. 2023; Zhu et al. 2025; Fang et al. 2025). However, many existing HOI synthesis methods require predefined object geometry, object trajectories, or other task-specific conditions that must be prepared separately and cannot be obtained directly from a single photograph. A practical system should instead oper-ate from natural user inputs, such as an RGB photograph and an open-vocabulary instruction, and generate a 3D interac-tion sequence grounded in the recovered task-relevant scene. As illustrated in Fig. 1, this setting reduces the reliance on manually prepared object geometry and trajectories. Recent advances in HOI synthesis have made significant 
+
+> ∗
+
+Corresponding author. 
+
+progress in generating plausible hand-object interactions. Early methods (Liu et al. 2023; Zhang et al. 2024; Zhong et al. 2025) mainly focus on synthesizing static grasps for a given object. More recent works extend this setting to dy-namic interaction sequence generation by using text descrip-tions (Cha et al. 2024; Christen et al. 2024), contact maps (Zhang et al. 2025b; Han et al. 2025; Yan, Fang, and Lu 2025; Yu et al. 2025b), or object trajectories (Zhang et al. 2026b, 2025a; Chen et al. 2025c) as conditions. Despite these ad-vances, most existing methods still require object geometry or motion-related conditions to be specified in advance and therefore cannot directly synthesize interactions from natural image-language inputs. To bridge this gap, we present PhotoHOI, a framework for synthesizing 3D hand-object interactions from minimal user-provided inputs. Given only a single RGB photograph and an open-vocabulary language instruction, PhotoHOI generates a 3D hand-object interaction sequence grounded in the recov-ered task-relevant scene. We devise a two-stage approach that first performs task parsing, task-relevant scene recovery, and geometry-guided object-motion planning, and then synthe-sizes the corresponding hand motion. The central challenge is to infer object geometry, initial object states, target rela-tions, and interaction conditions that are explicitly provided to many existing HOI synthesis methods but are unavailable in our image-language input setting. Natural-language instructions generally describe interac-tion goals at a semantic level, whereas downstream 3D re-covery and motion synthesis require explicit objects, spatial relations, and geometric states. To bridge this discrepancy, PhotoHOI integrates VLM-based task parsing, task-relevant 3D scene recovery, and object-motion planning. Given an in-put photograph and language instruction, a vision-language model extracts structured task cues, including the interaction object, target object or region, action type, and spatial rela-tion. Guided by these cues, PhotoHOI segments and recon-structs the objects and support structures relevant to the task. The recovered object geometries and poses are refined using support information and are then used to determine the initial and target object states. Based on these states and the parsed spatial relation, PhotoHOI plans a smooth collision-aware object trajectory for subsequent hand-motion synthesis. Recovering an object trajectory alone is insufficient for synthesizing plausible hand motion, especially when the re-arXiv:2608.01905v1 [cs.CV] 3 Aug 2026 Figure 1: Overview: Unlike existing methods that rely on known object geometry or given trajectories, PhotoHOI starts from a single RGB photograph and an open-vocabulary instruction to generate a 3D hand-object interaction sequence grounded in the recovered task-relevant scene. constructed objects differ from those observed in the HOI training data. Generalizing hand synthesis to such objects re-quires interaction priors that capture transferable functional contact and grasp patterns rather than object-specific con-figurations. To this end, we first learn a task-conditioned contact prior from a large-scale collection of affordance and HOI data. The contact prior predicts functional surface re-gions that guide hand placement on both seen and unseen object geometries. We further learn a contact-conditioned grasp prior that maps the object geometry and predicted con-tact regions into a compact latent distribution of plausible hand configurations. During inference, instead of directly optimizing high-dimensional hand articulations, PhotoHOI refines the grasp through the learned latent variables together with the global wrist pose. This constrains the optimization to a plausible hand-pose manifold while aligning the hand with the predicted contact regions and reducing hand-object interpenetration. After obtaining the refined grasp, Photo-HOI generates an approach motion and coordinates the hand with the planned object trajectory during manipulation. Experiments on standard HOI benchmarks and real-world photograph input demonstrate that PhotoHOI generates phys-ically plausible and semantically consistent 3D hand-object interaction sequences from minimal image-language inputs. The results suggest a practical step toward deploying 3D HOI synthesis in real-world scenarios. Our contributions are summarized as follows: 
+
+• We introduce PhotoHOI, a framework that synthesizes 3D hand-object interaction sequences from a single RGB photograph and an open-vocabulary instruction, reduc-ing the need for manually prepared object geometry and trajectories. 
+
+• We develop an image-to-motion pipeline that parses task-relevant objects and spatial relations, recovers their geom-etry and poses, and plans a smooth collision-aware object trajectory based on the recovered scene. 
+
+• We develop transferable interaction priors for hand syn-thesis by combining a task-conditioned contact prior with a contact-conditioned grasp prior. By refining the grasp in the learned latent space, PhotoHOI maintains plausible hand articulation while satisfying contact and penetration objectives on reconstructed objects. 
+
+# Related Work 
+
+Hand-object Interaction Synthesis 
+
+3D hand-object interaction synthesis has progressed from static grasp generation to dynamic interaction sequence generation. Text2HOI(Cha et al. 2024) decomposes text-conditioned HOI synthesis into contact and motion gener-ation, while DiffH2O(Christen et al. 2024) generates one- or two-handed interactions from language and object geometry. HOIGPT(Huang et al. 2025) represents language and HOI sequences in a unified token space, OpenHOI(Zhang et al. 2025c) supports free-form instructions and unseen objects, and TOUCH(Han et al. 2025) leverages large-scale videos to improve interaction diversity. Despite these advances, most existing methods still assume that object geometry or motion-related conditions are provided. In contrast, PhotoHOI de-rives task-relevant object geometry and object-motion condi-tions from a single RGB photograph and an open-vocabulary instruction before synthesizing the corresponding hand mo-tion. 
+
+Vision Language Models for Digital Human 
+
+Vision-language models and large language models pro-vide semantic understanding and task reasoning capabili-ties for interaction generation. SemGrasp(Li et al. 2024) in-troduces language semantics into grasp generation, while MotionGPT(Jiang et al. 2023) and MotionChain(Jiang et al. 2024) model language-conditioned human motion. HOIGPT(Huang et al. 2025) applies language modeling to 3D HOI sequences, and VLM-RMD(Deng et al. 2025) uses VLM reasoning to guide human-object motion policies. Dif-ferent from these works, PhotoHOI uses a VLM as a task parser that converts an image-instruction pair into structured objects, actions, and spatial relations for subsequent 3D re-covery and motion synthesis. 
+
+Hand-object Interaction Video 
+
+Videos provide large-scale observations for learning hand-object interaction dynamics. SViMo(Dang et al. 2025) and HarmoHOI(Dang et al. 2026) jointly model HOI videos and 3D motion, while PlayerOne(Tu et al. 2026) and EgoSim(Hao et al. 2026) focus on egocentric world simulation. Other methods use human activity videos to learn interaction rep-resentations or robotic manipulation policies (Li et al. 2025; Luo et al. 2025; Zhang et al. 2026a; Li et al. 2026). These approaches mainly target video generation, world modeling, or robotic action learning, whereas PhotoHOI synthesizes explicit 3D hand and object motion sequences from a single RGB photograph and a language instruction. 
+
+# Method 
+
+Problem Formulation 
+
+Given a real-world RGB photograph I and an open-vocabulary language instruction g, PhotoHOI aims to recover a task-relevant 3D scene representation S from the image and generate a 3D hand-object interaction sequence Y grounded in the recovered objects and their spatial relations. The over-all pipeline is illustrated in Fig. 2. We denote: 
+
+(Y, S) = PhotoHOI( I, g ),
+
+Y = {Ht, T obj  
+
+> t
+
+}Tt=1 , S = {(Gi, T i)}Ni=1 . (1) where Ht denotes the hand pose and articulation state at frame t, and T obj  
+
+> t
+
+denotes the 6DoF pose of the interaction object at frame t in the recovered scene coordinate system. 
+
+Gi and Ti denote the local geometry of the i-th recovered ob-ject and its similarity transform in the reconstructed scene S,respectively. Unlike methods that assume predefined object geometry or object-motion conditions, our setting requires the system to infer task-relevant object geometry and poses, construct an object trajectory that accounts for the recov-ered scene geometry, and synthesize the corresponding hand motion from image-language inputs. 
+
+VLM-based Task Parsing 
+
+Given the input image I and language instruction g, the first step is to ground the open-vocabulary task in the visual scene. This is non-trivial because human instructions usually describe tasks at a high semantic level, whereas downstream 3D recovery and motion planning require structured cues, including task-relevant objects, target regions, and spatial relations. We therefore use a VLM (Team et al. 2023) as a semantic task parser that converts the image-instruction pair into a compact structured specification for subsequent scene recovery and motion synthesis. Specifically, the VLM outputs a set of task-relevant objects 
+
+Otask and a structured task specification τ :
+
+(Otask , τ ) = VLM( I, g ),τ = ( a, o int , o goal , r ). (2) Here, Otask contains the task-relevant objects or regions that need to be localized and processed for the current task. The task specification τ consists of the action type a, the interaction object oint , the target object or region ogoal , and the spatial relation r. For example, given “I am hungry, place the banana on the plate,” the VLM parses place as a, the 
+
+banana as oint , the plate as ogoal , and on as r.In this way, VLM parsing converts free-form image-language inputs into structured cues for downstream mod-ules: Otask guides object localization and scene recovery; 
+
+oint , ogoal , and r determine the object-motion planning prob-lem; and a conditions the contact prior. The VLM provides semantic task cues rather than metric 3D geometry; object geometry, poses, scales, support relations, and obstacle ge-ometry are estimated in the subsequent scene recovery stage. 
+
+Scene Recovery 
+
+Given the task-relevant object set Otask parsed by the VLM, scene recovery lifts the relevant image observations into a 3D representation. We build on visual and 3D foundation models for open-vocabulary segmentation and single-image reconstruction to obtain object geometry and initial poses, followed by a lightweight support-aware refinement. This stage provides the geometric and spatial context required for subsequent trajectory planning and hand synthesis. 
+
+Open-vocabulary Object Segmentation. We first local-ize the task-relevant objects in the image and obtain their instance masks using an open-vocabulary detection and seg-mentation foundation model (Ren et al. 2024): 
+
+M = Φ seg (I, Otask ) = {Mi}Ni=1 . (3) Here, Mi denotes the binary instance mask of the i-th object. The segmentation step focuses on the regions required by the interaction task, including the interaction object, the target object or region, support structures, and nearby objects that may obstruct the planned motion. 
+
+Object-wise 3D Recovery. Given the instance masks M,we recover the local geometry and initial similarity transform of each segmented object using a single-view 3D reconstruc-tion foundation model (Chen et al. 2025b): 
+
+S(0) = Φ rec (I, M) = {(Gi, T (0)  
+
+> i
+
+)}Ni=1 . (4) Here, Gi denotes the local 3D geometry of the i-th object, and T (0)  
+
+> i
+
+= ( R(0)  
+
+> i
+
+, t (0)  
+
+> i
+
+, s (0)  
+
+> i
+
+) denotes its initial similarity transform, including rotation, translation, and scale. This object-wise reconstruction provides the geometry and coarse placement of each relevant entity. However, because individ-ual objects are reconstructed independently, their estimated poses may produce spatial inconsistencies when assembled, such as floating objects or penetration into a support surface. 
+
+Support-aware Scene Optimization. Directly assembling independently recovered objects in a shared coordinate sys-tem can introduce spatial artifacts. We therefore introduce a lightweight support-aware optimization to refine their place-ment. In the tabletop interactions considered in this work, the ① Input&Task Parsing ② Scene Recovery & Motion Planning 
+
+③ Interaction Priors ④ Grasp Pose Synthesis 
+
+⑤ 3D HOI Synthesis 
+
+> Input: single RGB image Open-vocabulary Instruction
+> I am hungry, put the banana on the plate
+> VLM Parsing
+
+Scene Parsing    
+
+> Scene Parsing Instruction Decomposition
+> Action: Pick&Place Move: Banana Target: Plate
+
+Segmentation Reconstruction Motion Planning Object Masks Recovered Scene Object Trajectory   
+
+> Apple Banana Plate Table
+> Affordance Data HOI Data
+> “Pick” Pose
+> Interaction Priors Contact
+
+＋ Encoder Latent Code     
+
+> Relation: On 𝐀 = 𝐀 𝐀𴐀𝐀𴰀𴐀 𝐀 𝐀𴐀𝐀𴰀𴐀 + 𝐀 𝐀𗀀𝐀𚀀𝐀𝐀𚀀 𝐀 𝐀𴰀𝐀𴀀𝐀𝐀𴀀 + 𝐀 𝐀𴐀𝐀 𝐀 𝐀𴐀𝐀
+
+Decoder  
+
+> Latent Optimization Grasp Pose
+
+Figure 2: Given a single RGB photograph and an instruction, PhotoHOI parses the task, recovers the task-relevant 3D scene, and plans a collision-aware object trajectory. It then predicts interaction priors and refines the grasp in a learned latent space. The resulting hand motion and object trajectory form a scene-grounded 3D hand-object interaction sequence. dominant support surface provides a geometric reference for object placement. Specifically, we estimate a support plane π
+
+from the recovered geometry of the table or support object: 
+
+π = x ∈ R3 | n⊤x + d = 0 , ∥n∥2 = 1 . (5) Here, n is the unit normal of the fitted support plane and d
+
+is its scalar offset. Since n is normalized, n⊤x + d gives the signed distance from a point x to the support plane. We then optimize the translation of each non-support ob-ject along the support normal n, while keeping its rotation and scale fixed: 
+
+min 
+
+> {δi}
+
+X
+
+> i / ∈I sup
+
+ Li 
+
+> sup
+
++ λpen Li 
+
+> pen
+
++ λreg δ2
+
+> i
+
+ ,
+
+with Ti =
+
+
+
+R(0)  
+
+> i
+
+, t (0)  
+
+> i
+
++ δin, s (0) 
+
+> i
+
+
+
+.
+
+(6) Here, Isup denotes the set of support objects and δi is the scalar displacement of the i-th object along the support nor-mal. Li 
+
+> sup
+
+encourages contact between the object bottom and the support surface, Li 
+
+> pen
+
+penalizes penetration into support structures, and δ2 
+
+> i
+
+regularizes the displacement from the ini-tial estimate. After optimization, we obtain the final task-relevant scene representation as: 
+
+S = {(Gi, T i)}Ni=1 . (7) The resulting representation contains the geometry and poses of the interaction object, target object, support structures, and task-relevant surrounding objects. These quantities are subsequently used to determine the object start and goal states, detect collisions, replan object and hand trajectories when necessary, and condition hand synthesis. 
+
+Scene-constrained Object Trajectory Planning 
+
+Given the recovered scene S and the structured task speci-fication τ = ( a, o int , o goal , r ), we plan a scene-constrained object trajectory that moves the interaction object from its recovered initial pose to a target pose determined by the goal region, spatial relation, and support geometry. We first retrieve the initial 6DoF pose of oint from S as the start point. To estimate the target pose, we determine a candidate placement position from the location of ogoal and the spa-tial relation r, and adjust it using the corresponding support surface. This adjustment reduces placement inconsistencies such as floating above or penetrating into the support surface. 
+
+T obj 0 = ObjPose( S, o int ),
+
+ˆT obj 1 = TargetPose( S, o int , o goal , r ). (8) Here, T obj 0 = ( R0, t 0) is the recovered initial pose of the in-teraction object, and ˆT obj 1 = ( ˆR1, ˆt1) is its support-adjusted target pose. To generate a smooth motion between the initial and target poses, we construct a lifted cubic Bézier trajectory. Let ut =(t−1) /(T −1) be normalized time, and αt = 10 u3 
+
+> t
+
+−15 u4 
+
+> t
+
++6u5 
+
+> t
+
+be the minimum-jerk time parameter (Flash and Hogan 1985). Given a lift height h and an upward direction nup 
+
+defined by the support normal or scene vertical direction, the Bézier control points are p0 = t0, p 1 = t0 + hn up , p 2 = ˆ t1 + hn up , p 3 = ˆ t1.
+
+For object orientation, we use spherical linear interpola-tion to interpolate between the initial rotation R0 and the target rotation ˆR1. The resulting candidate object trajectory 
+
+T obj  
+
+> t
+
+= ( Robj  
+
+> t
+
+, t obj  
+
+> t
+
+) at frame t is derived as: 
+
+tobj  
+
+> t
+
+= Bezier( αt; p0, p 1, p 2, p 3),Robj  
+
+> t
+
+= SLERP( R0, ˆR1, α t). (9) We then perform collision checking between the trans-formed interaction-object geometry along the candidate tra-jectory and the recovered geometry of surrounding scene objects. If a collision is detected, the planner invokes a scene-aware replanning procedure to update the intermediate path while preserving the recovered initial pose and target pose. Collision checking and replanning are repeated until the tra-jectory is collision-free with respect to the recovered scene geometry or the predefined replanning budget is reached. The final object trajectory converts the parsed spatial goal into a continuous object-side motion and is subsequently coordinated with the synthesized hand motion. 
+
+Hand Motion Synthesis 
+
+Given the planned object trajectory, the remaining task is to synthesize the corresponding hand motion. Directly optimiz-ing high-dimensional hand parameters using only geometric objectives is under-constrained and may produce unstable finger configurations. We therefore use contact as an inter-mediate representation: a task-conditioned contact prior first predicts functional contact regions and a contact-conditioned hand-pose prior for grasp synthesis. 
+
+Task-conditioned Contact Prior. To guide hand synthe-sis for open-set object geometries, we first predict where the hand should contact the object surface. Instead of learn-ing category-specific contact patterns, the contact predictor should capture functional surface regions that are transfer-able across unseen object categories. We therefore adopt a coarse-to-fine training strategy. The contact predictor is first pre-trained on large-scale affordance data (Yu et al. 2025a; Wang et al. 2026), which provides coarse but generalizable supervision for functional object regions such as graspable parts and handles. It is then fine-tuned using contact maps derived from HOI datasets, aligning the learned affordance prior with realistic hand-object contact distributions. Inspired by (Zhang et al. 2025c), we train a conditional VAE to model task-conditioned contact distributions on object surfaces. Given the recovered interaction-object geometry G and action type a, the contact prior predicts a point-wise contact probability map: 
+
+C = Φ contact (G, a ) = {cj }Mj=1 . (10) Here, M is the number of surface points sampled from G,and cj ∈ [0 , 1] is the predicted contact probability of the 
+
+j-th point. The contact map serves two roles: it conditions the grasp prior to initialize a contact-compatible grasp and serves as a contact constraint during optimization. 
+
+Contact-conditioned Hand Pose Prior. Given the pre-dicted contact map C, we learn a contact-conditioned grasp prior that models plausible hand configurations around the object. We represent the object-contact condition as 
+
+P = {(xj , n j , c j )}Mj=1 , (11) where xj , nj , and cj denote the position, surface normal, and predicted contact probability of the j-th object point, respectively. A point-set encoder extracts the conditioning feature y = Φ enc (P). We then use a conditional variational autoencoder to model MANO (Romero, Tzionas, and Black 2017) hand articulation conditioned on y. The model con-tains a conditional prior encoder, a posterior encoder, and a decoder: 
+
+pϕ(z|y) = N  μp(y), σ 2 
+
+> p
+
+(y),qψ (z|θ, y ) = N  μq (θ, y ), σ 2 
+
+> q
+
+(θ, y ),
+
+ˆθ = Dω (z, y ).
+
+(12) Here, θ denotes the MANO hand articulation parame-ters, pϕ(z|y) predicts a latent distribution from the object-contact condition, qψ (z|θ, y ) approximates the posterior dur-ing training, and Dω decodes z into hand articulation. During training, the posterior and conditional prior are aligned using a KL-divergence loss, while the decoded hand is supervised using reconstruction losses on hand articula-tion and geometry. At inference time, the posterior branch is discarded. We sample or initialize z from pϕ(z|y) and decode it into an initial hand articulation. The global wrist rotation and translation are predicted by a separate wrist-pose head conditioned on the same object-contact feature y.
+
+Contact-guided Latent Hand Optimization. Although the contact-conditioned prior provides a plausible initial grasp, the prediction may remain imperfect because of contact-estimation noise, reconstruction errors, and the do-main gap between unseen objects and training data. Direct optimization of high-dimensional MANO articulation pa-rameters under these geometric cues can lead to unstable or implausible finger articulation. Inspired by latent pose pri-ors (Pavlakos et al. 2019), we instead refine the grasp in the learned latent space: 
+
+H(z, R h, t h) = MANO  Rh, t h, D ω (z, y ) , (13) where z controls finger articulation, and the global wrist rotation Rh and translation th determine the hand placement relative to the object. We optimize the pose latent and wrist pose using 
+
+E = λprior Eprior + λcontact Econtact + λpen Epen . (14) Here, Eprior regularizes z toward the learned conditional prior, Econtact attracts the hand surface toward the predicted high-probability contact regions, and Epen penalizes hand-object interpenetration. Optimizing through z restricts fin-ger articulation to configurations represented by the learned grasp prior, while the wrist variables align the hand with the reconstructed object. After obtaining the optimized grasp, we select an initial hand pose in the free space of the recovered task-relevant Method IV ↓ ID ↓ CR ↑ SP ↓                    
+
+> GraspD 6.47 27.36 14.64 3.61 DiffH2O 5.64 24.69 16.54 3.35 Text2HOI 4.82 22.76 18.41 2.85 OpenHOI 4.68 21.53 21.14 2.80 PhotoHOI (Ours) 3.83 13.04 29.43 2.78
+
+Table 1: Comparison with SOTA methods on GRAB.                             
+
+> Method IV ↓ID ↓CR ↑SP ↓
+> GraspD 9.65 31.27 17.63 3.79 DiffH2O 8.45 28.43 18.47 3.35 Text2HOI 7.88 25.29 20.63 2.83 OpenHOI 6.34 22.37 21.05 2.81 PhotoHOI (Ours) 5.25 20.89 36.70 2.79
+
+Table 2: Comparison with SOTA methods on H2O. scene and first generate a candidate approach motion by smoothly interpolating the wrist pose and hand articulation toward the optimized grasp. We perform collision check-ing between the candidate hand trajectory and the recovered non-interaction scene geometry. If a collision is detected, the wrist trajectory is replanned while keeping the optimized ter-minal grasp fixed, and the hand articulation is interpolated along the updated approach trajectory. During the object manipulation stage, we keep the optimized relative transfor-mation between the hand and the object fixed, so that the hand shares the same global rigid motion as the manipulated object along the planned object trajectory while maintaining the optimized contact configuration. 
+
+# Experiments 
+
+We evaluate PhotoHOI on standard HOI benchmarks and real-world photograph inputs. Comparative experiments evaluate grasp quality and real-world task performance, while ablation studies examine the contributions of the con-tact prior, hand-pose prior, and latent optimization. 
+
+Dataset 
+
+The contact prior is first pre-trained on approximately 180K 3D affordance pairs (Yu et al. 2025a) and then aligned with contact maps derived from HOI data. The hand-pose prior is trained on approximately 170K samples collected from GRAB (Taheri et al. 2020), H2O (Kwon et al. 2021), Con-tactPose (Brahmbhatt et al. 2020), DexYCB (Chao et al. 2021), OakInk (Yang et al. 2022), and HOGraspNet (Cho et al. 2024). The full PhotoHOI model is trained on approx-imately 170K samples collected from the aforementioned HOI datasets. For comparisons with SOTA methods, we ad-ditionally train benchmark-specific variants using only the training split of the corresponding benchmark, i.e., GRAB for the GRAB evaluation and H2O for the H2O evaluation. The corresponding test splits are excluded from all training stages.                                           
+
+> Method IV ↓ID ↓CR ↑SP ↓TSR ↑SCR ↑
+> GraspD 22.46 106.35 5.85 3.02 24.95 22.70 DiffH2O 21.95 98.32 5.49 2.92 29.60 25.30 Text2HOI 20.67 96.97 6.94 2.83 42.15 38.20 OpenHOI 19.25 78.41 10.71 2.76 43.90 39.35 PhotoHOI 10.32 49.21 11.24 1.89 63.05 62.75
+
+Table 3: Real-world task evaluation on photograph inputs. 
+
+Evaluation Metrics 
+
+We evaluate the generated interactions from two perspec-tives: grasp quality on standard HOI benchmarks and task-level performance on real-world photograph inputs. 
+
+Grasp Quality. We report Interpenetration Volume (IV), Interpenetration Depth (ID), Contact Ratio (CR), and Self-Penetration (SP). IV and ID measure hand-object penetra-tion, CR measures contact coverage, and SP measures hand self-intersection. Lower IV, ID, and SP and higher CR indi-cate better grasp quality. 
+
+Real-world Task Performance. We report Task Success Rate (TSR) and Scene Consistency Rate (SCR). TSR mea-sures whether the instructed task is successfully completed, while SCR evaluates whether the recovered scene and gen-erated interaction satisfy support, collision, and placement constraints. 
+
+Main Results 
+
+Comparison with SOTA Methods. We compare Photo-HOI with GraspD (Turpin et al. 2022), DiffH2O (Chris-ten et al. 2024), Text2HOI (Cha et al. 2024), and Open-HOI (Zhang et al. 2025c). As shown in Tabs. 1 and 2, Photo-HOI achieves better IV, ID, CR, and SP on both GRAB and H2O. 
+
+Real-World Photograph Results. We evaluate PhotoHOI across 30 real-world scenes containing 20 common objects. For each object, we conduct 100 randomized trials and re-port the results averaged over all 2,000 trials. Although all compared methods are provided with the same task-relevant reconstructed scene geometry, they must still synthesize an interaction that satisfies the instructed target relation. As shown in Tab. 3 and Fig. 3, PhotoHOI achieves higher TSR and SCR, indicating more reliable task completion and better scene consistency. 
+
+Ablation Study 
+
+We conduct ablation studies on GRAB using the same pre-processing, input conditions, and evaluation protocol. Each variant removes one component from PhotoHOI: the con-tact prior, hand-pose prior, or latent optimization. Results are reported in Tab. 4, with visualizations provided in Fig. 4. 
+
+Contact Prior. Removing the contact prior increases hand-object penetration and reduces CR. This indicates that task-conditioned contact regions provide important geomet-ric guidance for locating functional grasp areas. pick the toothbrush and place it on the cup 
+
+> pick the orange and place it on the plate
+
+Input Recovered Scene Interaction Prior 3D HOI Figure 3: Qualitative results on real-world photograph inputs. PhotoHOI recovers task-relevant geometry, plans the object trajectory, and synthesizes the corresponding hand motion. Yellow hands indicate the approach stage, while purple hands indicate the manipulation stage. 
+
+Figure 4: Qualitative ablation results of key components in PhotoHOI. 
+
+Hand-Pose Prior. Removing the hand-pose prior in-creases SP and slightly degrades the other grasp-quality met-rics. The learned pose distribution therefore provides a useful initialization and regularization for plausible hand articula-tion. 
+
+Latent Optimization. Replacing latent optimization with direct MANO-parameter optimization produces slightly worse grasp-quality metrics. Together with the qualitative results in Fig. 4, this suggests that latent-space refinement better preserves plausible hand articulation while satisfying contact and penetration constraints. 
+
+# Discussion 
+
+Conclusion. PhotoHOI explores a more natural interface for 3D hand-object interaction synthesis, where the system starts from what users can easily provide: a real scene photo-graph and a language instruction, and produces a situated 3D interaction sequence. PhotoHOI grounds the task in a recov-ered 3D scene, plans the object-side motion, and synthesizes the corresponding hand motion with transferable contact and grasp priors. By reducing the need for manually prepared 3D                         
+
+> Method IV ↓ID ↓CR ↑SP ↓
+> w/o Contact Prior 5.23 16.86 28.95 2.81 w/o Hand-Pose Prior 3.92 14.22 28.64 2.84 w/o Latent Optimization 4.08 13.17 29.07 2.82 PhotoHOI 3.83 13.04 29.43 2.78
+
+Table 4: Ablation study on GRAB. We evaluate the effects of the contact prior, hand-pose prior, and latent optimization. object conditions, such as object scans and predefined trajec-tories, PhotoHOI makes HOI synthesis more accessible for practical content creation and embodied interaction. 
+
+Limitation and Future Work. PhotoHOI currently fo-cuses on rigid-object interactions in tabletop scenes for 3D animation and content generation, and extending it to artic-ulated or deformable objects would require modeling part-level affordances and object state changes. The framework also relies on single-image 3D recovery, where reconstruc-tion errors may affect the generated results. In addition, our input setting is closely aligned with current embodied ma-nipulation scenarios. Future work may explore retargeting the generated results to robotic embodiments. References 
+
+Brahmbhatt, S.; Tang, C.; Twigg, C. D.; Kemp, C. C.; and Hays, J. 2020. ContactPose: A dataset of grasps with object contact and hand pose. In European Conference on Computer Vision , 361–378. Springer. Cha, J.; Kim, J.; Yoon, J. S.; and Baek, S. 2024. Text2hoi: Text-guided 3d motion generation for hand-object interac-tion. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , 1577–1585. Chao, Y.-W.; Yang, W.; Xiang, Y.; Molchanov, P.; Handa, A.; Tremblay, J.; Narang, Y. S.; Van Wyk, K.; Iqbal, U.; Birch-field, S.; et al. 2021. Dexycb: A benchmark for capturing hand grasping of objects. In Proceedings of the IEEE/CVF con-ference on computer vision and pattern recognition , 9044– 9053. Chen, K.; Mohan, S.; Theiss, J.; Oprea, S.; Sridhar, S.; and Prakash, A. 2025a. InteractAvatar: Modeling Hand-Face Interaction in Photorealistic Avatars with Deformable Gaus-sians. In Proceedings of the IEEE/CVF International Con-ference on Computer Vision , 10410–10420. Chen, X.; Chu, F.-J.; Gleize, P.; Liang, K. J.; Sax, A.; Tang, H.; Wang, W.; Guo, M.; Hardin, T.; Li, X.; et al. 2025b. Sam 3d: 3dfy anything in images. arXiv preprint arXiv:2511.16624 .Chen, Y.; Xu, W.; Yu, Z.; Tang, T.; Li, Y.; Yao, S.; and Lu, C. 2025c. FBI: Learning Dexterous In-hand Manipulation with Dynamic Visuotactile Shortcut Policy. arXiv preprint arXiv:2508.14441 .Cho, W.; Lee, J.; Yi, M.; Kim, M.; Woo, T.; Kim, D.; Ha, T.; Lee, H.; Ryu, J.-H.; Woo, W.; et al. 2024. Dense hand-object (ho) graspnet with full grasping taxonomy and dynam-ics. In European Conference on Computer Vision , 284–303. Springer. Christen, S.; Hampali, S.; Sener, F.; Remelli, E.; Hodan, T.; Sauser, E.; Ma, S.; and Tekin, B. 2024. Diffh2o: Diffusion-based synthesis of hand-object interactions from textual de-scriptions. In SIGGRAPH Asia 2024 Conference Papers ,1–11. Dang, L.; Li, J.; Li, Z.; Zhang, H.; An, L.; Min, W.; Liu, Y.; and Wu, Q. 2026. HarmoHOI: Harmonizing Appear-ance and 3D Motion for Multi-view Hand-Object Interaction Synthesis. arXiv:2607.17097. Dang, L.; Shao, R.; Zhang, H.; Min, W.; Liu, Y.; and Wu, Q. 2025. Svimo: Synchronized diffusion for video and mo-tion generation in hand-object interaction scenarios. arXiv preprint arXiv:2506.02444 .Deng, Z.; Shi, Y.; Ji, K.; Xu, L.; Huang, S.; and Wang, J. 2025. Human-object interaction via automatically designed vlm-guided motion policy. arXiv preprint arXiv:2503.18349 .Fang, H.-S.; Yan, H.; Tang, Z.; Fang, H.; Wang, C.; and Lu, C. 2025. Anydexgrasp: General dexterous grasping for different hands with human-level learning efficiency. arXiv preprint arXiv:2502.16420 .Flash, T.; and Hogan, N. 1985. The coordination of arm movements: an experimentally confirmed mathematical model. Journal of neuroscience , 5(7): 1688–1703. Han, G.; Zhai, W.; Yang, Y.; Cao, Y.; and Zha, Z.-J. 2025. TOUCH: Text-guided Controllable Generation of Free-Form Hand-Object Interactions. arXiv preprint arXiv:2510.14874 .Hao, J.; Jia, M.; Wang, R.; Liu, X.; Yi, R.; Ma, L.; Pang, J.; and Xu, X. 2026. EgoSim: Egocentric World Simula-tor for Embodied Interaction Generation. arXiv preprint arXiv:2604.01001 .Höll, M.; Oberweger, M.; Arth, C.; and Lepetit, V. 2018. Efficient physics-based implementation for realistic hand-object interaction in virtual reality. In 2018 IEEE conference on virtual reality and 3D user interfaces (VR) , 175–182. IEEE. Huang, M.; Chu, F.-J.; Tekin, B.; Liang, K. J.; Ma, H.; Wang, W.; Chen, X.; Gleize, P.; Xue, H.; Lyu, S.; et al. 2025. Hoigpt: Learning long-sequence hand-object interaction with lan-guage models. In Proceedings of the Computer Vision and Pattern Recognition Conference , 7136–7146. Jiang, B.; Chen, X.; Liu, W.; Yu, J.; Yu, G.; and Chen, T. 2023. Motiongpt: Human motion as a foreign language. 
+
+Advances in Neural Information Processing Systems , 36: 20067–20079. Jiang, B.; Chen, X.; Zhang, C.; Yin, F.; Li, Z.; Yu, G.; and Fan, J. 2024. Motionchain: Conversational motion con-trollers via multimodal prompts. In European Conference on Computer Vision , 54–74. Springer. Kwon, T.; Tekin, B.; Stühmer, J.; Bogo, F.; and Pollefeys, M. 2021. H2o: Two hands manipulating objects for first person interaction recognition. In Proceedings of the IEEE/CVF international conference on computer vision , 10138–10148. Li, C.; Xiong, K.; Xu, Y.; Qian, L.; Wang, Y.; and Zhu, W. 2026. GazeVLA: Learning Human Intention for Robotic Manipulation. arXiv preprint arXiv:2604.22615 .Li, K.; Wang, J.; Yang, L.; Lu, C.; and Dai, B. 2024. Sem-grasp: Semantic grasp generation via language aligned dis-cretization. In European Conference on Computer Vision ,109–127. Springer. Li, Q.; Deng, Y.; Liang, Y.; Luo, L.; Zhou, L.; Yao, C.; Zeng, L.; Feng, Z.; Liang, H.; Xu, S.; et al. 2025. Scalable vision-language-action model pretraining for robotic manip-ulation with real-life human activity videos. arXiv preprint arXiv:2510.21571 .Liu, S.; Zhou, Y.; Yang, J.; Gupta, S.; and Wang, S. 2023. Contactgen: Generative contact modeling for grasp genera-tion. In Proceedings of the IEEE/CVF International Confer-ence on Computer Vision , 20609–20620. Luo, H.; Feng, Y.; Zhang, W.; Zheng, S.; Wang, Y.; Yuan, H.; Liu, J.; Xu, C.; Jin, Q.; and Lu, Z. 2025. Being-h0: vision-language-action pretraining from large-scale human videos. 
+
+arXiv preprint arXiv:2507.15597 .Mangalam, M.; Oruganti, S.; Buckingham, G.; and Borst, C. W. 2024. Enhancing hand-object interactions in virtual reality for precision manual tasks. Virtual Reality , 28(4): 166. Pavlakos, G.; Choutas, V.; Ghorbani, N.; Bolkart, T.; Osman, A. A. A.; Tzionas, D.; and Black, M. J. 2019. Expressive Body Capture: 3D Hands, Face, and Body from a Single Image. In Proceedings IEEE Conf. on Computer Vision and Pattern Recognition (CVPR) .Ren, T.; Liu, S.; Zeng, A.; Lin, J.; Li, K.; Cao, H.; Chen, J.; Huang, X.; Chen, Y.; Yan, F.; et al. 2024. Grounded sam: Assembling open-world models for diverse visual tasks. 
+
+arXiv preprint arXiv:2401.14159 .Romero, J.; Tzionas, D.; and Black, M. J. 2017. Embodied Hands: Modeling and Capturing Hands and Bodies Together. 
+
+ACM Transactions on Graphics, (Proc. SIGGRAPH Asia) ,36(6). Taheri, O.; Ghorbani, N.; Black, M. J.; and Tzionas, D. 2020. GRAB: A dataset of whole-body human grasping of ob-jects. In European conference on computer vision , 581–600. Springer. Tang, X.; Li, R.; and Fu, C.-W. 2023. CAFI-AR: Contact-aware freehand interaction with ar objects. Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies , 6(4): 1–23. Team, G.; Anil, R.; Borgeaud, S.; Alayrac, J.-B.; Yu, J.; Sori-cut, R.; Schalkwyk, J.; Dai, A. M.; Hauth, A.; Millican, K.; et al. 2023. Gemini: a family of highly capable multimodal models. arXiv preprint arXiv:2312.11805 .Tu, Y.; Luo, H.; Chen, X.; Bai, X.; Wang, F.; and Zhao, H. 2026. Playerone: Egocentric world simulator. Advances in Neural Information Processing Systems , 38: 145235– 145261. Turpin, D.; Wang, L.; Heiden, E.; Chen, Y.-C.; Macklin, M.; Tsogkas, S.; Dickinson, S.; and Garg, A. 2022. Grasp’D: Dif-ferentiable Contact-rich Grasp Synthesis for Multi-fingered Hands. arXiv:2208.12250. Wang, H.; Zhang, Z.; Ji, K.; Liu, M.; Yin, W.; yuchao chen; Liu, Z.; Zeng, X.; Gui, T.; Zhang, H.; Yuan, J.; Cui, Z.; Liu, J.; Ma, Z.; and Xiong, H. 2026. Diffusion Models are Open-World Affordance Learners: Leveraging Generative Priors for 3D Affordance Learning. arXiv:2508.01651. Wang, R.; Zhang, J.; Chen, J.; Xu, Y.; Li, P.; Liu, T.; and Wang, H. 2022. Dexgraspnet: A large-scale robotic dexterous grasp dataset for general objects based on simulation. arXiv preprint arXiv:2210.02697 .Xu, S.; Li, D.; Zhang, Y.; Xu, X.; Long, Q.; Wang, Z.; Lu, Y.; Dong, S.; Jiang, H.; Gupta, A.; et al. 2025. Interact: Advancing large-scale versatile 3d human-object interaction generation. In Proceedings of the Computer Vision and Pat-tern Recognition Conference , 7048–7060. Xu, Y.; Wan, W.; Zhang, J.; Liu, H.; Shan, Z.; Shen, H.; Wang, R.; Geng, H.; Weng, Y.; Chen, J.; et al. 2023. Unidexgrasp: Universal robotic dexterous grasping via learning diverse proposal generation and goal-conditioned policy. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 4737–4746. Yan, H.; Fang, H.; and Lu, C. 2025. Dexterous Manip-ulation Based on Prior Dexterous Grasp Pose Knowledge. In 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 1389–1396. IEEE. Yang, L.; Li, K.; Zhan, X.; Wu, F.; Xu, A.; Liu, L.; and Lu, C. 2022. Oakink: A large-scale knowledge repository for understanding hand-object interaction. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 20953–20962. Yu, C.; Wang, H.; Shi, Y.; Luo, H.; Yang, S.; Yu, J.; and Wang, J. 2025a. Seqafford: Sequential 3d affordance reasoning via multimodal large language model. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 1691–1701. Yu, Z.; Xu, W.; Xie, P.; Li, Y.; Anthony, B. W.; Zhang, Z.; and Lu, C. 2025b. Dynamic reconstruction of hand-object inter-action with distributed force-aware contact representation. In Proceedings of the IEEE/CVF International Conference on Computer Vision , 8590–8599. Zhang, H.; Christen, S.; Fan, Z.; Hilliges, O.; and Song, J. 2024. Graspxl: Generating grasping motions for diverse ob-jects at scale. In European Conference on Computer Vision ,386–403. Springer. Zhang, J.; Zhang, Y.; An, L.; Li, M.; Zhang, H.; Hu, Z.; and Liu, Y. 2025a. Manidext: Hand-object manipulation synthe-sis via continuous correspondence embeddings and residual-guided diffusion. IEEE Transactions on Pattern Analysis and Machine Intelligence .Zhang, W.; Dabral, R.; Golyanik, V.; Choutas, V.; Alvarado, E.; Beeler, T.; Habermann, M.; and Theobalt, C. 2025b. Bi-mart: A unified approach for the synthesis of 3d biman-ual interaction with articulated objects. In Proceedings of the Computer Vision and Pattern Recognition Conference ,27694–27705. Zhang, Z.; Liu, J.; Shi, Y.; and Wang, J. 2026a. UniHM: Unified Dexterous Hand Manipulation with Vision Language Model. arXiv preprint arXiv:2603.00732 .Zhang, Z.; Shi, Y.; Yang, L.; Ni, S.; Ye, Q.; and Wang, J. 2025c. Openhoi: Open-world hand-object interaction syn-thesis with multimodal large language model. arXiv preprint arXiv:2505.18947 .Zhang, Z.; Zhang, Y.; Xu, X.; Wang, Z.; Xu, S.; Zhou, K.; Zhou, B.; Guo, C.; Wang, J.; Wang, Y.-X.; et al. 2026b. HandX: Scaling Bimanual Motion and Interaction Genera-tion. arXiv preprint arXiv:2603.28766 .Zhong, Y.; Jiang, Q.; Yu, J.; and Ma, Y. 2025. Dexgrasp anything: Towards universal robotic dexterous grasping with physics awareness. In Proceedings of the Computer Vision and Pattern Recognition Conference , 22584–22594. Zhu, Y.; Zhong, Y.; Yang, Z.; Cong, P.; Yu, J.; Zhu, X.; and Ma, Y. 2025. Evolvinggrasp: Evolutionary grasp generation via efficient preference alignment. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,11665–11674.

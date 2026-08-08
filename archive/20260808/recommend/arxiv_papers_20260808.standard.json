@@ -1,0 +1,585 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-08T20:08:19.609963+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 8,
+    "deep_cap": 9,
+    "deep_selected": 8,
+    "quick_candidates": 5,
+    "quick_skim_target": 14,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2608.04692v1",
+      "source": "arxiv",
+      "title": "Suppression Sticks, Locality Is Fragile: A Closed-Loop Target-and-Control Audit of Task-Vector Negation in VLA Policies",
+      "abstract": "Task-vector arithmetic offers a closed-form way to modify a model, yet its behavioral locality remains unclear in closed-loop robot control. We present a target-and-control audit of per-skill task-vector subtraction from multitask vision-language-action (VLA) policies. Across all ten LIBERO-Goal skills, subtraction produces three qualitatively different regimes: target-control separation for five skills, resistance for three, and global collapse for two. On held-out initial states, the five suppressible targets remain at 0% success; however, mean baseline-normalized control retention is only 52%, and each target-suppressing edit materially harms at least one nominally unrelated control. Additional Goal panels show separation across tested policies with continuous-regression, discrete-token, and flow-matching action heads, whereas we observe no clean separation on Spatial and control collapse on the tested Object and Long-horizon panels. Mean task-vector cosine does not account for this variation. A matched-norm control identifies a local sign asymmetry around one Goal anchor, while multi-vector outcomes vary with anchor and scale. Retain-aware gradient baselines provide data-dependent comparators but require removal-time data and optimization; subtraction is data- and gradient-free only at edit time, assuming precomputed expert deltas. Finally, a single-skill relearning probe is consistent with behavioral masking, not certified unlearning. These results characterize task-vector subtraction as a fast but brittle intervention and underscore the need for closed-loop target-and-control evaluation when assessing locality in embodied model editing.",
+      "authors": [
+        "Shaoguang Wang",
+        "Weiyu Guo",
+        "Rushi Dai",
+        "Yiren Zhao",
+        "Yandong Guo",
+        "Hui Xiong"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-08-05T10:59:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.04692v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "closed-loop target-and-control audit of task-vector negation in multitask VLA policies",
+      "llm_evidence_cn": "对多任务VLA策略进行任务向量否定的闭环目标与控制审计，评估可解释性",
+      "llm_evidence": "对多任务VLA策略进行任务向量否定的闭环目标与控制审计，评估可解释性",
+      "canonical_evidence": "对多任务VLA策略进行任务向量否定的闭环目标与控制审计，评估可解释性",
+      "llm_tldr_en": "This audit of per-skill task-vector subtraction across ten LIBERO-Goal skills reveals three suppression regimes and fragile locality, with only 52% control retention and collateral harm to unrelated skills.",
+      "llm_tldr_cn": "任务向量算术是一种闭式模型编辑方式，但其在闭环机器人控制中的行为局部性未知。本文对多任务VLA策略的逐技能任务向量减法进行了目标与控制审计。在LIBERO-Goal全部十个技能上，减法产生目标-控制分离、抵抗和全局崩溃三种模式。抑制目标虽在保留初始状态下成功率降至0%，但控制保留率平均仅52%，且每次编辑至少误伤一个无关技能。该结果揭示了VLA模型可解释性的脆弱性。",
+      "llm_tldr": "任务向量算术是一种闭式模型编辑方式，但其在闭环机器人控制中的行为局部性未知。本文对多任务VLA策略的逐技能任务向量减法进行了目标与控制审计。在LIBERO-Goal全部十个技能上，减法产生目标-控制分离、抵抗和全局崩溃三种模式。抑制目标虽在保留初始状态下成功率降至0%，但控制保留率平均仅52%，且每次编辑至少误伤一个无关技能。该结果揭示了VLA模型可解释性的脆弱性。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "interpretability methods for vision-language-action architectures",
+      "matched_requirement_id": "req-25",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05215v1",
+      "source": "arxiv",
+      "title": "VLAff: Vision-Language-Affordance Model for Unified Actionable Affordances",
+      "abstract": "Learning manipulation skills from human videos is promising for scalable robot learning. However, the embodiment mismatch between humans and robots makes this challenging. One promising solution is to learn object-centric actionable affordances that are embodiment-agnostic. In this work, we propose a framework that leverages egocentric human videos with state-of-the-art 3D Structure-from-Motion and hand mesh reconstruction to extract actionable affordances such as visual, grasp, and trajectory affordances that explicitly encode where to interact, how to grasp, and how to move. We construct EgoAffordance, a large-scale dataset comprising 204K episodes with 5.6M visual affordances and 11.6M grasp and trajectory affordances. Building on this, we introduce VLAff, a large vision-language model-based unified foundation model that learns cross-modal correlations across all actionable affordances. Given a visual observation and instruction, VLAff generates visual affordance heatmaps, grasp poses, and trajectories, which are then converted into directly executable actions by utilizing 3D scene information. Through extensive experiments, we demonstrate that VLAff not only achieves state-of-the-art performance on visual affordance prediction, but can also be effectively applied to real robot applications such as zero-shot manipulation and affordance-guided robot learning.",
+      "authors": [
+        "Jihoon Oh",
+        "Kento Kawaharazuka",
+        "Kei Okada"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-05T10:15:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.05215v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "leverages egocentric human videos to extract visual, grasp, and trajectory affordances as robot-executable action data",
+      "llm_evidence_cn": "利用第一视角人类视频提取视觉、抓取与轨迹可供性，转化为机器人可执行的动作数据",
+      "llm_evidence": "利用第一视角人类视频提取视觉、抓取与轨迹可供性，转化为机器人可执行的动作数据",
+      "canonical_evidence": "利用第一视角人类视频提取视觉、抓取与轨迹可供性，转化为机器人可执行的动作数据",
+      "llm_tldr_en": "VLAff extracts actionable affordances from large-scale egocentric human videos using 3D reconstruction and hand mesh fitting, building a 204K-episode dataset EgoAffordance and a vision-language-affordance model for robot manipulation.",
+      "llm_tldr_cn": "从人类视频学习操作技能面临人机关节和形态差异，VLAff提出学习与具体身体无关的物体中心可执行可供性。它结合三维运动恢复结构与手部网格重建，从第一视角人类视频中提取视觉、抓取和轨迹可供性，明确编码交互位置、抓取方式和移动方式，并构建了包含20.4万条片段的大规模数据集EgoAffordance。在此基础上训练视觉-语言-可供性模型，为可扩展机器人操作学习提供了一种绕过具身差异的数据引擎。",
+      "llm_tldr": "从人类视频学习操作技能面临人机关节和形态差异，VLAff提出学习与具体身体无关的物体中心可执行可供性。它结合三维运动恢复结构与手部网格重建，从第一视角人类视频中提取视觉、抓取和轨迹可供性，明确编码交互位置、抓取方式和移动方式，并构建了包含20.4万条片段的大规模数据集EgoAffordance。在此基础上训练视觉-语言-可供性模型，为可扩展机器人操作学习提供了一种绕过具身差异的数据引擎。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "methods for converting human video demonstrations into robot executable action data",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01905v1",
+      "source": "arxiv",
+      "title": "PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph",
+      "abstract": "Hand-object interaction (HOI) is a fundamental human behavior with broad applications in AR/VR, digital humans, and embodied interaction. Existing methods typically require predefined object geometry, object trajectories, or task-specific conditions, limiting their use with natural real-world inputs. To address this, we study a more practical problem of synthesizing 3D hand-object interaction sequences from a single RGB photograph and an open-vocabulary language instruction, and introduce PhotoHOI. PhotoHOI first uses a vision-language model to parse the input image and instruction into a structured task specification, including the interaction object, target region, and spatial relation. It then recovers a compact task-relevant 3D scene and plans a smooth collision-aware object trajectory based on the recovered object states, support relations, and surrounding scene geometry. To synthesize hand motion that generalizes to real-world photographs and unseen objects, it learns transferable task-conditioned contact and contact-conditioned grasp priors from large-scale affordance and HOI data. The grasp is further refined in a learned latent space, constraining the optimization to a plausible hand-pose manifold. Experiments on GRAB and H2O demonstrate improved contact quality and reduced penetration over representative baselines. Results on real-world photographs further demonstrate higher task success and scene consistency, together with generalization to unseen objects and open-vocabulary instructions.",
+      "authors": [
+        "Zhenhao Zhang",
+        "Jiajun Zhang",
+        "Wei Min",
+        "Yebin Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T08:39:31+00:00",
+      "link": "https://arxiv.org/pdf/2608.01905v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "synthesizes 3D hand-object interactions from a single photo, enabling data generation for robot manipulation learning",
+      "llm_evidence_cn": "从单张照片合成3D手物交互，为机器人操作学习提供数据生成",
+      "llm_evidence": "从单张照片合成3D手物交互，为机器人操作学习提供数据生成",
+      "canonical_evidence": "从单张照片合成3D手物交互，为机器人操作学习提供数据生成",
+      "llm_tldr_en": "PhotoHOI synthesizes 3D hand-object interaction sequences from a single RGB photo and open-vocabulary instruction, using a vision-language model for structured task parsing and compact 3D scene recovery.",
+      "llm_tldr_cn": "针对现有手物交互（HOI）合成方法需要预先定义物体几何、物体轨迹或任务条件而难以用于自然图片的问题，提出PhotoHOI，从单张RGB照片和开放词汇语言指令中合成3D手物交互序列。它先用视觉语言模型解析图像和指令，得到结构化任务描述，再恢复紧凑的任务相关3D场景并生成交互过程。该方法支持更真实世界的输入，可为AR/VR、数字人以及具身交互提供数据，也有潜力为机器人操作学习生成训练样本。",
+      "llm_tldr": "针对现有手物交互（HOI）合成方法需要预先定义物体几何、物体轨迹或任务条件而难以用于自然图片的问题，提出PhotoHOI，从单张RGB照片和开放词汇语言指令中合成3D手物交互序列。它先用视觉语言模型解析图像和指令，得到结构化任务描述，再恢复紧凑的任务相关3D场景并生成交互过程。该方法支持更真实世界的输入，可为AR/VR、数字人以及具身交互提供数据，也有潜力为机器人操作学习生成训练样本。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "reconstructing hand object interactions from human videos for robot manipulation learning",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01127v1",
+      "source": "arxiv",
+      "title": "MiniWorld: Democratizing the Training of Video World Models from Scratch",
+      "abstract": "Video world models predict future observations conditioned on historical observations and control signals, enabling long-horizon generation through autoregressive state transitions. Unlike conventional video generation models that primarily capture visual appearance and motion, video world models learn the underlying dynamics governing environment evolution under agent actions, providing a foundation for embodied AI and interactive simulation. Recent progress has largely relied on adapting pretrained video generation models through post-training or distillation. Although effective, these approaches often require complex training pipelines, substantial computational resources, and suffer from the mismatch between bidirectional pretraining and causal streaming inference. Recent studies have shown that training autoregressive video world models from scratch is feasible and scalable. However, the community still lacks a lightweight, transparent, and fully reproducible baseline trainable end-to-end with modest computational resources. We present MiniWorld, a reproducible framework for training streaming video world models from scratch. MiniWorld employs a block-causal Video Diffusion Transformer trained with Flow Matching in the latent space of a pretrained Video VAE. Building on Diffusion Forcing, it adopts a chunk-wise non-decreasing noise schedule and two-stage continued training to improve temporal modeling and stability. During inference, MiniWorld combines a rolling KV cache with pipelined asynchronous denoising for efficient streaming generation under bounded computation. The entire model can be trained within several days on a single 8-GPU server. By releasing the training and inference codebase and pretrained checkpoints, we hope MiniWorld will facilitate future research on video world modeling.",
+      "authors": [
+        "Yian Zhao",
+        "Ruochong Zheng",
+        "Hongcan Guo",
+        "Yu Yan",
+        "Jian Zhang",
+        "Jie Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-02T09:57:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.01127v1",
+      "tags": [
+        "keyword:Model",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "video world models for embodied AI from scratch",
+      "llm_evidence_cn": "从零训练面向具身AI的视频世界模型",
+      "llm_evidence": "从零训练面向具身AI的视频世界模型",
+      "canonical_evidence": "从零训练面向具身AI的视频世界模型",
+      "llm_tldr_en": "MiniWorld enables efficient training of video world models from scratch, avoiding complex post-training or distillation pipelines, and providing a foundation for embodied AI and interactive simulation.",
+      "llm_tldr_cn": "视频世界模型对具身AI和交互仿真至关重要，但近期进展多依赖预训练视频生成模型的后训练或蒸馏，流程复杂且算力大。MiniWorld支持从零开始高效训练视频世界模型，在学习环境动态方面取得有竞争力的效果。该工作降低了视频世界模型的训练门槛，使更多研究者和应用能够从零构建世界模型。",
+      "llm_tldr": "视频世界模型对具身AI和交互仿真至关重要，但近期进展多依赖预训练视频生成模型的后训练或蒸馏，流程复杂且算力大。MiniWorld支持从零开始高效训练视频世界模型，在学习环境动态方面取得有竞争力的效果。该工作降低了视频世界模型的训练门槛，使更多研究者和应用能够从零构建世界模型。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.06221v1",
+      "source": "arxiv",
+      "title": "Robot Learning from Human Demonstrations: Handwritten Alphabet Trajectories and Human-Likeness Evaluation",
+      "abstract": "Learning from demonstration (LfD) provides a developmental framework through which robots can develop motor skills by observing and imitating human dynamics, reducing reliance on explicit programming to teach a skill to a robot. The resulting human-like robot motion is recognised as a key factor in building trust and enabling natural collaboration in human-robot interaction. This paper presents a framework for learning human-like robot motion from demonstration, including data collection, probabilistic trajectory learning, and perceptual user evaluation. A dataset of 3,142 handwriting demonstrations was collected from 22 participants across all 52 Latin alphabet character-case combinations via a touchscreen teleoperation interface, capturing planar position, contact force, and timing. Building on the widely used Gaussian Mixture Model and Gaussian Mixture Regression approach for learning from demonstration, the framework is extended in this work by incorporating force and normalised time dimensions to enable richer representation of human dynamics, and adapting it to handle non-continuous, multi-segment trajectories, enabling generalisation across demonstrations. A user study with 21 participants evaluated the perceived human-likeness of the generated trajectories using a continuous scale anchored between robotic and human-like motion, normalised to 0-100 where 50 represents the neutral midpoint. The generated trajectories achieved an overall human-likeness score of 71.50 (SD=22.56), indicating that the majority of trajectories were perceived as more human-like. Participants identified geometric positioning and trajectory sequence as the most influential perceptual factors, and reported positive attitudes toward human-like robot behaviour. The datasets are released as open-source, providing a reproducible benchmark for developing and evaluating human-like robot motion methods.",
+      "authors": [
+        "Alperen Kenan",
+        "Paul Bremner",
+        "Manuel Giuliani"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.HC",
+        "cs.LG"
+      ],
+      "published": "2026-08-06T16:12:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.06221v1",
+      "tags": [
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Framework for transferring human handwriting demonstrations to robot motion with human-likeness evaluation",
+      "llm_evidence_cn": "将人类书写示范传递为机器人运动并评估类人程度",
+      "llm_evidence": "将人类书写示范传递为机器人运动并评估类人程度",
+      "canonical_evidence": "将人类书写示范传递为机器人运动并评估类人程度",
+      "llm_tldr_en": "Collects 3,142 human handwriting demonstrations, learns probabilistic trajectories, and evaluates human-likeness, supporting transfer of human skills to human-like robot motion.",
+      "llm_tldr_cn": "本文面向机器人的技能传授问题，从22名参与者收集3142条手写字母轨迹，通过概率轨迹学习建模人类运动特征，并开展感知用户评估验证类人性。实验表明该方法能生成具有类人特点的机器人运动，为从人类示范学习运动技能提供了数据采集、建模与评估的完整框架。",
+      "llm_tldr": "本文面向机器人的技能传授问题，从22名参与者收集3142条手写字母轨迹，通过概率轨迹学习建模人类运动特征，并开展感知用户评估验证类人性。实验表明该方法能生成具有类人特点的机器人运动，为从人类示范学习运动技能提供了数据采集、建模与评估的完整框架。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "transferring human skills to robots",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.04633v1",
+      "source": "arxiv",
+      "title": "Mind-VLA: Instruction-Aware Spatial Representation Alignment for Vision-Language-Action Models",
+      "abstract": "Recent Vision-Language-Action (VLA) methods improve generalization by aligning their representations with 3D scene geometry. However, these methods are fundamentally instruction-agnostic: the representations align the entire scene uniformly, neglecting the 3D geometry of the specific target object designated by the language instruction. This causes failures on fine-grained manipulation and target occlusion tasks, where success depends on accurate 3D understanding of the target object rather than the entire scene. To address this, we present Mind-VLA, an instruction-aware spatial representation alignment method for VLA models. Specifically, Mind-VLA first obtains the target object specified by the language instruction, then prepares its target-object tri-view and extracts the corresponding VAE and VGGT features. Finally, the latent representation of the VLA model is aligned with these features to enable instruction-aware 3D understanding. Mind-VLA reaches 93.9% on LIBERO and 4.47 on CALVIN with a compact 345M-parameter backbone. On real-robot tasks with target occlusion, Mind-VLA reaches 54% average success, outperforming the best-performing instruction-agnostic method in real-robot comparison by 32 percentage points. Code will be publicly available.",
+      "authors": [
+        "Xingyu Ding",
+        "Yuzhong Zhao",
+        "Yang Wu",
+        "Chaoyang Zhao",
+        "Chunhai Zhao",
+        "Yifan Zhang",
+        "Jian Cheng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-05T09:49:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.04633v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Instruction-aware spatial representation alignment grounding VLA in task-relevant 3D geometry",
+      "llm_evidence_cn": "面向VLA的指令感知空间表征对齐，将模型锚定到任务相关的三维几何",
+      "llm_evidence": "面向VLA的指令感知空间表征对齐，将模型锚定到任务相关的三维几何",
+      "canonical_evidence": "面向VLA的指令感知空间表征对齐，将模型锚定到任务相关的三维几何",
+      "llm_tldr_en": "Improves VLA generalization by aligning representations to target object 3D geometry; existing methods align entire scene uniformly and neglect instruction-specified object. Mind-VLA localizes target from language and aligns relevant spatial representations, improving fine-grained and occluded manipulation.",
+      "llm_tldr_cn": "现有VLA方法将表征与三维场景几何对齐以提升泛化，但均匀对齐整幅场景，忽略语言指令指定目标物体的三维结构，导致精细操作和目标遮挡任务失败。为此提出Mind-VLA，先根据语言指令定位目标物体，再进行指令感知的空间表征对齐。该方法使模型关注任务相关几何而非整幅场景，显著改善精细操作与遮挡场景下的表现，增强了VLA的三维空间理解与推理能力。",
+      "llm_tldr": "现有VLA方法将表征与三维场景几何对齐以提升泛化，但均匀对齐整幅场景，忽略语言指令指定目标物体的三维结构，导致精细操作和目标遮挡任务失败。为此提出Mind-VLA，先根据语言指令定位目标物体，再进行指令感知的空间表征对齐。该方法使模型关注任务相关几何而非整幅场景，显著改善精细操作与遮挡场景下的表现，增强了VLA的三维空间理解与推理能力。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05999v1",
+      "source": "arxiv",
+      "title": "Beyond Flat Policies: Hierarchical Post-Training for Embodied Agents in Robotic Manipulation",
+      "abstract": "Vision-language-action (VLA) models have demonstrated remarkable capabilities in robotic manipulation by leveraging pretrained vision-language models. However, existing post-training methods predominantly optimize VLA models as flat policies, making it difficult to explicitly model task progression and perform robust long-horizon manipulation. Although hierarchical approaches introduce task decomposition, they mainly rely on supervised learning from offline demonstrations and cannot effectively improve execution through online interaction. To address this limitation, we propose Hierarchical Robotic Control (HiRoC), a hierarchical post-training framework that decouples high-level task planning from low-level action execution. The planner decomposes complex tasks into executable subgoals to provide explicit semantic guidance, while the executor continuously improves subgoal-conditioned action generation through reinforcement learning. To enable effective collaboration between the two modules, we further align the executor with planner-generated subgoals before reinforcement learning, mitigating the distribution misalignment between planning and execution. Extensive experiments across diverse robotic manipulation benchmarks demonstrate that HiRoC consistently outperforms strong baselines. Comprehensive analyses further validate the effectiveness of hierarchical post-training and the contribution of each key component.",
+      "authors": [
+        "He Kong",
+        "Zengjue Chen",
+        "Qi Wang",
+        "Qianli Xing",
+        "Runliang Niu",
+        "Peidong Liu",
+        "Jiawei Li",
+        "Shiqi Wang",
+        "Yi Chang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-06T13:07:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.05999v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "hierarchical post-training for vision-language-action robotic manipulation",
+      "llm_evidence_cn": "面向视觉-语言-动作机器人的分层后训练",
+      "llm_evidence": "面向视觉-语言-动作机器人的分层后训练",
+      "canonical_evidence": "面向视觉-语言-动作机器人的分层后训练",
+      "llm_tldr_en": "HiRoC is a hierarchical post-training framework that decouples high-level task planning from low-level action execution for VLA robot manipulation, improving long-horizon control over flat policies.",
+      "llm_tldr_cn": "VLA模型在机器人操作上表现出色，但现有后训练方法常将其优化为扁平策略，难以建模任务进度与长程操作。HiRoC提出分层后训练框架，将高层任务规划与低层动作执行解耦，并通过在线交互进一步提升执行效果。实验表明，HiRoC相比扁平策略更能完成长程操作任务。这为VLA模型的具身后训练提供了层次化新思路。",
+      "llm_tldr": "VLA模型在机器人操作上表现出色，但现有后训练方法常将其优化为扁平策略，难以建模任务进度与长程操作。HiRoC提出分层后训练框架，将高层任务规划与低层动作执行解耦，并通过在线交互进一步提升执行效果。实验表明，HiRoC相比扁平策略更能完成长程操作任务。这为VLA模型的具身后训练提供了层次化新思路。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.06332v1",
+      "source": "arxiv",
+      "title": "GeniWorld: A Generalizable Interactive World Model for Robotic Manipulation via Visual Actions",
+      "abstract": "Generalist robot policies exhibit strong capabilities, but their robustness in complex and unseen environments remains limited. Scaling robot learning and evaluation in diverse real-world environments remains costly and challenging. Action-conditioned world models offer a promising alternative, but they often suffer from limited action controllability and poor generalization to out-of-distribution (OOD) scenarios. To this end, we present GeniWorld, an interactive world model for robots that generalizes robustly across unseen scenarios. Building on pretrained video generative models, we use URDF-based rendering to transform numerical actions into visual action representations, enabling spatially grounded action control. By explicitly decoupling embodiment kinematics from environmental dynamics, our model mitigates scene overfitting and facilitates modeling of robot-environment interactions. To achieve closed-loop control, we construct an autoregressive video prediction model integrated with high-frequency robot kinematic control, enabling interaction with both robot policies and human teleoperators. In our experiments, even when trained solely on limited fixed-scene data, our model achieves superior in-domain performance and robust zero-shot generalization to highly randomized, unseen environments. For downstream applications, GeniWorld serves as a scalable policy evaluator that remains reliable under environmental perturbations. Furthermore, even with limited real-world demonstrations, GeniWorld generates diverse manipulation trajectories within the world model, improving downstream policy performance and robustness in complex environments.",
+      "authors": [
+        "Chenghao Gu",
+        "Hanyang Yu",
+        "Jingbo Zhang",
+        "Haitao Lin",
+        "Wenyao Zhang",
+        "Jinghe Wang",
+        "Hanglei Jin",
+        "Shuzhao Xie",
+        "Jingyan Jiang",
+        "Zhi Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-06T17:40:32+00:00",
+      "link": "https://arxiv.org/pdf/2608.06332v1",
+      "tags": [
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "action-conditioned interactive world model transforming numerical actions into visual actions for OOD generalization",
+      "llm_evidence_cn": "将数值动作转换为视觉动作的可泛化交互世界模型，支持空间接地的动作控制",
+      "llm_evidence": "将数值动作转换为视觉动作的可泛化交互世界模型，支持空间接地的动作控制",
+      "canonical_evidence": "将数值动作转换为视觉动作的可泛化交互世界模型，支持空间接地的动作控制",
+      "llm_tldr_en": "GeniWorld builds on pretrained video generative models and URDF rendering to turn actions into visual actions, yielding a controllable interactive world model that generalizes across unseen manipulation scenarios.",
+      "llm_tldr_cn": "针对通用机器人策略在未知环境中鲁棒性有限、真实世界评估成本高的问题，本文提出GeniWorld交互世界模型。该方法利用预训练视频生成模型，并通过URDF渲染将数值动作转换为视觉动作表示，实现空间接地的动作控制。实验显示其在未见场景下具有更强的泛化能力，且动作可控性优于现有世界模型。这为高效、可扩展的机器人操作学习与评估提供了新途径。",
+      "llm_tldr": "针对通用机器人策略在未知环境中鲁棒性有限、真实世界评估成本高的问题，本文提出GeniWorld交互世界模型。该方法利用预训练视频生成模型，并通过URDF渲染将数值动作转换为视觉动作表示，实现空间接地的动作控制。实验显示其在未见场景下具有更强的泛化能力，且动作可控性优于现有世界模型。这为高效、可扩展的机器人操作学习与评估提供了新途径。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.29374v1",
+      "source": "arxiv",
+      "title": "SAGP: Semantic Affordance-Guided Grasp Planning via Coarse-Zone VLM Reasoning",
+      "abstract": "Geometry-based grasp planners ensure physically valid grasps but ignore functional semantics, often generating grasps that are antipodal and collision-free yet practically inappropriate, for example, gripping a mug by its rim, a knife by the blade, or a bottle near its cap. These inconsistencies cause the downstream task to fail even when traditional grasp metrics are met. Existing vision-language model (VLM) approaches either depend on fine-grained, category-specific part segmentation or attempt to directly infer grasp poses, with the latter prone to spatial hallucinations. As a result, no practical, training-free framework has yet been proposed that robustly links high-level semantic reasoning to geometric grasp planning. We introduce Semantic Affordance-Guided Grasp Planning (SAGP), a training-free pipeline built on a coarse-zone abstraction layer. The method first partitions the object point cloud into spatial regions (top, middle, bottom, lateral sides, and protrusions) by applying PCA-based alignment followed by distance-driven DBSCAN clustering, entirely bypassing learned segmentation. A pre-trained VLM then assesses the grasp quality of each region through a structured zero-shot query, and the resulting zone-wise scores are fused with geometric, reachability, and task-alignment signals to re-rank antipodal grasp candidates. Experiments on YCB objects in PyBullet with a Franka Panda robot show that SAGP preserves the high success rate of geometry-only planning while substantially improving the functional appropriateness of selected grasps, particularly on asymmetric, handle-bearing objects where geometry alone is uninformative. The introduced coarse-zone abstraction offers an effective, training-free bridge between VLM-based reasoning and geometric grasp planning, without the need for fine-grained part segmentation.",
+      "authors": [
+        "Muhayy Ud Din",
+        "Irfan Hussain"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-31T12:59:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.29374v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "VLM-based semantic affordance reasoning for grasp planning, a vision-language-action style robot control approach",
+      "llm_evidence_cn": "基于VLM的语义可供性抓取规划，属于视觉-语言-动作式机器人控制",
+      "llm_evidence": "基于VLM的语义可供性抓取规划，属于视觉-语言-动作式机器人控制",
+      "canonical_evidence": "基于VLM的语义可供性抓取规划，属于视觉-语言-动作式机器人控制",
+      "llm_tldr_en": "SAGP uses coarse-zone VLM reasoning to link semantic affordances to geometric grasp planning, producing practical grasps without training and avoiding spatial hallucinations.",
+      "llm_tldr_cn": "几何抓取规划只保证物理可行而忽略功能语义，容易抓在不合适的位置；现有VLM方法又依赖细粒度部件分割或直接预测抓取位姿而产生空间幻觉。SAGP提出无需训练的框架，通过粗分区VLM推理将高层语义与几何抓取规划连接起来，生成既语义合理又几何有效的抓取位姿。该方法为语义引导的机器人抓取提供了实用、可泛化的新思路。",
+      "llm_tldr": "几何抓取规划只保证物理可行而忽略功能语义，容易抓在不合适的位置；现有VLM方法又依赖细粒度部件分割或直接预测抓取位姿而产生空间幻觉。SAGP提出无需训练的框架，通过粗分区VLM推理将高层语义与几何抓取规划连接起来，生成既语义合理又几何有效的抓取位姿。该方法为语义引导的机器人抓取提供了实用、可泛化的新思路。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02428v1",
+      "source": "arxiv",
+      "title": "DF$^3$: World Modeling via Decoder-Free Feature Forecasting in Autonomous Navigation",
+      "abstract": "Forecasting future states from video sequences is a critical challenge for autonomous robotic systems and a fundamental objective of world modeling. Prior generative methods operating at the pixel level inevitably overemphasize task-irrelevant details, leading to prohibitive computational overhead. While latent-based approaches attempt to mitigate this by predicting features directly, the persistent reliance on heavy decoders for state-to-task mapping remains a computational bottleneck. In this work, we propose Decoder-Free Feature Forecasting (DF$^3$), a novel framework that models world evolution entirely within the latent space and directly derives task outputs, completely eliminating the need for a decoder. Specifically, DF$^3$ injects learnable spatial queries into the terminal blocks of a frozen vision foundation model to extract future state representations directly. By employing a lightweight, unified Motion-Aware Context Fusion (MACF) mechanism that seamlessly integrates coarse flow warping with fine-grained latent cross-correlation, these queries interact with historical token representations to explicitly align and forecast the feature of the next frame. Subsequently, a specialized set of task queries probes these forecasted features for the downstream task. Extensive experiments on public benchmarks and zero-shot deployment in a robotic simulator demonstrate that DF$^3$ achieves performance comparable to state-of-the-art methods while offering superior efficiency and flexibility for integrated perception and control.",
+      "authors": [
+        "Jiaming Chen",
+        "Guoan Xu",
+        "Aoshen Huang",
+        "Haozhuo Zhang",
+        "Yang Li",
+        "Wei Pan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T16:08:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.02428v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decoder-free latent world modeling for autonomous navigation, related to world action models",
+      "llm_evidence_cn": "自主导航中的无解码器潜在世界建模，与世界动作模型相关",
+      "llm_evidence": "自主导航中的无解码器潜在世界建模，与世界动作模型相关",
+      "canonical_evidence": "自主导航中的无解码器潜在世界建模，与世界动作模型相关",
+      "llm_tldr_en": "DF^3 removes the decoder in latent world models for autonomous navigation, forecasting features directly in latent space for efficient task output.",
+      "llm_tldr_cn": "现有世界模型要么在像素级预测中过分强调与任务无关的细节，造成巨大计算开销，要么在潜在空间预测后仍需重解码器完成状态到任务的映射。为此本文提出DF^3，在潜在空间中直接建模世界演化并导出任务输出，彻底移除解码器。这一设计避免了像素级重建和额外解码计算，使自主导航等机器人系统能够更高效地利用未来状态信息进行决策，也为世界模型与动作预测的结合提供了更轻量的范式。",
+      "llm_tldr": "现有世界模型要么在像素级预测中过分强调与任务无关的细节，造成巨大计算开销，要么在潜在空间预测后仍需重解码器完成状态到任务的映射。为此本文提出DF^3，在潜在空间中直接建模世界演化并导出任务输出，彻底移除解码器。这一设计避免了像素级重建和额外解码计算，使自主导航等机器人系统能够更高效地利用未来状态信息进行决策，也为世界模型与动作预测的结合提供了更轻量的范式。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03159v1",
+      "source": "arxiv",
+      "title": "Accelerating Human-Aware Robot Trajectory Generation via Diffusion and Consistency Distillation",
+      "abstract": "This research proposes a constrained motion planning framework for robot manipulators in human-robot interaction (HRI). For a non-redundant manipulator with a fully specified end-effector pose, additional requirements such as collision avoidance and self-collision avoidance are difficult to handle as simple null-space secondary tasks. This limitation makes it challenging to generate feasible joint-space trajectories in HRI environments where safety and kinematic constraints must be considered simultaneously. To address this limitation, collision- and self-collision-aware trajectories are generated using Rapidly-exploring Random Tree (RRT) and RRT* algorithms, and the resulting dataset is used to train a diffusion model that generates constraint-satisfying trajectories through guided sampling. To reduce the inference time required for iterative diffusion sampling, consistency distillation is applied, and a joint-weighted jerk regularization term is incorporated into the loss function to promote smoother trajectories by penalizing abrupt changes in joint acceleration. Simulation results show that the consistency model generates 150 trajectory candidates in less than 100 ms, maintains a high episode success rate, and substantially reduces joint and end-effector jerk when jerk regularization is applied.",
+      "authors": [
+        "Byeong-Il Ham",
+        "Hyun-Bin Kim",
+        "Kyung-Soo Kim"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-04T05:47:25+00:00",
+      "link": "https://arxiv.org/pdf/2608.03159v1",
+      "tags": [
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Generates RRT-based trajectory dataset to train a diffusion model for robot motion generation",
+      "llm_evidence_cn": "用RRT生成轨迹数据集并训练扩散模型，用于机器人运动生成",
+      "llm_evidence": "用RRT生成轨迹数据集并训练扩散模型，用于机器人运动生成",
+      "canonical_evidence": "用RRT生成轨迹数据集并训练扩散模型，用于机器人运动生成",
+      "llm_tldr_en": "A constrained motion planning framework that uses RRT-generated collision-aware trajectories to train a diffusion model, accelerated by consistency distillation for rapid human-aware manipulator motion.",
+      "llm_tldr_cn": "针对人机交互中需同时满足碰撞避免和运动学约束的轨迹生成问题，该文用RRT/RRT*生成碰撞自感知训练数据，训练扩散模型生成可行轨迹，并通过一致性蒸馏加速推理。在非冗余机械臂等难以用零空间处理附加约束的场景下，该方法能有效生成满足安全与几何约束的轨迹。实验表明该方法在保证安全的同时显著降低生成耗时，为机器人运动策略的算法数据驱动训练提供了新思路。",
+      "llm_tldr": "针对人机交互中需同时满足碰撞避免和运动学约束的轨迹生成问题，该文用RRT/RRT*生成碰撞自感知训练数据，训练扩散模型生成可行轨迹，并通过一致性蒸馏加速推理。在非冗余机械臂等难以用零空间处理附加约束的场景下，该方法能有效生成满足安全与几何约束的轨迹。实验表明该方法在保证安全的同时显著降低生成耗时，为机器人运动策略的算法数据驱动训练提供了新思路。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "robot manipulation data engine",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.04768v1",
+      "source": "arxiv",
+      "title": "Embedding Large Language Models into Flow Controls: An Agentic Framework for Adaptive and Trustworthy Automated Cooking",
+      "abstract": "Automated cooking robots have traditionally relied on predefined procedures and rule-based control, ensuring stable execution but offering limited personalization, whereas recent large-model approaches support natural language interaction but often suffer from opaque decision making and unreliable execution in real kitchens. To address this challenge, this paper proposes an agentic framework that systematically decomposes personalized cooking requirements into structured and verifiable control programs rather than directly mapping language to actions. Multiple AI agents collaboratively transform user intents into canonical recipes, workflow programs with explicit flow control, and executable Python code grounded in an atomic action library. The system consists of three tightly coupled stages: offline recipe-to-code generation through multiple agents, online closed-loop execution with supervisory intervention enabled by multimodal perception, and post-run adaptation that updates user preference models for long-term personalization. Real-world experiments on a physical cooking platform demonstrate that the proposed framework achieves reliable task completion, transparent execution logic, and effective anomaly handling across diverse personalized scenarios, validating its practicality for trustworthy automated cooking in real environments.",
+      "authors": [
+        "Zihan Song",
+        "Hongwei Huang",
+        "Yueshuo Sun",
+        "Yonglin Tian",
+        "Fei-Yue Wang",
+        "Bai Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-05T12:33:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.04768v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "agentic framework embedding large language models into flow controls for adaptive robot cooking",
+      "llm_evidence_cn": "将大语言模型嵌入流程控制，实现自适应可信的机器人烹饪",
+      "llm_evidence": "将大语言模型嵌入流程控制，实现自适应可信的机器人烹饪",
+      "canonical_evidence": "将大语言模型嵌入流程控制，实现自适应可信的机器人烹饪",
+      "llm_tldr_en": "Presents an agentic framework that decomposes personalized cooking requirements into canonical recipes, workflow programs with explicit flow control, and executable Python code, improving trustworthiness and personalization over direct language-to-action mapping.",
+      "llm_tldr_cn": "自动化烹饪机器人若依赖预设流程则缺乏个性化，若直接用大模型生成动作则不可靠且不透明。本文提出一个智能体框架，将个性化烹饪需求系统性地分解为规范食谱、带显式流程控制的工作流程序和可执行Python代码，由多个AI代理协作完成从意图到程序的转换。该方法兼顾个性化和可验证执行，提升了真实厨房中烹饪机器人的适应性可信度。",
+      "llm_tldr": "自动化烹饪机器人若依赖预设流程则缺乏个性化，若直接用大模型生成动作则不可靠且不透明。本文提出一个智能体框架，将个性化烹饪需求系统性地分解为规范食谱、带显式流程控制的工作流程序和可执行Python代码，由多个AI代理协作完成从意图到程序的转换。该方法兼顾个性化和可验证执行，提升了真实厨房中烹饪机器人的适应性可信度。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.06170v1",
+      "source": "arxiv",
+      "title": "Prior-SG: Task and Prior Driven Region Segmentation for Scene Graphs in Arbitrarily-Structured Environments",
+      "abstract": "Hierarchical 3D scene graphs are a promising representation for high-level spatial reasoning in autonomous mobile platforms. However, existing extraction frameworks typically rely on purely local visual clustering or strict geometric heuristics, such as wall-separated rooms, which fail in open-plan or arbitrarily-structured environments. We propose Prior-SG, a task- and prior-driven framework that casts scene graph generation fundamentally as a probabilistic alignment problem. As the robot explores, it continuously aggregates an incoming RGB-D sensor stream into a physically grounded Instance Graph utilizing a multi-scale, open-vocabulary feature fusion strategy. The system then infers the high-level functional semantics of this map through a Maximum A Posteriori (MAP) estimate, guided by a Prior Graph-a logical expectation of the environment's structure and task-relevant vocabulary synthesized dynamically by a Large Language Model. By optimizing a Markov Random Field that fuses heterogeneous experts (visual, geometric, and discrete objects) with these topological priors, the system resolves local perceptual ambiguities. We validate this approach across diverse simulated residential datasets and large, open-plan real-world environments. Prior-SG achieves state-of-the-art semantic region segmentation accuracy compared to recent baselines, robustly delineates distant functional boundaries in the absence of physical walls, and uniquely provides zero-shot ontological flexibility, enabling the robot to entirely restructure its spatial partitioning based on a given high-level task.",
+      "authors": [
+        "Giorgio Tonetti",
+        "Laurent Kneip",
+        "Abel Gawel",
+        "Marco Hutter"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-06T15:36:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.06170v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "task and prior driven scene graph generation for spatial understanding in arbitrarily-structured environments",
+      "llm_evidence_cn": "面向任意结构环境的场景图生成，提升机器人空间语义理解",
+      "llm_evidence": "面向任意结构环境的场景图生成，提升机器人空间语义理解",
+      "canonical_evidence": "面向任意结构环境的场景图生成，提升机器人空间语义理解",
+      "llm_tldr_en": "Presents Prior-SG, a task- and prior-driven probabilistic alignment framework that converts an RGB-D sensor stream into a physically grounded instance graph and infers high-level functional semantics for spatial reasoning in arbitrary environments.",
+      "llm_tldr_cn": "现有层次化3D场景图提取依赖局部聚类或严格几何启发式，难以应对开放式或无规则环境。本文提出Prior-SG，将场景图生成建模为概率对齐问题，在机器人探索中利用多尺度开放词汇特征融合构造物理实例图，并推断高层功能语义。该方法可提升任意结构环境下的空间理解与任务驱动推理能力，适用于移动平台的高层空间推理。",
+      "llm_tldr": "现有层次化3D场景图提取依赖局部聚类或严格几何启发式，难以应对开放式或无规则环境。本文提出Prior-SG，将场景图生成建模为概率对齐问题，在机器人探索中利用多尺度开放词汇特征融合构造物理实例图，并推断高层功能语义。该方法可提升任意结构环境下的空间理解与任务驱动推理能力，适用于移动平台的高层空间推理。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
