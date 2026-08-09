@@ -1,0 +1,460 @@
+Title: SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance
+
+URL Source: https://arxiv.org/pdf/2608.00502v1
+
+Published Time: Tue, 04 Aug 2026 00:30:21 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+> 1
+
+# SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance 
+
+Yufei Zhang 1, Chenlu Zhan 1, Donghui Sun 2, Xiaoxin Chen 2, and Hongwei Wang* 11Zhejiang University 
+
+> 2
+
+Vivo Mobile Communication Co., Ltd 
+
+Abstract —Affordance grounding aims to localize the functional region for interaction, such as the handle to grasp or the button to press, rather than the whole object. This makes it more challenging than generic visual grounding because the target region is smaller, more ambiguous, and more dependent on task context, especially for compact vision-language models (VLMs) used in embodied settings. Recent sequence-level supervision and reinforcement learning improve coordinate prediction quality, yet compact autoregressive VLMs still lack reliable affordance-aware visual focus before coordinate generation: the model can produce better coordinate tokens while its cross-modal attention remains diffuse and weakly anchored to the true affordance evidence. To address it, we propose SpatialAfford, a two-stage framework that first aligns attention to the ground-truth affordance re-gion through Spatial Attention Alignment (SAA), then refines coordinate prediction with Spatial-Aware GRPO. By explicitly teaching the model where to look before optimizing where to ground, SpatialAfford turns affordance grounding from a purely output-constrained objective into attention-grounded spatial rea-soning. Across ShareRobot-Bench, ReasonAff, and PartAfford, SpatialAfford consistently improves affordance grounding, with a compact 4B model outperforming stronger 7B+ baselines. 
+
+I. I NTRODUCTION 
+
+Affordance grounding aims to localize the functional region that supports a specified interaction, such as the handle to grasp or the button to press. This capability is central to embodied intelligence because downstream actions depend on identifying where interaction should occur, not merely which 
+
+object is present. Compared with generic object grounding, affordance grounding is substantially more demanding: the target region is typically smaller, more visually subtle, and more dependent on task context. A prediction that roughly covers the object may still be unusable for manipulation if it misses the actionable part. Therefore, the core challenge of affordance grounding is to bind the interaction intent to the correct local visual evidence. Recent vision-language grounding methods have shown that sequence-level supervision and reinforcement learning can improve coordinate generation quality (Shen et al., 2025; Liu et al., 2025; Wang et al., 2026). Nevertheless, these approaches predominantly constrain the final prediction, while offering little direct supervision on how the model aligns language queries with localized affordance evidence before decoding. This limitation is particularly severe for compact autore-gressive VLMs. Owing to limited representational capacity, compressed visual tokens, and diffuse decoder attention, these models are easily distracted by background clutter, object-level shortcuts, or non-functional regions. Recent studies on multi-modal reasoning similarly report that visual-token attention can decay during decoding or become dominated by language priors (Yang et al., 2026; Zou et al., 2025; Venkatraman et al., 2026; Ou et al., 2026; Esmaeilkhani and Latecki, 2026). Despite predicting accurate bounding boxes, vision-language models like Qwen3-VL-4B (Bai et al., 2025) exhibit an attention sink phenomenon, concentrating attention weights on initial tokens rather than target affordance regions (Zhang et al., 2026). This causes an attention–output mismatch, where spatial decoding proceeds without anchoring on affordance-relevant visual features. RGB Text 
+
+MLLM 
+
+GT Bbox MLLM 
+
+RGB Text 
+
+Attn map Pseudo Attn Pred Bbox GT Bbox 
+
+> Which part of the bicycle would you interact with to sit on?
+
+Attention alignment Pred Bbox 
+
+Existing Methods SpatialAfford  
+
+> Which part of the bicycle would you interact with to sit on?
+> Bbox token prediction Which bicycle interac
+
+Fig. 1: Conventional SFT supervises only bbox tokens, whereas SpatialAfford aligns cross-modal attention to the affordance region before bbox prediction. To address this bottleneck, we propose SpatialAfford , a two-stage framework that explicitly separates visual evidence alignment from spatial prediction (Figure 1). Stage 1, Spatial Attention Alignment (SAA), derives a supervision target from the ground-truth affordance box and trains the model to con-centrate cross-modal attention within the target region, thereby establishing affordance-aware visual focus. Stage 2, Spatial-Aware GRPO , performs policy optimization on top of these aligned features to refine coordinate prediction. This decompo-sition is important for compact models: when local evidence is not stabilized first, subsequent coordinate decoding is easily driven by coarse object cues or spurious correlations rather than the true functional region. By aligning the model’s visual focus before optimizing its coordinate policy, SpatialAfford arXiv:2608.00502v1 [cs.CV] 1 Aug 2026 2
+
+turns affordance grounding from a purely output-constrained objective into a visually grounded reasoning process. Our primary contributions are summarized as follows:  
+
+> •
+
+Problem Diagnosis. We identify an attention–output mismatch in compact autoregressive VLMs for affor-dance grounding, showing that coordinate prediction can improve even when cross-modal attention remains mis-aligned with the local functional region.  
+
+> •
+
+Two-Stage Framework. We propose SpatialAfford, which couples Spatial Attention Alignment (SAA) for 
+
+where to look with Spatial-Aware GRPO for where to ground , explicitly separating evidence alignment from coordinate refinement.  
+
+> •
+
+Empirical Results. We show that this decomposition consistently improves compact affordance grounding across multiple benchmarks, with a 4B model outper-forming several larger 7B+ baselines. II. R ELATED WORK 
+
+A. Embodied Affordance Grounding and Reinforcement Learning 
+
+Affordance grounding (Gibson, 1979) has transited from foundational convolutional architectures (Myers et al., 2015; Sawatzky et al., 2017; Luo et al., 2021; Do et al., 2018; Mo et al., 2021) to decoder-only vision-language models (VLMs) (Liu et al., 2023, 2024a; Wang et al., 2024; Qwen Team, 2025) that formulate affordance-region grounding as autoregressive coordinate generation. Building upon open-vocabulary detection and embodied foundation models (Ka-math et al., 2021; Li et al., 2022; Minderer et al., 2022; Liu et al., 2024b; Brohan et al., 2023a; Driess et al., 2023; Brohan et al., 2023b; Kim et al., 2024), general-purpose embodied systems such as RoboBrain (Ji et al., 2025; BAAI RoboBrain Team et al., 2025; Tan et al., 2026) and RynnBrain (Alibaba DAMO Academy, 2025) adopt a two-stage paradigm that pairs supervised instruction tuning with subsequent policy optimiza-tion for broad spatial manipulation. In parallel, reinforcement learning including RLHF (Ouyang et al., 2022; Sun et al., 2024; Yu et al., 2024) and GRPO (Shao et al., 2024) have been extended to spatial grounding tasks (Liu et al., 2025; Shen et al., 2025; Chen et al., 2025; Huang et al., 2026; Yu et al., 2026). Specifically, Affordance-R1 (Wang et al., 2026) leverages GRPO to optimize coordinate token generation for affordance reasoning. However, existing embodied VLM training and policy op-timization paradigms compute supervisory loss gradients ex-clusively on output coordinate tokens. Consequently, compact models tend to optimize coordinate prediction through global object shortcuts while their internal cross-modal attention remains unaligned with actionable affordance regions. Spa-tialAfford decouples this optimization by explicitly aligning internal cross-modal focus with affordance regions during Stage 1 SFT, establishing a rectified feature space before performing Stage 2 policy optimization. 
+
+B. Attention Regularization and Supervision 
+
+Cross-modal alignment in autoregressive VLMs depends critically on visual token attention. Prior diagnostic studies confirm that directing visual attention enhances recognition efficiency (Fuller et al., 2026), whereas supervising answer-to-visual-token attention improves grounding accuracy (Es-maeilkhani and Latecki, 2026). Related studies further empha-size the necessity of visual retracing during decoding (Zou et al., 2025; Yang et al., 2026) and demonstrate that ex-plicit attention regularization stabilizes multimodal reason-ing (Ou et al., 2026; Venkatraman et al., 2026). Furthermore, TokAG (Lee et al., 2026) reveals that internal cross-modal at-tention intrinsically harbors functional affordance cues through training-free heatmap extraction. SpatialAfford converts inter-mediate cross-modal attention into an explicit, region-level supervisory target during training, forcing compact models to anchor visual focus onto actionable sub-regions prior to coordinate emission. III. M ETHODOLOGY 
+
+The overall framework is illustrated in Figure 2. To ad-dress the attention–output mismatch, SpatialAfford adopts a coarse-to-fine training strategy. Stage 1, Spatial Attention Alignment (SAA) , explicitly aligns text-to-image attention with the ground-truth affordance region, so the model first learns 
+
+where to look . Stage 2, Spatial-Aware GRPO , then optimizes coordinate generation on top of these aligned features, so the model learns where to ground . This decomposition turns affordance grounding into a sequential process of affordance-evidence alignment followed by spatial coordinate refinement. 
+
+A. Overview and Conceptual Formulation 
+
+We formalize the attention–output mismatch in decoder-only VLMs. Given an input image I ∈ RH×W ×3 and a task instruction T (e.g., “reach the mug’s handle”), a VLM autoregressively predicts a bounding box b =(xmin , y min , x max , y max ) for the targeted affordance region. The network processes the input via a vision encoder that generates Nimg visual patch tokens, coupled with a language backbone of L layers wherein the l-th layer computes a cross-modal attention matrix A(l) ∈ RNtext ×Nimg mapping text query tokens to visual patch tokens. 
+
+Attention–output mismatch. Standard supervised fine-tuning (SFT) optimizes solely the negative log-likelihood over the sequence of coordinate tokens: 
+
+LSFT = − log P (bgt | I, T ) = − X
+
+> t
+
+log p(bt | b<t , I, T ). (1) Although gradients backpropagate through intermediate layers during SFT, this cross-entropy objective provides no explicit supervisory signal on the cross-modal attention matrix A(l).Lacking direct spatial regularization, implicit gradients are insufficient to anchor visual focus, causing attention mass to diffuse across task-irrelevant regions. Let Mgt ⊂ { 1, . . . , N img } denote the set of visual token indices corresponding to the spatial interior of the ground-truth region bgt . Instantiating this framework with Qwen3-VL-4B as our primary backbone, diagnostic empirical evaluations reveal that the normalized attention density within Mgt remains suppressed, accompanied by near-zero or negative Normalized 3To grip this cup securely, which area should your fingers wrap around? Policy Model 
+
+Stage 1: Spatial Attention Alignment: Fixing “Where to look” 
+
+Attention alignment 
+
+> Visual token Text token
+> Multi-Head Attention Layers
+> QK
+
+▪▪▪ ▪▪▪ 
+
+> Q-K hook
+
+Stage 2: Spatial-Aware GRPO: Perfecting “Where to Ground” 
+
+> Group Computation
+
+Token Prediction    
+
+> Continuous IoU reward Continuous L1 reward Forward reward
+> [(x1,y1,x2,y2) ][x1,y1,x2,y2) ]
+> Invalid
+> （0）
+> Valid
+> （1）
+> Pred bbox GT bbox Pred bbox GT bbox
+
+R1
+
+R2
+
+R3
+
+Rn
+
+A1
+
+A2
+
+A3
+
+An
+
+O1
+
+O2
+
+O3
+
+On
+
+Affordance reward model 
+
+> Update Outputs
+> Reference Model
+> Multi-Head Attention Layers Multi-Head Attention Layers
+> Continuous L1 reward
+> Attention block
+> Advantage Normalization
+> Update
+
+KL-divergence 
+
+Fig. 2: Overall framework of SpatialAfford. Stage 1: Spatial Attention Alignment aligns the model’s visual focus with the affordance region, establishing spatial-semantic correspondence between the instruction and image and resolving where to look .
+
+Stage 2: Spatial-Aware GRPO improves bounding box prediction with spatial rewards, resolving where to ground for precise affordance grounding. Scanpath Saliency (NSS) scores (Appendix ?? ). We formalize this empirical imbalance as: 
+
+Ei∈M gt [Aj,i ] < Ei / ∈M gt [Aj,i ] , (2) where Aj,i represents the aggregated cross-modal attention weight from query token j to visual patch token i. This observed attention–output mismatch suggests that coordinate generation is susceptible to shortcut learning, failing to ground its internal visual focus on affordance evidence. 
+
+B. Spatial Attention Alignment: Fixing “Where to Look” 
+
+Given a ground-truth affordance bounding box B =(x1, y 1, x 2, y 2) in normalized coordinates, Spatial Attention Alignment (SAA) constructs a spatial target distribution PM
+
+over the visual token grid to provide explicit cross-modal attention supervision. 
+
+Step 1: Bbox to grid mask. The bounding box B is mapped onto the visual feature grid of dimension Hg × Wg , dy-namically determined by the spatial resolution of the vision encoder: 
+
+M[i, j ] = 
+
+(
+
+1 if (i, j ) ∈ grid (B)0 otherwise (3) where grid (B) maps norm1k coordinates to grid indices via 
+
+gx = ⌊x/ 1000 · Wg ⌋.
+
+Step 2: Box blur smoothing. We smooth the binary mask with a uniform average filter whose kernel size is adaptive to the bbox dimensions: 
+
+k = max 
+
+
+
+3, min 
+
+ max( bw, b h)2
+
+
+
+× 2 + 1 , 7
+
+ 
+
+(4) where bw, b h are the bbox width and height in grid cells. The smoothing window scales with the target extent and is constrained to the odd-sized range of 3 to 7 in order to preserve locality on the visual token grid. The kernel 1 
+
+> k2
+
+1k×k is applied via 2D convolution: 
+
+˜M = Conv2D  M, 1 
+
+> k2
+
+1k×k, padding =k/ 2 (5) 
+
+Step 3: Normalization. The smoothed mask is normalized into a probability distribution: 
+
+PM = ˜M
+
+P 
+
+> i,j
+
+˜M[i, j ] (6) The resulting PM is used as the supervision target and is de-rived directly from the geometry of the affordance annotation. To enforce spatial focus, we minimize the KL divergence 
+
+KL( PS∥PM), penalizing probability mass assigned by the model’s attention distribution PS to task-irrelevant regions where PM approaches zero. Formally, let PS denote the normalized text-to-image cross-modal attention map, aggre-gated across text instruction tokens and designated transformer layers L. The SAA loss is formulated as: 
+
+LSAA = KL( PS ∥ PM) = X
+
+> (u,v )
+
+PS[u, v ] log PS[u, v ]
+
+PM[u, v ] + ϵ
+
+(7) where ϵ > 0 is a small constant ensuring numerical stability. Cross-modal attention is extracted exclusively over instruction prompt positions to prevent teacher-forcing shortcut leakage 4
+
+during training. The overall objective balances standard lan-guage modeling with attention alignment. 
+
+LStage1 = LSFT + α · L SAA (8) 
+
+C. Spatial-Aware GRPO: Perfecting “Where to Ground” 
+
+While supervised attention alignment establishes affordance-aware features FSAA , policy optimization sharpens affordance grounding by directly refining coordinate emission over this rectified feature representation. 
+
+1) Group Relative Policy Optimization: We adopt Group Relative Policy Optimization (Shao et al., 2024) for reward-based boundary refinement. For each query, the policy πθ
+
+samples G candidate outputs {o1, . . . , o G}, and the sampled responses are evaluated by a spatial reward function. The group-relative advantage is computed as: 
+
+ˆAg = Rg − ¯RσR + ϵ , ¯R = 1
+
+G
+
+> G
+
+X
+
+> j=1
+
+Rj (9) where Rg is the reward of the g-th sampled output, and σR
+
+denotes the standard deviation of group rewards. The policy parameters are updated via a clipped surrogate objective regularized by a reference policy πref :
+
+LGRPO = 1
+
+G
+
+> G
+
+X
+
+> g=1
+
+h
+
+min 
+
+
+
+ρg ˆAg , clip( ρg , 1 − ϵ, 1 + ϵ) ˆAg
+
+
+
+− βD KL (πθ ∥πref )
+
+i
+
+,
+
+(10) where ρg = πθ (og |I,T )   
+
+> πref (og|I,T )
+
+is the policy ratio. The clipped term stabilizes policy updates, while the KL penalty keeps the optimized policy close to the initialization. We use the BNPO loss variant (Yu et al., 2026) with adaptive KL control (β ∈ [0 .10 , 0.50] , KL target =1 .0) for training stability. 
+
+2) Spatial Reward Engine: To improve affordance ground-ing, we design a composite spatial reward function compris-ing three complementary components: spatial overlap reward (RIoU ), coordinate proximity reward ( RL1 ), and format reward (Rformat ). 
+
+Spatial overlap reward. To evaluate affordance-region overlap, we compute the Intersection over Union (IoU) be-tween the predicted bounding box b(og ) parsed from response 
+
+og and the ground-truth annotation bgt :
+
+RIoU = 1max( M, N )
+
+X
+
+> (i,j )∈M ∗
+
+IoU( bi, b∗ 
+
+> j
+
+) (11) where M∗ is the optimal assignment between M predicted and N ground-truth boxes. 
+
+Coordinate proximity reward. To further guide fine-grained coordinate adjustment, we compute the mean absolute distance between predicted and ground-truth box coordinates in the norm1k coordinate space: 
+
+RL1 = max 
+
+
+
+0, 1 − ¯d1(b(og ), bgt )
+
+τL1
+
+
+
+,τL1 = 0 .05 · W + H
+
+2 .
+
+(12) where b(og ) denotes the bbox parsed from sampled output og ,
+
+¯d1 = 14
+
+P4 
+
+> k=1
+
+|bk(og ) − bgt ,k | is the mean absolute coordinate error, and W = H = 1000 for norm1k coordinates. 
+
+Format reward. To ensure that the model’s outputs strictly adhere to the required coordinate format [( x1, y 1, x 2, y 2)] , a format reward is incorporated into the training framework. Specifically, a binary indicator Rformat ∈ { 0, 1} is defined to validate syntax and parsing integrity: 
+
+Rformat =
+
+(
+
+1, if b(og ) is valid, 
+
+0, otherwise. (13) 
+
+Combined reward: The overall reward function combines spatial accuracy with structural constraints: 
+
+R = RIoU + RL1
+
+2 + Rformat (14) where RIoU , R L1 ∈ [0 , 1] are the matched IoU and L1 rewards, and Rformat ∈ { 0, 1} checks valid bbox syntax. The two spatial terms are equally weighted. Since our training data contains single-bbox annotations, the spatial reward (RIoU + RL1 )/2
+
+provides the primary learning signal. 
+
+D. Synergistic Training: Asymmetric Two-Stage Dependency 
+
+Stage 1 performs full-parameter SFT with LStage1 = LSFT +
+
+α · L SAA to produce FSAA , followed by Stage 2 full-parameter GRPO on FSAA for coordinate refinement. 
+
+Stage 1 as the prerequisite. The policy optimization in Stage 2 is conditioned on the rectified feature space FSAA :
+
+max  
+
+> θ
+
+Eb∼πθ (·|F SAA (I,T )) [R(b, bgt )] (15) Without FSAA , the reward is applied to scattered or task-irrelevant visual evidence, making policy optimization less effective for precise affordance grounding. 
+
+Stage 2 as the refinement. Spatial Attention Alignment alone does not determine precise box boundaries. GRPO further optimizes the mapping from aligned visual features to coordinate outputs, completing the transition from where to look to where to ground .IV. E XPERIMENTS 
+
+A. Experimental Settings 
+
+Training Data. We compile a unified affordance ground-ing dataset from three primary sources: ShareRobot-Affordance (Ji et al., 2025), ReasonAff-Bbox (Wang et al., 2026), and PartAfford-Tools (Xu et al., 2022). This com-bination encompasses robotic manipulation scenarios, com-plex reasoning-driven affordance descriptions, and part-level functional annotations. Further details are elaborated in Ap-pendix ?? .
+
+Out-of-Distribution Benchmark. To evaluate zero-shot generalizability, we benchmark on AGD20K (Luo et al., 2021). AGD20K serves as a rigorous out-of-distribution (OOD) testbed due to its distinct egocentric perspectives and non-overlapping category splits relative to the training corpora. Moreover, its pixel-level affordance annotations enable cross-modal attention alignment evaluation. 5Which part of the banana would you interact with to cut?                     
+
+> GT Qwen3-VL-4B Qwen3-VL-8B Robrain2.5-8B Rynnbrain-8B Ours Affordance-R1
+> Which part of the bicycle would you interact with to ride? You are a robot using the joint control. The task is "take photo the cell phone". Please predict apossible affordance area of the end effector? Which part of the mug is used for contain?
+> Prompt
+
+red box is predicated results, green box is ground truth                   
+
+> To hold this wine glass securely, which part of your hand should make contact with it? You are a robot using the joint control. The task is "lie on the bed". Please predict a possible affordance area of the end effector?
+> Where would you place your fingers if you were about to cut the leek with this knife?
+
+Fig. 3: Qualitative comparison of bounding box predictions. Green: ground truth; Red: predict result. The baseline model exhibits severe affordance grounding errors, while SpatialAfford produces accurate predictions. 
+
+Baselines. We compare with three groups of meth-ods: (1) general-model VLMs, including Qwen2.5-VL-3B/7B (Qwen Team, 2025), Qwen3-VL-4B/8B (Bai et al., 2025), and UniVG-R1 (GD-ML Team, 2025); (2) embod-ied VLMs, including RoboBrain2.0-3B/7B (BAAI RoboBrain Team et al., 2025), RoboBrain2.5-4B/8B (Tan et al., 2026), and RynnBrain-2B/8B (Alibaba DAMO Academy, 2025); and (3) affordance-specific VLMs AffordanceLLM Qian et al. (2024), Affordance-R1 (Wang et al., 2026). 
+
+Metrics and Implementation. We evaluate grounding per-formance using standard benchmarks, including generalized IoU (gIoU), Precision at IoU threshold 0.5 (P@50), and syn-tactic format compliance rate. SpatialAfford is instantiated on Qwen3-VL-4B (Bai et al., 2025) via a two-stage optimization pipeline: full-parameter supervised fine-tuning with Spatial Attention Alignment (SAA) loss, followed by full-parameter Group Relative Policy Optimization (GRPO) (Shao et al., 2024) with a group size of G = 4 . Comprehensive training configurations and hyperparameter specifications are detailed in Appendix ?? .
+
+B. Main Results 
+
+The experimental evaluations validate the effectiveness and generalizability of SpatialAfford. We benchmark across ShareRobot-Bench, ReasonAff, and PartAfford to systemati-cally assess affordance grounding performance. TABLE I: Affordance grounding results on ShareRobot-Bench and PartAfford. All metrics are percentages.                                                                                              
+
+> Model Size ShareRobot-Bench PartAfford gIoU ↑cIoU ↑P@50 ↑gIoU ↑cIoU ↑P@50 ↑
+> General-purpose VLMs Qwen2.5-VL 3B 18.60 15.08 7.00 41.29 32.31 35.31 Qwen3-VL 4B 25.10 17.59 17.68 47.37 45.00 46.21 Qwen2.5-VL 7B 22.83 22.60 13.19 47.20 40.30 43.36 Qwen3-VL 8B 37.00 24.34 18.00 56.55 55.51 59.48 Embodied VLMs RoboBrain2.0 3B 28.01 15.85 26.02 38.05 36.72 35.78 RoboBrain2.5 4B 41.78 35.19 41.44 50.39 51.27 54.98 RynnBrain 4B 43.30 42.51 37.50 35.71 33.32 35.31 RoboBrain2.0 7B 46.60 33.67 48.50 38.86 37.09 28.44 Affordance-R1 7B 29.44 28.30 17.00 57.24 54.95 60.90 RoboBrain2.5 8B 48.07 54.35 51.80 58.38 58.34 60.12 RynnBrain 8B 44.70 40.05 40.30 38.47 35.66 35.78
+> SpatialAfford 4B 47.80 49.76 55.00 76.37 78.50 86.57
+
+Table I presents the affordance grounding results on ShareRobot-Bench and PartAfford. SpatialAfford achieves su-perior performance across both benchmarks. On ShareRobot-Bench, SpatialAfford (4B) achieves 55.00% P@50 and 47.80% gIoU, surpassing RoboBrain2.5-8B (51.80% P@50) while nearly matching its gIoU (48.07%). Table II sum-marizes the performance on ReasonAff, which evaluates 6
+
+TABLE II: Affordance reasoning on ReasonAff. 
+
+Model Size gIoU ↑ cIoU ↑ P@50 ↑ P@50–95 ↑
+
+Grounding methods VLPart — 4.21 3.88 1.31 0.85 OVSeg — 16.52 10.59 9.89 4.12 SAN — 10.21 13.45 7.18 3.17 LISA 7B 38.17 40.58 33.62 19.69 SAM4MLLM 7B 45.51 33.64 43.48 22.79 Seg-Zero 7B 59.26 48.03 61.33 45.87 Vision Reasoner 7B 63.04 52.70 67.33 47.23 General-purpose VLMs Qwen3-VL 4B 42.88 36.81 41.17 28.50 Qwen2.5-VL 7B 25.18 20.54 26.00 15.82 InternVL3 8B 31.79 24.68 35.41 21.93 Qwen3-VL 8B 48.40 41.20 49.83 35.20 Embodied VLMs RynnBrain 2B 42.80 39.88 42.50 28.73 RoboBrain2.0 3B 26.26 26.12 22.33 0.11 RoboBrain2.5 4B 26.76 35.60 24.79 9.67 RoboBrain2.0 7B 47.69 48.98 46.83 36.86 RynnBrain 8B 49.70 43.13 49.83 37.53 RoboBrain2.5 8B 41.38 35.97 42.50 22.83 AffordanceLLM 7B 48.49 38.61 42.11 20.19 Affordance-R1 7B 67.41 62.72 74.50 55.22 
+
+SpatialAfford 4B 74.92 69.32 82.50 64.42 
+
+instruction-dependent affordance reasoning. SpatialAfford achieves 74.92% gIoU and 82.50% P@50, outperforming the affordance-specialized Affordance-R1 by +7.51% gIoU and +8.00% P@50. These improvements demonstrate that enforc-ing spatial focus prior to policy optimization remains effective when functional targets must be inferred from contextual language instructions. Figures 3 and 4 provide qualitative visualizations of pre-dicted affordance-region boxes and cross-modal attention dis-tributions. Competing methods frequently suffer from object-level shortcuts or diffuse over adjacent non-functional struc-tures. In contrast, SpatialAfford consistently anchors visual focus onto actionable affordance regions, yielding precise affordance grounding that aligns with the quantitative metrics. Which part of the mug is used for wrap-grasp?                           
+
+> GT Qwen3-VL-4B Qwen3-VL-8B Robrain2.5-8B Rynnbrain-8B Ours Affordance-R1 Prompt
+> Where would you place your hands if you were to sit down at this table?
+> Which part of the cup would you interact with to sip?
+> To hold this wine glass securely, which part of your hand should make contact with it? Which part of the bicycle would you interact with to ride?
+
+Fig. 4: Qualitative comparison of affordance mask predictions. SpatialAfford generates precise masks that align with ground truth affordance regions. 
+
+C. Generalization and Attention Analysis 
+
+To evaluate the generalization ability of SpatialAfford, we present zero-shot affordance reasoning results on AGD20K in Table III. At a compact 4B scale, SpatialAfford achieves top scores in P@50 (37.44%)and NSS (1.05), while ranking second only to the 8B RoboBrain2.5 in gIoU and cIoU. These diagnostics confirm its cross-scene generalization and justify the necessity of SAA to guide models on where to look prior to coordinate regression. Figure 5 visualizes the cross-modal attention maps for affordance grounding, illustrating whether the model focuses on functionally relevant affordance regions prior to coordinate prediction or erroneously diffuses its focus over task-irrelevant background areas. TABLE III: OOD attention-alignment diagnostics on AGD20K. 
+
+Model Size gIoU ↑ cIoU ↑ P@50 ↑ KLD ↓ SIM ↑ NSS ↑
+
+Qwen2.5-VL 3B 23.21 18.90 17.62 10.27 0.30 0.75 RoboBrain2.0 3B 27.52 22.38 23.67 13.31 0.18 0.58 Qwen3-VL 4B 26.83 20.84 19.91 9.29 0.34 0.91 RoboBrain2.5 4B 33.58 33.56 29.14 12.03 0.25 0.87 RynnBrain 4B 27.11 25.21 21.04 10.16 0.32 0.83 InternVL3 7B 18.18 14.63 3.79 10.09 0.25 0.61 Qwen2.5-VL 7B 25.70 23.82 18.22 10.13 0.32 0.85 LISA 7B 13.18 11.96 1.45 13.68 0.16 0.46 SAM4MLLM 7B 15.27 13.22 2.40 9.51 0.27 0.52 Seg-Zero 7B 26.99 22.01 6.52 9.02 0.35 0.94 Qwen3-VL 8B 26.74 29.44 19.44 10.37 0.31 0.88 RoboBrain2.0 7B 27.32 26.60 23.94 12.71 0.28 0.78 Affordance-R1 7B 31.38 27.85 20.49 9.73 0.36 0.98 RoboBrain2.5 8B 36.82 49.07 37.08 10.28 0.38 0.89 RynnBrain 8B 27.55 28.24 20.21 10.42 0.32 0.87 SpatialAfford 4B 36.21 48.76 37.44 9.35 0.40 1.05 
+
+D. Ablation: Component Synergy 
+
+Table IV isolates the incremental contribution of each com-ponent. Standard SFT delivers limited gains on the baseline model (P@50 rises from 17.50% to 22.50%), whereas integrat-ing Spatial Attention Alignment (SAA) substantially elevates P@50 to 40.50% and gIoU to 42.59%, confirming that explicit cross-modal attention regularization is critical for anchor-ing visual focus onto affordance regions. Standalone GRPO mainly optimizes coordinate prediction precision. Incorporat-ing Spatial-Aware GRPO policy optimization achieves the best overall performance (47.80% gIoU and 55.00% P@50), demonstrating that reward-driven boundary refinement is most effective when executed over an aligned visual feature space. These progressive gains confirm the functional dependency between components: SAA establishes affordance-aware vi-sual focus, which SpatialAfford subsequently transforms into precise spatial coordinates. TABLE IV: Component ablation on ShareRobot. 
+
+Variant SAA GRPO gIoU ↑ cIoU ↑ P@50 ↑
+
+Baseline (Qwen3-VL-4B) ✗ ✗ 25.10 16.84 17.50 SFT ✗ ✗ 27.17 45.59 22.50 SFT + SAA ✓ ✗ 42.59 47.16 40.50 GRPO ✗ ✓ 42.45 43.34 45.55 
+
+SpatialAfford ✓ ✓ 47.80 49.76 55.00 
+
+We investigate the sensitivity of SAA to the loss weight α
+
+and the choice of loss function. Results show that KL diver-gence with α=0 .1 achieves the optimal trade-off, maintaining 7Which part of the wine glass would you interact with to pour?  
+
+> Which part of the turner is used for grasp?
+> RGB SpatialAfford Rynnbrain-8B Qwen3-VL-4B
+> Which region should the robot grasp or touch to: open a cabinet door? What would happen if you turned on the faucet without using the handles?
+> Robobrain2.5-8B Affordance-R1
+> AGD20K PartAfford Sharerobot ReasonAff
+> Affordance region
+
+Fig. 5: Cross-modal attention maps for affordance grounding. The visualization covers different evaluated datasets and supports inspection of whether model attention concentrates on affordance regions or diffuses over irrelevant background areas. superior grounding ability (42.59% gIoU, 40.50% P@50) while effectively enhancing attention alignment. In contrast, pure coverage loss severely degrades coordinate prediction despite improving attention alignment, justifying our adoption of KL divergence for SAA. TABLE V: α sensitivity and loss function selection on Qwen3-VL-4B. 
+
+α Loss Type Loss Value gIoU ↑ P@50 ↑
+
+0 Baseline — 25.10 17.68 0.01 kl divergence 0.5455 35.26 33.25 0.05 kl divergence 0.5005 37.49 36.68 
+
+0.1 kl divergence 0.5125 42.59 40.50 
+
+0.2 kl divergence 0.5312 33.12 24.10 0.1 coverage 0.4755 30.67 32.15 1.0 coverage 0.3702 33.38 31.73 
+
+V. C ONCLUSION 
+
+This work shows that compact VLMs for affordance grounding should not be optimized only at the output level. By explicitly aligning visual attention before policy-based coordi-nate refinement, SpatialAfford builds a more reliable pathway from task intent to affordance regions. The empirical results suggest that improving where a compact model looks is a key prerequisite for robust affordance grounding, and that attention alignment and spatial policy optimization provide comple-mentary benefits.Future work will extend SpatialAfford’s 2D attention alignment to 3D representations to establish view-consistent functional focus, bridging 2D semantic perception and 3D physical manipulation. 8
+
+REFERENCES 
+
+Alibaba DAMO Academy. RynnBrain: A compact vision-language model for embodied reasoning. arXiv preprint ,2025. BAAI RoboBrain Team, Mingyu Cao, Huajie Tan, et al. Robo-Brain 2.0 technical report. arXiv preprint arXiv:2507.02029 ,2025. Shuai Bai, Yuxuan Cai, Ruizhe Chen, et al. Qwen3-VL technical report. arXiv preprint arXiv:2511.21631 , 2025. Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818 , 2023a. Anthony Brohan, Yevgen Chebotar, Chelsea Finn, Karol Haus-man, Alexander Herzog, Daniel Ho, Julian Ibarz, Alex Irpan, Eric Jang, Ryan Julian, et al. Do as i can, not as i say: Grounding language in robotic affordances. In Conference on robot learning , pages 287–318. PMLR, 2023b. Liang Chen, Zhibin Liu, Tianyu Pang, Chao Du, Qingsong Wan, Bingzhe He, Tianyu Yu, and Yang Liu. R1-V: Reinforcing super generalization ability in vision language models with less than $3. arXiv preprint , 2025. Thanh-Toan Do, Anh Nguyen, and Ian Reid. Affordance detection of tool parts from geometric features. In IEEE In-ternational Conference on Robotics and Automation (ICRA) ,pages 1606–1613, 2018. Danny Driess, Fei Xia, Mehdi S. M. Sajjadi, et al. PaLM-E: An embodied multimodal language model. arXiv preprint arXiv:2303.03378 , 2023. Parsa Esmaeilkhani and Longin Jan Latecki. Direct visual grounding by directing attention of visual tokens. In 2026 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) , pages 5787–5797. IEEE, 2026. Anthony Fuller, Yousef Yassin, Junfeng Wen, Tarek Ibrahim, Daniel Kyrollos, James Green, and Evan Shelhamer. Look-where? efficient visual recognition by learning where to look and what to see from self-supervision. Advances in Neural Information Processing Systems , 38:87001–87039, 2026. GD-ML Team. UniVG-R1: Universal visual grounding with reinforcement learning. arXiv preprint , 2025. James J. Gibson. The Ecological Approach to Visual Percep-tion . Houghton Mifflin, 1979. Xinyu Huang, Yuhao Dong, Weiwei Tian, Bo Li, Rui Feng, and Ziwei Liu. Mgpo: Thinking with images via multi-turn grounding-based reinforcement learning. In Findings of the Association for Computational Linguistics: ACL 2026 ,pages 383–399, 2026. Yuheng Ji, Huajie Tan, Jiayu Shi, Xiaoshuai Hao, Yuan Zhang, Hengyuan Zhang, Pengwei Wang, Mengdi Zhao, Yao Mu, Pengju An, et al. RoboBrain: A unified brain model for robotic manipulation from abstract to concrete. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 1724–1734, 2025. Aishwarya Kamath, Mannat Singh, Yann LeCun, Gabriel Synnaeve, Ishan Misra, and Nicolas Carion. MDETR: Mod-ulated detection for end-to-end multi-modal understanding. In IEEE/CVF International Conference on Computer Vision (ICCV) , pages 1780–1790, 2021. Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, et al. OpenVLA: An open-source vision-language-action model. 
+
+arXiv preprint arXiv:2406.09246 , 2024. Seung Il Lee, Qinqian Lei, Daguang Xu, Dong Yang, Robby T Tan, Yixin Chen, and Bo Wang. Token-based affor-dance grounding with large vision-language models. arXiv preprint arXiv:2607.03595 , 2026. Liunian Harold Li, Pengchuan Zhang, Haotian Zhang, Jian-wei Yang, Chunyuan Li, Yiwu Zhong, Lijuan Wang, Lu Yuan, Lei Zhang, Jenq-Neng Hwang, Kai-Wei Chang, and Jianfeng Gao. Grounded language-image pre-training. In 
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 10965–10975, 2022. Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. Visual instruction tuning. In Advances in Neural Information Processing Systems (NeurIPS) , 2023. Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. Improved baselines with visual instruction tuning. In Pro-ceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 26296–26306, 2024a. Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Qing Jiang, Chunyuan Li, Jianwei Yang, Hang Su, et al. Grounding dino: Marrying dino with grounded pre-training for open-set object detection. In 
+
+European conference on computer vision , pages 38–55. Springer, 2024b. Ziyu Liu, Zeyi Sun, Yuhang Zang, Xiaoyi Dong, Yuhang Cao, Haodong Duan, Dahua Lin, and Jiaqi Wang. Visual-RFT: Visual reinforcement fine-tuning. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 2034–2044, 2025. Hongchen Luo, Wei Zhai, Jing Zhang, and Meng Yang. One-shot affordance detection. arXiv preprint arXiv:2106.14747 ,2021. Matthias Minderer, Alexey Gritsenko, Austin Stone, Maxim Neumann, Dirk Weissenborn, Alexey Dosovitskiy, Aravindh Mahendran, Anurag Arnab, Mostafa Dehghani, Zhuoran Shen, Xiao Wang, Xiaohua Zhai, Thomas Kipf, and Neil Houlsby. Simple open-vocabulary object detection with vision transformers. In European Conference on Computer Vision (ECCV) , pages 728–755, 2022. Kaichun Mo, Leonidas J. Guibas, Mustafa Mukadam, Abhinav Gupta, and Shubham Tulsiani. Where2Act: From pixels to actions for articulated 3D objects. In IEEE/CVF Interna-tional Conference on Computer Vision (ICCV) , pages 6813– 6823, 2021. Austin Myers, Ching L. Teo, Cornelia Fermuller, and Yiannis Aloimonos. Affordance detection of tool parts from geomet-ric features. In IEEE International Conference on Robotics and Automation (ICRA) , pages 1374–1381, 2015. Siqu Ou, Tianrui Wan, Zhiyuan Zhao, Junyu Gao, and Xuelong Li. Do MLLMs really see it: Reinforcing visual attention in multimodal LLMs. arXiv preprint arXiv:2602.08241 , 2026. Long Ouyang, Jeffrey Wu, Xu Jiang, et al. Training lan-guage models to follow instructions with human feedback. In Advances in Neural Information Processing Systems (NeurIPS) , pages 27730–27744, 2022. 9
+
+Shengyi Qian, Weifeng Chen, Min Bai, Xiong Zhou, Zhuowen Tu, and Li Erran Li. Affordancellm: Grounding affor-dance from vision language models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 7587–7597, 2024. Qwen Team. Qwen2.5-VL technical report. arXiv preprint arXiv:2502.13923 , 2025. Johann Sawatzky, Abhilash Srikantha, and Juergen Gall. Weakly supervised affordance detection. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 2795–2804, 2017. Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, Y.K. Li, Y. Wu, and Daya Guo. DeepSeekMath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. Qiaoli Shen, Zilun Zhang, Kangjia Zhao, Qianqian Zhang, Ruochen Xu, and Tiancheng Zhao. VLM-R1: A stable and generalizable R1-style large vision-language model. arXiv preprint arXiv:2504.07615 , 2025. Zhiqing Sun, Sheng Shen, Shengcao Cao, Haotian Liu, Chun-yuan Li, Yikang Shen, Chuang Gan, Liangyan Gui, Yu-Xiong Wang, Yiming Yang, et al. Aligning large multimodal models with factually augmented rlhf. In Findings of the Association for Computational Linguistics: ACL 2024 ,pages 13088–13110, 2024. Huajie Tan, Enshen Zhou, Zhiyu Li, et al. RoboBrain 2.5: Depth in sight, time in mind. arXiv preprint arXiv:2601.14352 , 2026. Shravan Venkatraman, Ritesh Thawkar, Omkar Thawakar, Rao Muhammad Anwer, Hisham Cholakkal, Salman Khan, and Fahad Shahbaz Khan. Paying more attention to visual tokens in self-evolving large multimodal models. arXiv preprint arXiv:2606.27373 , 2026. Hanqing Wang, Shaoyang Wang, Yiming Zhong, Zemin Yang, Jiamin Wang, Zhiqing Cui, Jiahao Yuan, Yifan Han, Mingyu Liu, and Yuexin Ma. Affordance-r1: Reinforcement learning for generalizable affordance reasoning in multimodal large language models. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 9738–9746, 2026. Peng Wang, Shuai Bai, Sinan Tan, et al. Qwen2-VL: Enhanc-ing vision-language model’s perception of the world at any resolution. arXiv preprint arXiv:2409.12191 , 2024. Chao Xu, Yixin Chen, and He Wang. PartAfford: Part-level affordance discovery from 3D objects. arXiv preprint arXiv:2202.13519 , 2022. Shuo Yang, Yuwei Niu, Yuyang Liu, Yang Ye, Bin Lin, and Li Yuan. Look-back: Implicit visual re-focusing in mllm reasoning. In Proceedings of the AAAI conference on artificial intelligence , pages 11694–11702, 2026. Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu Yue, Weinan Dai, Tiantian Fan, Gaohong Liu, Lingjun Liu, et al. Dapo: An open-source llm reinforcement learning system at scale. Advances in Neural Information Processing Systems , 38:113222–113244, 2026. Tianyu Yu, Yuan Yao, Haoye Zhang, Taiwen He, Yifeng Han, Ganqu Cui, Jinyi Hu, Zhiyuan Liu, Hai-Tao Zheng, Maosong Sun, et al. Rlhf-v: Towards trustworthy mllms via behavior alignment from fine-grained correctional human feedback. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 13807– 13816, 2024. Xiaofeng Zhang, Yuanchao Zhu, Chaochen Gu, Jiawei Cao, Hao Cheng, and Kaijie Wu. What drives attention sinks? a study of massive activations and rotational positional encoding in large vision–language models. Information Processing & Management , 63(2):104431, 2026. Xin Zou, Yizhou Wang, Yibo Yan, Yuanhuiyi Lyu, Kening Zheng, Sirui Huang, Junkai Chen, Peijie Jiang, Jia Liu, Chang Tang, and Xuming Hu. Look twice before you answer: Memory-space visual retracing for hallucination mitigation in multimodal large language models. arXiv preprint arXiv:2410.03577 , 2025.

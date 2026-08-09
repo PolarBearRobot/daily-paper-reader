@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-08</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-09</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 13 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 7 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>8</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>5</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>6</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-08 20:13:02 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-09 20:34:51 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日精读聚焦VLA策略安全审计与视觉-语言-可操作能力建模，两篇均获9.0高分；速读覆盖抓取规划、自监督世界模型与人机轨迹加速，整体评分6.0。最值得关注的是任务向量否定对VLA局部性的脆弱影响，以及统一可操作能力框架的提出。下一步可结合这两大方向，尝试在抓取规划中引入语义可操作先验，并关注模型蒸馏对实时性的提升。</p>
+<p>今日共读7篇论文，精读1篇，速读6篇，重点聚焦具身智能与空间感知。</p>
+<p>最推荐精读《ETA》提出的具身任务智能体新范式，以及《SSTG-Nav》的语义拓扑导航方法。</p>
+<p>后续可沿着“具身决策+几何语义融合”方向追踪，实用落地值得关注。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -71,12 +73,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">8 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Suppression Sticks, Locality Is Fragile: A Closed-Loop Target-and-Control Audit of Task-Vector Negation in VLA Policies">Suppression Sticks, Locality Is Fragile: A Closed-Loop Target-and-Control Audit of Task-Vector Negation in VLA Policies</span></li><li><span class="dpr-home-dashboard-paper-title" title="VLAff: Vision-Language-Affordance Model for Unified Actionable Affordances">VLAff: Vision-Language-Affordance Model for Unified Actionable Affordances</span></li><li><span class="dpr-home-dashboard-paper-title" title="MiniWorld: Democratizing the Training of Video World Models from Scratch">MiniWorld: Democratizing the Training of Video World Models from Scratch</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="ETA: A New Agentic Paradigm for Embodied Tasks">ETA: A New Agentic Paradigm for Embodied Tasks</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">data <strong>3</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -84,12 +86,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">5 篇</strong>
+    <strong class="dpr-home-dashboard-count">6 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SAGP: Semantic Affordance-Guided Grasp Planning via Coarse-Zone VLM Reasoning">SAGP: Semantic Affordance-Guided Grasp Planning via Coarse-Zone VLM Reasoning</span></li><li><span class="dpr-home-dashboard-paper-title" title="DF$^3$: World Modeling via Decoder-Free Feature Forecasting in Autonomous Navigation">DF$^3$: World Modeling via Decoder-Free Feature Forecasting in Autonomous Navigation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Accelerating Human-Aware Robot Trajectory Generation via Diffusion and Consistency Distillation">Accelerating Human-Aware Robot Trajectory Generation via Diffusion and Consistency Distillation</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Learning to Predict Contact Force Distributions from Vision Leveraging Object Geometry Priors">Learning to Predict Contact Force Distributions from Vision Leveraging Object Geometry Priors</span></li><li><span class="dpr-home-dashboard-paper-title" title="SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance">SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance</span></li><li><span class="dpr-home-dashboard-paper-title" title="SSTG-Nav: Metric-Grounded Spatial-Semantic Topological Graphs for Reusable Object Navigation">SSTG-Nav: Metric-Grounded Spatial-Semantic Topological Graphs for Reusable Object Navigation</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">data <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
 </section>
 </div>
 

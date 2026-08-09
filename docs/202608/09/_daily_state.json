@@ -1,0 +1,121 @@
+{
+  "date": "20260809",
+  "date_label": "",
+  "generated_at": "2026-08-09 20:34:51 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.03924v1",
+      "route": "202608/09/2608.03924v1-eta-a-new-agentic-paradigm-for-embodied-tasks",
+      "title": "ETA: A New Agentic Paradigm for Embodied Tasks",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "提出基于规划器的具身任务智能体范式，解决长时程控制与数据覆盖问题",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.00464v1",
+      "route": "202608/09/2608.00464v1-learning-to-predict-contact-force-distributions-from-vision-leveraging-object-geometry-priors",
+      "title": "Learning to Predict Contact Force Distributions from Vision Leveraging Object Geometry Priors",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "robot"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "利用物体几何先验从视觉预测平滑接触力分布，支持视觉-触觉跨模态表征学习",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.00502v1",
+      "route": "202608/09/2608.00502v1-spatialafford-teaching-compact-vlms-where-to-look-and-where-to-ground-for-affordance",
+      "title": "SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "针对具身场景紧凑VLM的功能区域接地，改进注意力锚定与交互坐标预测",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.00527v1",
+      "route": "202608/09/2608.00527v1-sstg-nav-metric-grounded-spatial-semantic-topological-graphs-for-reusable-object-navigation",
+      "title": "SSTG-Nav: Metric-Grounded Spatial-Semantic Topological Graphs for Reusable Object Navigation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "SSTG-Nav构建可复用的度量-语义记忆以支持长期物体导航，与具身代理的记忆机制相关。",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.04428v1",
+      "route": "202608/09/2608.04428v1-deltoris-enabling-real-time-vla-inference-in-embodied-ai-via-bit-level-sparsity-and-speculative-inference",
+      "title": "Deltoris: Enabling Real-time VLA Inference in Embodied AI via Bit-level Sparsity and Speculative Inference",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向具身智能中扩散式VLA模型实时推理的软硬件协同设计",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.00264v1",
+      "route": "202608/09/2608.00264v1-interpretability-guided-soft-pruning-of-attention-heads-in-vision-transformers",
+      "title": "Interpretability-Guided Soft Pruning of Attention Heads in Vision Transformers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于谱分析和可解释性指导的视觉Transformer注意力头分析剪枝，可迁移至VLA视觉骨干",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    },
+    {
+      "paper_id": "2608.04042v1",
+      "route": "202608/09/2608.04042v1-kitchen-robotic-manipulation-utilizing-foundation-models",
+      "title": "Kitchen Robotic Manipulation utilizing Foundation Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "结合视觉与几何基础模型的模块化感知管线，用于厨房操作、抓取规划与6D位姿估计",
+      "first_seen_at": "2026-08-09 20:34:51 UTC",
+      "updated_at": "2026-08-09 20:34:51 UTC"
+    }
+  ]
+}
