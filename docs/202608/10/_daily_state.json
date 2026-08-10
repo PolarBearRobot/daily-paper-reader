@@ -1,0 +1,281 @@
+{
+  "date": "20260810",
+  "date_label": "",
+  "generated_at": "2026-08-10 20:26:02 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.06729v1",
+      "route": "202608/10/2608.06729v1-atlasvla-persistent-world-ego-state-modeling-for-vision-language-action-models",
+      "title": "AtlasVLA: Persistent World-Ego State Modeling for Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出AtlasVLA，采用包含4D持久世界状态记忆的双记忆架构，解决长时程任务中的感知与任务进度遗忘问题",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06994v1",
+      "route": "202608/10/2608.06994v1-decoupling-intention-from-trajectory-a-representational-deduction-framework-for-world-action-models",
+      "title": "Decoupling Intention from Trajectory: A Representational Deduction Framework for World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为世界动作模型解耦意图与轨迹",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.07045v1",
+      "route": "202608/10/2608.07045v1-c2dex-contact-consistent-reconstruction-and-retargeting-for-dexterous-manipulation-from-monocular-video",
+      "title": "C2Dex: Contact-Consistent Reconstruction and Retargeting for Dexterous Manipulation from Monocular Video",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从单目视频进行接触一致的手物交互重建并重定向到灵巧机器人操作",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.07314v1",
+      "route": "202608/10/2608.07314v1-tempo-semantic-action-decoupled-rl-post-training-for-vision-language-action-models",
+      "title": "TEMPO: Semantic-Action Decoupled RL Post-Training for Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向VLA模型的语义-动作解耦RL后训练",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.01221v1",
+      "route": "202608/10/2608.01221v1-endowam-a-grounded-world-action-model-for-generalizable-endoscopic-navigation",
+      "title": "EndoWAM: A Grounded World-Action Model for Generalizable Endoscopic Navigation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "首个用于泛化内窥镜导航的落地世界动作模型",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06434v1",
+      "route": "202608/10/2608.06434v1-fast-and-accurate-an-adaptive-vla-inference-framework-through-environment-aware-model-selection",
+      "title": "Fast and Accurate: An Adaptive VLA Inference Framework through Environment-aware Model Selection",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于环境感知模型选择的自适应 VLA 推理框架",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06756v1",
+      "route": "202608/10/2608.06756v1-capek-05-an-execution-centric-vision-language-model-for-embodied-intelligence",
+      "title": "Capek 0.5: An Execution-Centric Vision-Language Model for Embodied Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向机器人控制的执行中心具身视觉语言模型",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06799v1",
+      "route": "202608/10/2608.06799v1-is-forward-prediction-enough-physical-state-grounding-for-jepa-world-models",
+      "title": "Is Forward Prediction Enough? Physical State Grounding for JEPA World Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "为JEPA世界模型引入物理状态接地目标，学习控制相关的潜在表示",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06965v1",
+      "route": "202608/10/2608.06965v1-cross-view-action-consistency-for-camera-robust-vision-language-action-policies",
+      "title": "Cross-View Action Consistency for Camera-Robust Vision-Language-Action Policies",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过跨视角动作一致性实现相机鲁棒的视觉-语言-行动策略",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.07267v1",
+      "route": "202608/10/2608.07267v1-wnm-3d-a-world-navigation-model-with-3d-scene-conditioning-for-closed-loop-vln",
+      "title": "WNM-3D: A World Navigation Model with 3D Scene Conditioning for Closed-Loop VLN",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向闭环视觉语言导航的3D场景条件生成式世界导航模型",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.07409v1",
+      "route": "202608/10/2608.07409v1-unijepa-a-unified-joint-embedding-predictive-architecture-for-task-agnostic-visual-world-modeling",
+      "title": "UniJEPA: A Unified Joint-Embedding Predictive Architecture for Task-Agnostic Visual World Modeling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "统一图像级与视频级联合嵌入预测架构以实现任务无关的视觉世界建模，与机器人感知与控制中的表示学习相关",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.01834v1",
+      "route": "202608/10/2608.01834v1-teleopit-a-full-embodiment-humanoid-teleoperation-system",
+      "title": "Teleopit: A Full-Embodiment Humanoid Teleoperation System",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "将人体与手部运动映射到不同机器人形态",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06688v1",
+      "route": "202608/10/2608.06688v1-crosstracer-cross-embodiment-navigation-via-vla-model-reasoning-and-trace-residuals-adapting",
+      "title": "CrossTracer: Cross-Embodiment Navigation via VLA Model Reasoning and Trace Residuals Adapting",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "利用VLA模型推理实现跨形态导航",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.06745v1",
+      "route": "202608/10/2608.06745v1-memprism-task-conditioned-relational-memory-views-for-long-horizon-agents",
+      "title": "MemPrism: Task-Conditioned Relational Memory Views for Long-Horizon Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向长程智能体的任务条件关系记忆视图，缓解表征失配问题",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.02385v1",
+      "route": "202608/10/2608.02385v1-stablemimic-smooth-human-like-recovery-for-humanoid-motion-tracking---learning-beyond-the-tracking-distribution-for-structured-post-fall-behavior",
+      "title": "StableMimic: Smooth Human-Like Recovery for Humanoid Motion Tracking - Learning Beyond the Tracking Distribution for Structured Post-Fall Behavior",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将人类起身动作参考迁移到人形机器人，实现稳健恢复",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.02713v1",
+      "route": "202608/10/2608.02713v1-quo-vadis-world-modeling",
+      "title": "Quo Vadis, World Modeling?",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "提出以智能体为中心的世界代理概念，提供超越状态预测的可执行反馈",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    },
+    {
+      "paper_id": "2608.03227v1",
+      "route": "202608/10/2608.03227v1-pfm-hr-pose-flow-matching-for-humanoid-robots",
+      "title": "PFM-HR: Pose Flow Matching for Humanoid Robots",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "利用大规模无序姿态数据的人形机器人姿态流匹配先验",
+      "first_seen_at": "2026-08-10 20:26:02 UTC",
+      "updated_at": "2026-08-10 20:26:02 UTC"
+    }
+  ]
+}

@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-09</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-10</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 7 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 17 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>6</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>8</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-09 20:34:51 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-10 20:26:02 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,9 +62,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日共读7篇论文，精读1篇，速读6篇，重点聚焦具身智能与空间感知。</p>
-<p>最推荐精读《ETA》提出的具身任务智能体新范式，以及《SSTG-Nav》的语义拓扑导航方法。</p>
-<p>后续可沿着“具身决策+几何语义融合”方向追踪，实用落地值得关注。</p>
+<p>今日17篇论文聚焦具身智能与世界模型，精读9篇中两篇满分9.0引领核心突破。最值得关注视觉-语言-动作模型（VLA）与世界动作模型的表征解耦方向，速读中3D场景导航与任务无关世界建模亦具亮点。建议普通读者优先追踪上述高分工作，后续可关注其跨任务泛化与机器人部署验证。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -73,12 +71,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">1 篇</strong>
+    <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="ETA: A New Agentic Paradigm for Embodied Tasks">ETA: A New Agentic Paradigm for Embodied Tasks</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AtlasVLA: Persistent World-Ego State Modeling for Vision-Language-Action Models">AtlasVLA: Persistent World-Ego State Modeling for Vision-Language-Action Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Decoupling Intention from Trajectory: A Representational Deduction Framework for World Action Models">Decoupling Intention from Trajectory: A Representational Deduction Framework for World Action Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="C2Dex: Contact-Consistent Reconstruction and Retargeting for Dexterous Manipulation from Monocular Video">C2Dex: Contact-Consistent Reconstruction and Retargeting for Dexterous Manipulation from Monocular Video</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>8</strong></span><span class="dpr-home-dashboard-tag">data <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -86,12 +84,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">6 篇</strong>
+    <strong class="dpr-home-dashboard-count">8 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Learning to Predict Contact Force Distributions from Vision Leveraging Object Geometry Priors">Learning to Predict Contact Force Distributions from Vision Leveraging Object Geometry Priors</span></li><li><span class="dpr-home-dashboard-paper-title" title="SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance">SpatialAfford: Teaching Compact VLMs Where to Look and Where to Ground for Affordance</span></li><li><span class="dpr-home-dashboard-paper-title" title="SSTG-Nav: Metric-Grounded Spatial-Semantic Topological Graphs for Reusable Object Navigation">SSTG-Nav: Metric-Grounded Spatial-Semantic Topological Graphs for Reusable Object Navigation</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="WNM-3D: A World Navigation Model with 3D Scene Conditioning for Closed-Loop VLN">WNM-3D: A World Navigation Model with 3D Scene Conditioning for Closed-Loop VLN</span></li><li><span class="dpr-home-dashboard-paper-title" title="UniJEPA: A Unified Joint-Embedding Predictive Architecture for Task-Agnostic Visual World Modeling">UniJEPA: A Unified Joint-Embedding Predictive Architecture for Task-Agnostic Visual World Modeling</span></li><li><span class="dpr-home-dashboard-paper-title" title="Teleopit: A Full-Embodiment Humanoid Teleoperation System">Teleopit: A Full-Embodiment Humanoid Teleoperation System</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>4</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span><span class="dpr-home-dashboard-tag">robot <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>3</strong></span></div>
 </section>
 </div>
 
