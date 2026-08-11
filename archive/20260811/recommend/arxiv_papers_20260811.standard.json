@@ -1,0 +1,1066 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-11T21:10:07.039078+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 15,
+    "deep_cap": 9,
+    "deep_selected": 9,
+    "quick_candidates": 13,
+    "quick_skim_target": 14,
+    "quick_selected": 13
+  },
+  "deep_dive": [
+    {
+      "id": "2608.07619v1",
+      "source": "arxiv",
+      "title": "GWM-VLA: Geometry-Aware Latent World Modeling for Vision-Language-Action Learning",
+      "abstract": "Vision-Language-Action (VLA) models achieve strong robotic manipulation performance but often degrade under visual and environmental shifts. Latent world modeling offers a promising approach to improving robustness, yet existing methods commonly encode camera views independently and predict holistic scene dynamics without explicitly modeling their geometric relationships. We propose GWM-VLA, a geometry-aware latent world modeling framework for VLA learning. GWM-VLA combines geometry-aware multi-view state encoding, global context-conditioned target-view prediction, and shared latent-action representations grounded by robot-action supervision. Specifically, VGGT-$Ω$ jointly aggregates multi-view observations at each timestep to construct geometry-aware multi-view states. The latent world model predicts the next-step patch tokens of a selected target view using patch and register tokens obtained after multi-view aggregation, thereby retaining multi-view geometric information without predicting the complete multi-view state. We use the wrist view as the target in our experiments, placing greater emphasis on end-effector motion and local gripper-object interactions. Finally, the shared latent-action representations condition both the latent world model and the flow-matching action head, allowing latent-prediction supervision and ground-truth robot-action supervision to jointly shape the same latent-action representations. Experiments across both simulation and real-world environments demonstrate the effectiveness and robustness of GWM-VLA.",
+      "authors": [
+        "Yanping Zhao",
+        "Hang Yu",
+        "Yiwei Wang",
+        "Chen Ye",
+        "Siyu Tian",
+        "Di Zhang",
+        "Qingjun Wang",
+        "Qian Chen",
+        "Junqiao Zhao",
+        "Chen Ye",
+        "Guang Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-07T06:41:51+00:00",
+      "link": "https://arxiv.org/pdf/2608.07619v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "geometry-aware latent world modeling with 3D spatial understanding for VLA robustness",
+      "llm_evidence_cn": "具备3D空间理解的几何感知潜在世界建模提升VLA鲁棒性",
+      "llm_evidence": "具备3D空间理解的几何感知潜在世界建模提升VLA鲁棒性",
+      "canonical_evidence": "具备3D空间理解的几何感知潜在世界建模提升VLA鲁棒性",
+      "llm_tldr_en": "GWM-VLA introduces geometry-aware multi-view state encoding and target-view prediction, grounding shared latent-action representations with robot-action supervision to improve robustness of VLA under visual and environmental shifts.",
+      "llm_tldr_cn": "VLA模型在视觉与环境变化下容易性能下降，现有潜在世界建模常独立编码相机视角且未显式建模几何关系。GWM-VLA提出几何感知的多视角状态编码、全局上下文条件的目标视角预测，并通过机器人动作监督约束共享的潜在动作表示。实验表明该方法在操作鲁棒性上优于现有VLA基线，突出了3D几何建模对具身基础模型的重要性。",
+      "llm_tldr": "VLA模型在视觉与环境变化下容易性能下降，现有潜在世界建模常独立编码相机视角且未显式建模几何关系。GWM-VLA提出几何感知的多视角状态编码、全局上下文条件的目标视角预测，并通过机器人动作监督约束共享的潜在动作表示。实验表明该方法在操作鲁棒性上优于现有VLA基线，突出了3D几何建模对具身基础模型的重要性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08023v1",
+      "source": "arxiv",
+      "title": "4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields",
+      "abstract": "Building on recent advances in world models, World Action Models (WAMs) jointly model video prediction and action generation. However, they typically represent videos in 2D pixel space, creating a representation gap with 3D space in which robotic actions are executed. Recent 3D approaches introduce 3D information, but fail to fully exploit the dynamics of 3D structures. In this work, we propose 4D-WAM, a model-agnostic training strategy that injects spatiotemporal knowledge from 3D trajectory fields into WAMs through representation alignment. To this end, we introduce two complementary objectives: 1) motion alignment, which aligns temporal feature variations across adjacent frames and encourages the model to build local 4D awareness during training, and 2) destination alignment, which guides the model to infer the final destination from the source frame by minimizing the gap between their attention-like similarity distributions. Together, these objectives provide both local motion supervision and long-horizon goal guidance, enabling WAMs to learn trajectory-level spatiotemporal representations. Extensive in-distribution and out-of-distribution experiments across different base models demonstrate the model's improvements in spatial understanding, execution precision, robustness, generalization, and versatility.",
+      "authors": [
+        "Lishan Yang",
+        "Wenxuan Song",
+        "Xi Wang",
+        "Pingyue Sheng",
+        "Zheng Fang",
+        "Ziyang Zhou",
+        "Junjie He",
+        "Haodong Yan",
+        "Jiayi Chen",
+        "Nan Sun",
+        "Qiao Sun",
+        "Lingqiao Liu",
+        "Yan Wang",
+        "Yuxiang Gao",
+        "Feras Dayoub",
+        "Haoang Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-08T09:11:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.08023v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "4D-WAM injects spatiotemporal knowledge from 3D trajectory fields into World Action Models via representation alignment",
+      "llm_evidence_cn": "4D-WAM通过轨迹场向世界动作模型注入时空知识",
+      "llm_evidence": "4D-WAM通过轨迹场向世界动作模型注入时空知识",
+      "canonical_evidence": "4D-WAM通过轨迹场向世界动作模型注入时空知识",
+      "llm_tldr_en": "Proposes a model-agnostic training strategy to inject spatiotemporal knowledge from 3D trajectory fields into WAMs via representation alignment, improving robot manipulation.",
+      "llm_tldr_cn": "针对世界动作模型在2D像素空间与3D机器人动作空间之间存在表征鸿沟的问题，提出4D-WAM训练策略，利用3D轨迹场通过表征对齐为WAM注入时空感知，包括运动对齐和结构对齐两类互补目标。实验表明该策略能提升模型对3D动态结构的利用与泛化能力，为机器人操作提供更符合物理世界的动作建模。",
+      "llm_tldr": "针对世界动作模型在2D像素空间与3D机器人动作空间之间存在表征鸿沟的问题，提出4D-WAM训练策略，利用3D轨迹场通过表征对齐为WAM注入时空感知，包括运动对齐和结构对齐两类互补目标。实验表明该策略能提升模型对3D动态结构的利用与泛化能力，为机器人操作提供更符合物理世界的动作建模。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08558v1",
+      "source": "arxiv",
+      "title": "Vid2WAM: Distilling Video Diffusion Priors into World Action Models",
+      "abstract": "World Action Models (WAMs) improve robot policy learning by jointly modeling future visual dynamics and actions. However, their scalability and generalization remain constrained by their reliance on costly expert demonstrations. We challenge this by asking whether future supervision for WAMs must originate from target-task expert trajectories. In this paper, we propose Vid2WAM, an offline distillation framework that transfers visual diffusion priors from a large video foundation model into a compact WAM student. Given an observation and language instruction, Vid2WAM distills supervision through two complementary channels: task-conditioned future rollouts directly supervise the student's future prediction branch, while an inverse dynamics model recovers embodiment-specific pseudo-actions for action learning. To robustly integrate synthetic and real supervision, we introduce source-aware residual action adaptation that learns source-specific corrections around a shared action backbone and mitigates interference from noisy pseudo-actions. During inference, both the video teacher and inverse dynamics model are discarded, leaving only the WAM student for efficient deployment. Simulation and real-world experiments demonstrate that Vid2WAM improves novel-task generalization and data efficiency under limited expert demonstrations while preserving low-latency inference.",
+      "authors": [
+        "Chenhao Qiu",
+        "Ruixiang Wang",
+        "Runyi Zhao",
+        "Sixu Lin",
+        "Songen Gu",
+        "Shufeng Nan",
+        "Guiliang Liu",
+        "Kui Jia",
+        "Yanwei Fu",
+        "Simo Wu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-09T08:02:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.08558v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "distills video diffusion priors into World Action Models",
+      "llm_evidence_cn": "将视频扩散先验蒸馏到世界动作模型中",
+      "llm_evidence": "将视频扩散先验蒸馏到世界动作模型中",
+      "canonical_evidence": "将视频扩散先验蒸馏到世界动作模型中",
+      "llm_tldr_en": "Vid2WAM distills visual diffusion priors from a large video foundation model into a compact World Action Model student, reducing dependence on costly expert demonstrations while improving scalability and generalization.",
+      "llm_tldr_cn": "世界动作模型（WAM）通过联合建模未来视觉动态与动作来提升策略学习，但其可扩展性严重依赖专家演示。Vid2WAM提出离线蒸馏框架，从大规模视频基础模型中提取视觉扩散先验并蒸馏到紧凑的WAM学生模型，通过任务条件未来滚动与逆动力学模型两个通道提供监督。该方法降低了对目标任务专家轨迹的需求，使WAM能够利用视频先验实现更好的泛化，为大规模机器人数据利用提供了新途径。",
+      "llm_tldr": "世界动作模型（WAM）通过联合建模未来视觉动态与动作来提升策略学习，但其可扩展性严重依赖专家演示。Vid2WAM提出离线蒸馏框架，从大规模视频基础模型中提取视觉扩散先验并蒸馏到紧凑的WAM学生模型，通过任务条件未来滚动与逆动力学模型两个通道提供监督。该方法降低了对目标任务专家轨迹的需求，使WAM能够利用视频先验实现更好的泛化，为大规模机器人数据利用提供了新途径。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08749v1",
+      "source": "arxiv",
+      "title": "OnEvoMemory: Evolving Memory through Online Robot Rollouts for Pretrained Robot Policies",
+      "abstract": "Long-horizon robot manipulation requires policies to track completed subtasks and critical interaction events. However, existing memory mechanisms heavily rely on external models or predefined update rules. To address this, we propose OnEvoMemory, a value-guided memory module for pretrained robot policies. It maintains recent context, high-value experiences, and salient transitions, while learning which experiences should be retained from trajectory outcomes. Offline demonstrations initialize the memory prior, whereas successful and unsuccessful online rollouts refine memory selection, helping the policy recognize task-stage transitions and avoid repeating completed subtasks. Experiments on long-horizon manipulation benchmarks show that OnEvoMemory improves the performance of the base VLA policy through both offline initialization and online memory evolution.",
+      "authors": [
+        "Zhongxi Chen",
+        "Shenqi Zong"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-09T14:53:19+00:00",
+      "link": "https://arxiv.org/pdf/2608.08749v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "value-guided memory module for long-horizon pretrained robot policies",
+      "llm_evidence_cn": "面向长时程预训练机器人策略的价值引导记忆模块",
+      "llm_evidence": "面向长时程预训练机器人策略的价值引导记忆模块",
+      "canonical_evidence": "面向长时程预训练机器人策略的价值引导记忆模块",
+      "llm_tldr_en": "OnEvoMemory proposes a value-guided memory module for pretrained robot policies that learns to retain recent context, high-value experiences, and salient transitions, refining selection via online rollouts to avoid repeating completed subtasks.",
+      "llm_tldr_cn": "长时程机器人操作需要策略追踪已完成子任务和关键交互事件。现有记忆机制依赖外部模型或预定义规则。本文提出OnEvoMemory，面向预训练策略的价值引导记忆模块，维护最近上下文、高价值经验和显著状态迁移，并通过成功与失败的在线轨迹学习经验的取舍。实验表明该模块帮助策略识别任务阶段转换、避免重复已完成子任务，在长时程操作基准上提升了任务完成效率，为可学习记忆机制提供了新思路。",
+      "llm_tldr": "长时程机器人操作需要策略追踪已完成子任务和关键交互事件。现有记忆机制依赖外部模型或预定义规则。本文提出OnEvoMemory，面向预训练策略的价值引导记忆模块，维护最近上下文、高价值经验和显著状态迁移，并通过成功与失败的在线轨迹学习经验的取舍。实验表明该模块帮助策略识别任务阶段转换、避免重复已完成子任务，在长时程操作基准上提升了任务完成效率，为可学习记忆机制提供了新思路。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09381v1",
+      "source": "arxiv",
+      "title": "JEPA-WAM: Learning Vision-Language-Action Policies with Joint-Embedding World Modeling",
+      "abstract": "Robust robot control benefits from explicitly modeling state transitions, but video-generation world action models (WAMs) introduce substantial deployment cost. Existing latent WAMs avoid explicit future generation, but often compress predictive representations or separate predictive modeling from the representations used for action generation. We introduce JEPA-WAM, a latent WAM built in a pretrained V-JEPA space, which couples latent transition prediction with continuous action generation through a shared predictor. JEPA-WAM predicts a spatially structured joint current-future target that captures task-shared visual temporal structure between current and future observations, while preserving dense patch-level correspondence. Through the shared predictor, transition supervision directly shapes the backbone, from which dedicated representations are extracted for action prediction. The same design can also be instantiated in pretrained VLA policies while preserving their original perception and action pathways. On LIBERO-Plus, JEPA-WAM achieves 79.2%, the best result without large-scale robot-policy pretraining, while its pretrained $π_{0.5}$ instantiation reaches 86.3%, achieving the best overall performance. Experiments on RoboTwin 2.0 and real-world bimanual manipulation further demonstrate strong generalization under visual and spatial shifts.",
+      "authors": [
+        "Yihan Lin",
+        "Jiawei He",
+        "Shifeng Bao",
+        "Chen Zhao",
+        "Yang Li",
+        "Xiaobo Wang",
+        "Yan Wang",
+        "Cheng Chi",
+        "Jing Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T09:57:54+00:00",
+      "link": "https://arxiv.org/pdf/2608.09381v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "world action model for robot control with latent transition prediction and action generation",
+      "llm_evidence_cn": "面向机器人控制的世界行动模型，联合潜在转移预测与动作生成",
+      "llm_evidence": "面向机器人控制的世界行动模型，联合潜在转移预测与动作生成",
+      "canonical_evidence": "面向机器人控制的世界行动模型，联合潜在转移预测与动作生成",
+      "llm_tldr_en": "JEPA-WAM couples latent transition prediction with continuous action generation in a pretrained V-JEPA space, avoiding expensive video generation while sharing representations across prediction and control.",
+      "llm_tldr_cn": "现有潜在世界行动模型往往压缩预测表示或将预测建模与动作生成割裂。JEPA-WAM在预训练V-JEPA空间中构建潜在世界行动模型，通过共享预测器将潜在状态转移预测与连续动作生成耦合，并预测空间结构的联合当前-未来目标以保留密集补丁级对应。实验表明该方法在机器人控制上取得稳健性能，同时降低部署成本，为高效世界行动模型提供新思路。",
+      "llm_tldr": "现有潜在世界行动模型往往压缩预测表示或将预测建模与动作生成割裂。JEPA-WAM在预训练V-JEPA空间中构建潜在世界行动模型，通过共享预测器将潜在状态转移预测与连续动作生成耦合，并预测空间结构的联合当前-未来目标以保留密集补丁级对应。实验表明该方法在机器人控制上取得稳健性能，同时降低部署成本，为高效世界行动模型提供新思路。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09448v1",
+      "source": "arxiv",
+      "title": "VANE: Reliable Test-Time Training for Vision-Language-Action Models via Future Visual Representation Prediction",
+      "abstract": "Test-time training (TTT) offers a lightweight way to adapt vision--language--action (VLA) policies from unlabeled deployment streams, but it remains difficult to use reliably in closed-loop manipulation. A shared adaptation space can mix incompatible task corrections, while an online update can alter subsequent actions before its consequences are known. We introduce a reliable TTT framework for VLA policies (VANE). VANE conditions prompt adaptation on the current vision--language context and learns from the future visual consequences of executed actions. Candidate updates are isolated from the live policy, evaluated on subsequent observations, and committed only when supported by future evidence, making adaptation selective and reversible. On SimplerEnv WidowX, VANE improves average success by $3.2$ percentage points over the corresponding TTT baseline. Results on Google Robot further show that deployment-time gains remain task- and embodiment-dependent. Together, these results demonstrate a constrained, evidence-based approach to adapting VLA policies during interaction.",
+      "authors": [
+        "Hongjin Ji",
+        "Guoyang Xia",
+        "Luoyang Sun",
+        "Fangxiang Feng",
+        "Lei Ren"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-10T11:22:54+00:00",
+      "link": "https://arxiv.org/pdf/2608.09448v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reliable test-time training for VLA policies via future visual representation prediction",
+      "llm_evidence_cn": "利用未来视觉表征预测实现VLA策略的可靠测试时训练",
+      "llm_evidence": "利用未来视觉表征预测实现VLA策略的可靠测试时训练",
+      "canonical_evidence": "利用未来视觉表征预测实现VLA策略的可靠测试时训练",
+      "llm_tldr_en": "VANE introduces a reliable test-time training framework for VLA policies, conditioning prompt adaptation on vision-language context and using future visual consequences to validate updates before committing.",
+      "llm_tldr_cn": "VLA策略在闭环操作中的测试时训练容易因共享适应空间混入不相干修正，且在效果未知前就改动在线策略。VANE基于当前视觉语言上下文进行提示适应，利用已执行动作的未来视觉后果评估候选更新，仅当未来证据支持时才提交给在线策略。这种隔离与延迟提交机制提升了测试时适应的可靠性，在闭环操作任务中获得了更稳定的表现。",
+      "llm_tldr": "VLA策略在闭环操作中的测试时训练容易因共享适应空间混入不相干修正，且在效果未知前就改动在线策略。VANE基于当前视觉语言上下文进行提示适应，利用已执行动作的未来视觉后果评估候选更新，仅当未来证据支持时才提交给在线策略。这种隔离与延迟提交机制提升了测试时适应的可靠性，在闭环操作任务中获得了更稳定的表现。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09516v1",
+      "source": "arxiv",
+      "title": "HarnessWAM: Bridging Prediction and Deliberation in World Action Models",
+      "abstract": "World Action Models (WAMs) jointly learn environmental dynamics and robot actions, introducing priors over physical evolution into embodied control. However, finite-horizon prediction and action generation are insufficient for complex embodied tasks that require global planning, cross-stage state maintenance, execution verification, and failure recovery. We refer to this mismatch as the prediction-deliberation gap of WAMs. To address this gap, we propose HarnessWAM, an agentic framework for WAMs. HarnessWAM employs a vision-language-model-based Task Manager to maintain an evidence-grounded scene belief and a structured task graph. A capability-conditioned executable-space projection further constrains open-ended semantic plans into sequences of atomic skills that satisfy task dependencies, embodiment-state constraints, and the capability boundary of the underlying WAM. During execution, HarnessWAM operates through an event-driven, dual-timescale feedback loop: a lightweight progress estimator continuously provides high-frequency execution evidence, while the Task Manager deliberates at salient milestones by jointly considering the current observation, task state, and interaction history to determine whether to advance the task, acquire additional observations, revise the plan, or initiate local recovery. This mechanism enables the robot to recover its state after a subtask failure and resume execution without discarding previously acquired scene knowledge. HarnessWAM achieves state-of-the-art full-task and subtask success rates of 59.6% and 69.9% on RoboMemArena, and an SR of 23.7% on RoboCerebra Ideal. These results demonstrate that model-external structured state maintenance and closed-loop agentic decision making can effectively extend the local control capabilities of WAMs into embodied task execution that is plannable, verifiable, and recoverable.",
+      "authors": [
+        "Zhaopeng Gu",
+        "Bingke Zhu",
+        "Tianxi Lin",
+        "Guibo Zhu",
+        "Yingying Chen",
+        "Kai Wang",
+        "Tingyu Yuan",
+        "Chaoyang Zhao",
+        "Zhaowen Li",
+        "Peng Su",
+        "Jinqiao Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T12:15:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.09516v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic framework for World Action Models with planning",
+      "llm_evidence_cn": "面向世界动作模型的智能代理框架与规划",
+      "llm_evidence": "面向世界动作模型的智能代理框架与规划",
+      "canonical_evidence": "面向世界动作模型的智能代理框架与规划",
+      "llm_tldr_en": "HarnessWAM bridges the prediction-deliberation gap in World Action Models using a VLM-based task manager, evidence-grounded scene belief, structured task graph, and executable-space projection for long-horizon manipulation.",
+      "llm_tldr_cn": "世界动作模型虽然能联合学习环境动态与动作，但有限时域预测无法支撑长程任务所需的全局规划、跨阶段状态维护与失败恢复，形成预测-深思鸿沟。HarnessWAM提出由视觉语言模型驱动的任务管理器维护证据支撑的场景信念与结构化任务图，并通过能力约束的可执行空间投影将语义计划转为原子动作序列。该系统为WAM引入全局规划与执行校验能力，弥补了预测与深思之间的缺口，提升了复杂具身任务的完成率。",
+      "llm_tldr": "世界动作模型虽然能联合学习环境动态与动作，但有限时域预测无法支撑长程任务所需的全局规划、跨阶段状态维护与失败恢复，形成预测-深思鸿沟。HarnessWAM提出由视觉语言模型驱动的任务管理器维护证据支撑的场景信念与结构化任务图，并通过能力约束的可执行空间投影将语义计划转为原子动作序列。该系统为WAM引入全局规划与执行校验能力，弥补了预测与深思之间的缺口，提升了复杂具身任务的完成率。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09730v1",
+      "source": "arxiv",
+      "title": "World Tokens: Enhancing Embodied Policies with Training-Time World Modeling",
+      "abstract": "Vision-language-action (VLA) models are a widely adopted paradigm for embodied policies. They excel at efficient closed-loop control but do not explicitly model how physical scenes evolve as a task unfolds. Recently emerging world-action models (WAMs) leverage pretrained video world models to capture spatiotemporal evolution, yet retaining future generation or a large video backbone in the control loop substantially increases inference cost. We introduce World Tokens, an embodied policy architecture built around a World Adapter that bridges visual-language understanding, world-dynamics modeling, and action generation. It uses world modeling during training to enhance the action policy while preserving efficient deployment. Specifically, the World Adapter transforms VLM features into a fixed set of world tokens, which condition a jointly fine-tuned future-video denoiser and simultaneously serve as the action expert's sole visual-language context. This shared conditioning allows gradients from future-video denoising to directly shape the representation used for action prediction, while exclusive routing prevents the policy from bypassing that representation. At deployment, the world-model branch is removed, leaving only the VLM, World Adapter, and action expert, with no online video-model inference. With a 2B backbone and no embodied action pretraining, World Tokens is highly competitive on LIBERO, attains the best reported averages on SIMPLER, substantially improves real-world R1 Pro success over a matched action-only baseline, and generates each action chunk at VLA-level latency.",
+      "authors": [
+        "Qu Tang",
+        "Benhui Zhuang",
+        "Bo Yuan",
+        "Xue Yu",
+        "Longteng Guo",
+        "Junlan Feng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T15:30:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.09730v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "World Tokens, an embodied policy architecture with a World Adapter bridging visual-language understanding, world-dynamics modeling, and action generation",
+      "llm_evidence_cn": "World Tokens以World Adapter桥接视觉语言理解、世界动力学建模与动作生成",
+      "llm_evidence": "World Tokens以World Adapter桥接视觉语言理解、世界动力学建模与动作生成",
+      "canonical_evidence": "World Tokens以World Adapter桥接视觉语言理解、世界动力学建模与动作生成",
+      "llm_tldr_en": "Introduces World Tokens, an embodied policy architecture that uses a World Adapter for training-time world modeling to enhance VLA action policies while preserving efficient deployment without video generation.",
+      "llm_tldr_cn": "VLA模型能高效闭环控制但不显式建模场景演化，而世界行动模型依赖视频生成导致推理开销大。为此提出World Tokens，围绕World Adapter构建具身策略架构，在训练时引入世界动态建模增强动作策略，同时避免在控制回路中保留未来生成或大型视频主干。实验显示该方法在保持部署效率的同时提升了策略的任务表现。",
+      "llm_tldr": "VLA模型能高效闭环控制但不显式建模场景演化，而世界行动模型依赖视频生成导致推理开销大。为此提出World Tokens，围绕World Adapter构建具身策略架构，在训练时引入世界动态建模增强动作策略，同时避免在控制回路中保留未来生成或大型视频主干。实验显示该方法在保持部署效率的同时提升了策略的任务表现。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09771v1",
+      "source": "arxiv",
+      "title": "SLIM-0.5B: Learning Action-Grounded Predictive Latents for Robot Manipulation",
+      "abstract": "Vision-language-action policies rely on large multimodal backbones to jointly perform perception, language conditioning, and action generation at every control step. Much of this capacity supports open-domain semantics, whereas continuous robot manipulation primarily requires compact representations of observations, actions, and the transitions induced by actions. Pixel-level world models provide another route, but predicting visual details irrelevant to control can be unnecessarily expensive. We propose SLIM (Self-supervised Latent Interaction Model), a compact 0.5B-parameter latent interaction policy. SLIM learns action-grounded predictive latents that capture both action-conditioned future transitions and the actions that explain observed changes. SLIM learns these representations through self-supervised masked trajectory prediction, combining action reconstruction with future-latent prediction. A compact Mixture-of-Transformers (MoT) backbone models interactions between observation latents and action tokens. The resulting policy is trained with flow matching for language-conditioned action generation. Across simulation benchmarks and real-world evaluation, SLIM matches or exceeds representative large-scale VLA and world-action-model baselines with fewer parameters, no additional embodied pretraining, lower inference latency, and substantially lower GPU memory usage.",
+      "authors": [
+        "Jingkai Wang",
+        "Zihan Tang",
+        "Gu Zhang",
+        "Mingyu Cao",
+        "Jiapeng Chen",
+        "Jingjiao Zhao",
+        "Xiansheng Chen",
+        "Pengwei Wang",
+        "Lemao Liu",
+        "Dejing Dou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T15:58:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.09771v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "action-grounded predictive latents for manipulation policy",
+      "llm_evidence_cn": "面向操作策略的动作接地预测潜伏表示",
+      "llm_evidence": "面向操作策略的动作接地预测潜伏表示",
+      "canonical_evidence": "面向操作策略的动作接地预测潜伏表示",
+      "llm_tldr_en": "SLIM learns action-grounded predictive latents in a compact 0.5B latent interaction policy, capturing action-conditioned future transitions and explaining observed changes without expensive pixel prediction.",
+      "llm_tldr_cn": "视觉-语言-动作策略依赖大规模多模态骨干，但连续操作主要需要观测、动作与过渡的紧凑表示。像素级世界模型预测与控制无关的视觉细节，代价高昂。SLIM提出一个仅0.5B参数的潜伏交互模型，以自监督方式学习动作接地的预测潜伏表示，同时捕获动作条件未来变迁与解释观测变化的动作。实验表明SLIM在不预测像素的前提下有效生成机器人操作动作，展示了紧凑潜伏表示在操作策略中的价值。",
+      "llm_tldr": "视觉-语言-动作策略依赖大规模多模态骨干，但连续操作主要需要观测、动作与过渡的紧凑表示。像素级世界模型预测与控制无关的视觉细节，代价高昂。SLIM提出一个仅0.5B参数的潜伏交互模型，以自监督方式学习动作接地的预测潜伏表示，同时捕获动作条件未来变迁与解释观测变化的动作。实验表明SLIM在不预测像素的前提下有效生成机器人操作动作，展示了紧凑潜伏表示在操作策略中的价值。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "How to learn better latent representations for robot manipulation policies?",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.07596v1",
+      "source": "arxiv",
+      "title": "LIRA: Local Cross-Layer Information Routing for Vision-Language-Action Decoding",
+      "abstract": "Vision-Language-Action (VLA) models transform representations from pretrained vision-language models (VLMs) into robot actions, yet the interface that routes intermediate VLM features into action decoders remains underexplored. Existing designs either expose only a narrow part of the representation hierarchy or rigidly match each decoder block to one VLM layer, restricting access to complementary task evidence across depths. We introduce LIRA, a local cross-layer action-conditioning mechanism that formulates VLM-to-action conditioning as depth-aware information routing. LIRA operates on task-token features and LIRA Query features derived from intermediate VLM states, then assigns each Parallel Fusion Block a depth-aligned local window centered on its corresponding VLM layer. Parallel Fusion Blocks aggregate neighboring LIRA Query features and integrate them with task-token features and proprioceptive inputs before action prediction. This routing interface leaves the backbone architecture, action decoder, and supervised training recipe unchanged. Across LIBERO, LIBERO-Plus, CALVIN ABC$\\rightarrow$D, and real-world manipulation, LIRA improves the principal aggregate metrics over the VLA-Adapter baseline under the same 0.5B-parameter configuration. In zero-shot transfer to LIBERO-Plus, LIRA increases average success from 59.1% to 78.0%, an 18.9-point gain indicating improved robustness under controlled distribution shifts.",
+      "authors": [
+        "Zhewei Zhang",
+        "Puyue Wang",
+        "Guanren Qiao",
+        "Yijie Weng",
+        "Jiawei Hu",
+        "Guo Li",
+        "Lujia Wang",
+        "Junyan Wang",
+        "Tao Gu",
+        "Hongliang Lu",
+        "Guiliang Liu",
+        "Hong Jia",
+        "Xinhu Zheng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-06T08:12:32+00:00",
+      "link": "https://arxiv.org/pdf/2608.07596v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "improves representation routing from VLM features to action decoding in VLA models",
+      "llm_evidence_cn": "改进VLA模型中从VLM特征到动作解码的表示路由",
+      "llm_evidence": "改进VLA模型中从VLM特征到动作解码的表示路由",
+      "canonical_evidence": "改进VLA模型中从VLM特征到动作解码的表示路由",
+      "llm_tldr_en": "LIRA introduces a local cross-layer action-conditioning mechanism that routes intermediate VLM features into action decoders via depth-aware local windows.",
+      "llm_tldr_cn": "VLA模型依赖预训练VLM特征生成动作，但中间特征到动作解码器的路由研究不足，现有设计只暴露单层特征或刚性匹配。LIRA将条件化过程形式化为深度感知的信息路由，利用任务token特征与来自中间VLM状态的查询特征，为每个并行融合块分配深度对齐的局部窗口。实验证明这种交叉层访问能补充互补任务证据，有效提升生成动作的准确性。",
+      "llm_tldr": "VLA模型依赖预训练VLM特征生成动作，但中间特征到动作解码器的路由研究不足，现有设计只暴露单层特征或刚性匹配。LIRA将条件化过程形式化为深度感知的信息路由，利用任务token特征与来自中间VLM状态的查询特征，为每个并行融合块分配深度对齐的局部窗口。实验证明这种交叉层访问能补充互补任务证据，有效提升生成动作的准确性。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "learning better representations for robot actions",
+      "matched_requirement_id": "req-21",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09298v1",
+      "source": "arxiv",
+      "title": "WorldSimProbe: Diagnosing Simulator Faithfulness in Action-Conditioned World Models for Embodied Manipulation",
+      "abstract": "Action-conditioned world models (ACWMs) promise to provide embodied AI with scalable predictive simulators for planning, policy evaluation, and data generation. Realizing this promise requires precise action-conditioned transitions rather than merely plausible outputs. Yet their applicability remains difficult to establish because prevailing evaluations emphasize visual quality, task outcomes, or coarse rollout-level responsiveness without directly testing simulator fidelity. To address this gap, we evaluate ACWMs through the observable capabilities expected of physical simulators. Accordingly, we formalize Observable Simulator Contract, a minimal contract that any action-conditioned physical simulator should satisfy: supplied actions must induce corresponding agent motion, and environment responses must be grounded in that realized motion. To operationalize this contract, we introduce WorldSimProbe, comprising five controlled suites spanning local control sensitivity, global trajectory variation, source-diverse actions, interaction grounding, and dynamics. Suite-specific evaluators assess simulator-relative calibration, dense action-to-motion correspondence, false-interaction grounding, and primitive-level dynamics. We evaluate six open-source ACWMs on more than 18,000 instances across RoboTwin, ManiSkill, and LIBERO. World-SimProbe reveals systematic action-realization degradation across control variation, structured failures in interaction grounding and dynamics, and benchmark signals consistent with human judgments and downstream outcomes. Together, this capability-based framework provides a transparent, and standardized paradigm for diagnosing ACWM simulator fidelity beyond coarse, task-directed evaluation.",
+      "authors": [
+        "Peterson Co",
+        "Sicheng Hu",
+        "Chunxuan Jiao",
+        "Hongyang Cheng",
+        "Yulin Luo",
+        "Yijie Xu",
+        "Sixiang Chen",
+        "Zhongxia Zhao",
+        "Zihao Wang",
+        "DaFeng Chi",
+        "Peidong Liu",
+        "YuTong Chen",
+        "Henghua Liu",
+        "Zhihao Yuan",
+        "Huizhu Jia",
+        "Yuzheng Zhuang",
+        "Tianle Zhang",
+        "Liang Lin",
+        "Huajie Tan",
+        "Shanghang Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-08-10T08:48:06+00:00",
+      "link": "https://arxiv.org/pdf/2608.09298v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "diagnosing simulator faithfulness of action-conditioned world models",
+      "llm_evidence_cn": "诊断动作条件世界模型的仿真保真度",
+      "llm_evidence": "诊断动作条件世界模型的仿真保真度",
+      "canonical_evidence": "诊断动作条件世界模型的仿真保真度",
+      "llm_tldr_en": "WorldSimProbe formalizes an Observable Simulator Contract and evaluates action-conditioned world models against physical simulator capabilities instead of visual quality or task outcomes.",
+      "llm_tldr_cn": "动作条件世界模型有望成为可扩展的预测仿真器，但现有评测多关注视觉质量与任务结果，未直接检验其作为物理仿真器的保真度。WorldSimProbe提出可观察仿真器契约，明确动作条件物理仿真器应满足的最小能力集合，并据此系统评测世界模型。这种评测方式能够诊断模型在动作条件变换上的忠实性，为构建可信的仿真器提供了可操作的检验标准。",
+      "llm_tldr": "动作条件世界模型有望成为可扩展的预测仿真器，但现有评测多关注视觉质量与任务结果，未直接检验其作为物理仿真器的保真度。WorldSimProbe提出可观察仿真器契约，明确动作条件物理仿真器应满足的最小能力集合，并据此系统评测世界模型。这种评测方式能够诊断模型在动作条件变换上的忠实性，为构建可信的仿真器提供了可操作的检验标准。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "Methods for diagnosing and attributing causes in VLA and WAM models",
+      "matched_requirement_id": "req-29",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.07746v1",
+      "source": "arxiv",
+      "title": "LUCID: Latent-Skill Unified Control via Imagined Dynamics for Long-Horizon Humanoid Loco-Manipulation",
+      "abstract": "Long-horizon humanoid loco-manipulation requires composing versatile whole-body skills and reliable high-level decision making. Existing methods often coordinate pretrained skills with scripted planners, finite-state machines or task-specific model-free policies, restricting their ability to handle complex task sequences. To address this limitation, we propose \\textbf{LUCID}, a hierarchical model-based reinforcement learning framework that plans over reusable skills through imagined rollouts of a learned dynamics model. LUCID first trains a structured latent-conditioned low-level policy via adversarial imitation and then freezes it while jointly learning a high-level policy and macro-dynamics world model. The world model predicts the temporally extended state transitions induced by latent decisions, enabling high-level policy optimization through imagined rollouts. We evaluate our framework across various simulated multi-object rearrangement scenarios. Experimental results show that LUCID improves the full-task success and partial-completion rates compared to prior baseline methods, demonstrating its effectiveness in complex sequential loco-manipulation tasks.",
+      "authors": [
+        "Cheng Guo",
+        "Mingzhe Ni",
+        "Angelo Cangelosi",
+        "Arash Ajoudani"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published": "2026-08-07T20:26:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.07746v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hierarchical model-based RL with world model for long-horizon loco-manipulation",
+      "llm_evidence_cn": "使用世界模型进行长时程移动操纵的分层模型强化学习",
+      "llm_evidence": "使用世界模型进行长时程移动操纵的分层模型强化学习",
+      "canonical_evidence": "使用世界模型进行长时程移动操纵的分层模型强化学习",
+      "llm_tldr_en": "LUCID introduces a hierarchical model-based RL framework that plans over reusable skills through imagined rollouts of a learned dynamics model, enabling long-horizon humanoid loco-manipulation without hand-crafted planners.",
+      "llm_tldr_cn": "长时程人形机器人移动操纵需要组合全身技能和可靠的高层决策。现有方法依赖脚本规划器或任务特定策略，难以处理复杂任务序列。本文提出LUCID，一种分层模型强化学习框架，先通过对抗模仿训练结构化潜条件低层技能，再冻结低层并联合学习高层策略与宏观动力学世界模型，在世界模型的想象推演中规划可复用技能。实验表明该方法能有效提升长时程操作任务的组合与执行能力，为长时程规划提供了新的方案。",
+      "llm_tldr": "长时程人形机器人移动操纵需要组合全身技能和可靠的高层决策。现有方法依赖脚本规划器或任务特定策略，难以处理复杂任务序列。本文提出LUCID，一种分层模型强化学习框架，先通过对抗模仿训练结构化潜条件低层技能，再冻结低层并联合学习高层策略与宏观动力学世界模型，在世界模型的想象推演中规划可复用技能。实验表明该方法能有效提升长时程操作任务的组合与执行能力，为长时程规划提供了新的方案。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.07895v1",
+      "source": "arxiv",
+      "title": "Auditing Instruction-Trajectory Mismatches in Multimodal Robot Demonstrations",
+      "abstract": "Robot demonstration datasets used to train vision-language-action policies can contain a subtle but harmful failure mode: trajectories that are behaviorally correct but paired with the wrong language instruction. We study post-hoc auditing of these Instruction-Trajectory Mismatches (ITMs). Unlike failed rollouts, ITMs often look plausible, and can corrupt the language-behavior mapping learned by the policy. We propose Multimodal Probabilistic Fusion (MMPF), a training-free auditing framework that treats each modality as an expert, estimates a task-label distribution from local neighborhood agreement and global prototype similarity, and then fuses modalities with predictive-entropy weighting in a product of experts. Across LIBERO benchmarks with injected instruction mismatches and noisy real-robot data, MMPF achieves the strongest overall ITM detection and label correction accuracy. We also show that auditing improves most downstream policy learning in settings where language is needed to disambiguate the task. We demonstrate in real robot experiments that our method can achieve improved policy performance and show the trade-off of filtering demonstrations compared to relabeling.",
+      "authors": [
+        "Simon Holk",
+        "Ryosuke Takanami",
+        "Tatsuya Matsushima",
+        "Yusuke Iwasawa",
+        "Yutaka Matsuo",
+        "Yueh-Hua Wu",
+        "Kei Ota"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-08-08T03:43:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.07895v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Auditing instruction-trajectory mismatches in multimodal robot demonstration datasets",
+      "llm_evidence_cn": "审计多模态机器人演示数据集中的指令-轨迹不匹配",
+      "llm_evidence": "审计多模态机器人演示数据集中的指令-轨迹不匹配",
+      "canonical_evidence": "审计多模态机器人演示数据集中的指令-轨迹不匹配",
+      "llm_tldr_en": "The paper studies instruction-trajectory mismatches in robot demonstration datasets and proposes MMPF, a training-free multimodal auditing framework using neighborhood agreement and prototype similarity to detect corrupt data.",
+      "llm_tldr_cn": "机器人演示数据集用于训练VLA策略时可能存在指令与轨迹不匹配的隐蔽错误，破坏语言-行为映射。论文提出MMPF，一种无需训练的审计框架，将每个模态视为专家，通过局部邻域一致性和全局原型相似度估计任务标签分布，并利用预测熵加权进行乘积融合。在LIBERO基准上的实验表明，该方法能有效发现并纠正指令轨迹错配，提高数据质量和下游策略可靠性。",
+      "llm_tldr": "机器人演示数据集用于训练VLA策略时可能存在指令与轨迹不匹配的隐蔽错误，破坏语言-行为映射。论文提出MMPF，一种无需训练的审计框架，将每个模态视为专家，通过局部邻域一致性和全局原型相似度估计任务标签分布，并利用预测熵加权进行乘积融合。在LIBERO基准上的实验表明，该方法能有效发现并纠正指令轨迹错配，提高数据质量和下游策略可靠性。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "robot manipulation data engine",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09492v1",
+      "source": "arxiv",
+      "title": "Rethink Before You Execute: Adaptive Execution for World Action Models",
+      "abstract": "World Action Models (WAMs) jointly predict future actions and the evolution of the environment. At each inference, a WAM generates a chunk of actions and the robot executes a fixed prefix before replanning. We argue that this fixed execution horizon is poorly matched to execution dynamics: the chunk reliability varies across task stages, so when to replan depends on the result of accumulated execution, not on the step counts. We propose TempoWAM (Timing Execution by Monitoring Progress Online), a lightweight plug-and-play execution scheme for WAMs. A Recurrent Progress Monitor first estimates task progress from the current observation, task instruction, remaining actions, and execution history; and an Adaptive Execution Protocol then evaluates whether the chunk is advancing the task to decide if replanning is needed. To bridge the training-deployment gap, the protocol is calibrated by a task-dependent calibration factor with online adaptation. Experiments on LIBERO, RoboTwin, and real-world tasks show that TempoWAM consistently improves the efficiency-success trade-off of WAM execution. On real robots, it reduces WAM inferences by 26.9% on easy tasks while maintaining success, and improves success by 13.3 points on difficult tasks.",
+      "authors": [
+        "Feng Ye",
+        "Yiming Zhao",
+        "Yong Yu",
+        "Hongxu Zhou",
+        "Yong Pan",
+        "Yuan Xue",
+        "Peng Jia",
+        "Chuanmin Jia"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T11:59:42+00:00",
+      "link": "https://arxiv.org/pdf/2608.09492v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Adaptive execution scheme for World Action Models to decide when to replan",
+      "llm_evidence_cn": "为世界动作模型设计自适应执行方案，根据任务进度决定重规划时机",
+      "llm_evidence": "为世界动作模型设计自适应执行方案，根据任务进度决定重规划时机",
+      "canonical_evidence": "为世界动作模型设计自适应执行方案，根据任务进度决定重规划时机",
+      "llm_tldr_en": "TempoWAM adds a recurrent progress monitor to WAMs and adaptively decides when to replan based on task progress, outperforming fixed-prefix execution across varied task stages.",
+      "llm_tldr_cn": "针对世界动作模型固定执行前缀与任务实际进展不匹配的问题，论文提出TempoWAM自适应执行方案。它通过循环进度监控器从当前观测、指令、剩余动作与执行历史估计任务进度，再由自适应执行协议动态决定继续执行还是重新规划。该方法即插即用，能根据各阶段执行结果的可靠性调整重规划时机，从而提升长程任务的成功率与执行效率。",
+      "llm_tldr": "针对世界动作模型固定执行前缀与任务实际进展不匹配的问题，论文提出TempoWAM自适应执行方案。它通过循环进度监控器从当前观测、指令、剩余动作与执行历史估计任务进度，再由自适应执行协议动态决定继续执行还是重新规划。该方法即插即用，能根据各阶段执行结果的可靠性调整重规划时机，从而提升长程任务的成功率与执行效率。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08036v1",
+      "source": "arxiv",
+      "title": "Compiling and Benchmarking Task-State Horizons for Embodied Agents",
+      "abstract": "Frontier agentic models are increasingly deployed as high-level planners for long-horizon embodied tasks. Existing robotic benchmarks have advanced long-horizon evaluation, but primarily characterize difficulty through action-sequence length and subtask complexity, overlooking a distinct challenge: agents must track evolving task-relevant world states induced by both their exploration and environmental dynamics. We define the span of task-relevant state transitions that an agent must track as task-state horizon (TSH). To evaluate how agent performance varies with TSH, we introduce RoboGraph, a robotic task compiler that translates state-transition dependencies into executable symbolic graphs. Specifically, RoboGraph constructs task-state horizons from spatial and temporal causal dependencies, including those induced by unexpected failures and interventions during task execution. Building on RoboGraph, we release a benchmark comprising 588 episodes across 84 scenes with varying TSHs. Experiments evaluating 15 advanced agentic models in both semantic and visual closed-loop environments show that most models struggle with demanding TSHs, revealing substantial gaps in maintaining, exploring, and updating task-relevant state over long horizon.",
+      "authors": [
+        "Meiqi Wang",
+        "Shichao Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-08T09:45:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.08036v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "introduces task-state horizon and RoboGraph benchmark for long-horizon embodied planning",
+      "llm_evidence_cn": "提出任务状态视界概念与RoboGraph基准，用于评测具身智能体长时程规划",
+      "llm_evidence": "提出任务状态视界概念与RoboGraph基准，用于评测具身智能体长时程规划",
+      "canonical_evidence": "提出任务状态视界概念与RoboGraph基准，用于评测具身智能体长时程规划",
+      "llm_tldr_en": "RoboGraph defines task-state horizon and compiles state-transition dependencies into executable symbolic graphs, providing a benchmark that evaluates how embodied agents track evolving world states over long horizons.",
+      "llm_tldr_cn": "现有长时程机器人基准多以动作序列长度和子任务复杂度衡量难度，忽略智能体需要追踪的演化世界状态。RoboGraph提出任务状态视界（TSH）概念，将状态转移依赖编译为可执行符号图，进而评测TSH对智能体性能的影响。该基准为长时程具身规划研究提供了新的评价维度。",
+      "llm_tldr": "现有长时程机器人基准多以动作序列长度和子任务复杂度衡量难度，忽略智能体需要追踪的演化世界状态。RoboGraph提出任务状态视界（TSH）概念，将状态转移依赖编译为可执行符号图，进而评测TSH对智能体性能的影响。该基准为长时程具身规划研究提供了新的评价维度。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.08839v1",
+      "source": "arxiv",
+      "title": "SG-WAM: Text-Grounded and Spatial-aware Semantic Guidance for World-Action Models",
+      "abstract": "World-Action Models (WAMs) have emerged as a promising paradigm for robotic manipulation. However, most existing WAMs generate future videos and actions by relying mainly on visual cues rather than language instructions, since off-the-shelf text encoders embed instructions independently of visual observations. As a result, the videos predicted by these WAMs are often semantically misaligned with their corresponding language instructions, which degrades the accuracy of the predicted actions. To overcome this limitation, we propose SG-WAM, a semantic guidance method for world-action models that leverages a vision-language model (VLM) as a semantic planner to enhance the instruction-grounding capacity of world-action models. Specifically, we train a VLM-based planner to predict text-grounded and spatial-aware semantic foresight. The text-grounded semantic foresight grounds the instruction by identifying the correct target objects, and the spatial-aware semantic foresight provides the scene geometry for precise manipulation. We then inject this foresight into the world-action model as high-level semantic guidance, ensuring that both future-video generation and action prediction faithfully follow the language instruction. Extensive experiments in simulation and the real world demonstrate the superiority of our semantic guidance method, showcasing precise manipulation and strong instruction-following capabilities.",
+      "authors": [
+        "Junjie He",
+        "Junfeng Li",
+        "Zhide Zhong",
+        "Haodong Yan",
+        "Ruixin Li",
+        "Yangyang Zheng",
+        "Jiaguan Zhu",
+        "Tianran Zhang",
+        "Yuqiao Du",
+        "Wen Chen",
+        "Shunbo Zhou",
+        "Haoang Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-09T17:59:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.08839v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "semantic guidance for World-Action Models to align predictions with language",
+      "llm_evidence_cn": "面向世界-动作模型的语义引导以对齐语言与预测",
+      "llm_evidence": "面向世界-动作模型的语义引导以对齐语言与预测",
+      "canonical_evidence": "面向世界-动作模型的语义引导以对齐语言与预测",
+      "llm_tldr_en": "SG-WAM uses a VLM as a semantic planner to ground World-Action Models in language instructions, improving semantic alignment of predicted videos and actions.",
+      "llm_tldr_cn": "世界-动作模型生成未来视频和动作时常依赖视觉线索而忽视语言指令，导致语义错位并降低动作精度。SG-WAM将视觉语言模型作为语义规划器，把文本指令嵌入与视觉观察联合建模，增强WAM的指令接地能力。实验证明该方法能显著提升预测视频与指令的语义一致性，并改善动作预测准确率。",
+      "llm_tldr": "世界-动作模型生成未来视频和动作时常依赖视觉线索而忽视语言指令，导致语义错位并降低动作精度。SG-WAM将视觉语言模型作为语义规划器，把文本指令嵌入与视觉观察联合建模，增强WAM的指令接地能力。实验证明该方法能显著提升预测视频与指令的语义一致性，并改善动作预测准确率。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09778v1",
+      "source": "arxiv",
+      "title": "RoboSeg: Online Part-Level Semantic Reconstruction for Robotic Manipulation via a Single Eye-in-Hand Camera",
+      "abstract": "Robotic manipulation requires perception systemsthat identify actionable parts such as handles, rims, triggers,and tool tips, not merely object categories or point clouds. This paper presents RoboSeg, a part-level semantic reconstructionsystem that links vision-language model (VLM) functional-partdiscovery, asynchronous online RGB-D semantic reconstruc-tion, and task-oriented grasp generation without requiring CAD models or pre-scanned meshes. RoboSeg queries a VLM onthe initial RGB observation to obtain compact functional part prompts, then scans with two asynchronous streams: a high-frequency geometry thread for RGB-D odometry and truncated signed distance function (TSDF) fusion, and a keyframe-triggered semantic thread for SAM3 part masks. Projectedmasks are fused by voxel-level temporal voting into a persistentpart-labeled point cloud; RoboSeg uses this map to assign AnyGrasp 6-DoF candidates to semantic parts and select grasps consistent with the task-relevant part label. RoboSeg reaches 83.4% mean part intersection-over-union (mIoU) over manually labeled objects; in a 24-trial physical pilot across fourobjects and eight tasks, the selected grasp contacts the requestedpart in all trials and achieves 21/24 combined task successes.These results characterize RoboSeg as a semantic indexing layerfor task-conditioned manipulation, with AnyGrasp retained asthe proposal generator.",
+      "authors": [
+        "Zhaochen Lan",
+        "Mengxiang Lin"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T16:05:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.09778v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "part-level semantic reconstruction and grasp generation via VLM",
+      "llm_evidence_cn": "通过VLM进行部件级语义重建与抓取生成",
+      "llm_evidence": "通过VLM进行部件级语义重建与抓取生成",
+      "canonical_evidence": "通过VLM进行部件级语义重建与抓取生成",
+      "llm_tldr_en": "RoboSeg links VLM functional-part discovery, asynchronous online RGB-D semantic reconstruction, and task-oriented grasp generation to enable part-level semantic reconstruction without CAD models.",
+      "llm_tldr_cn": "机器人操作需要识别可操作部件而不只是物体类别，但现有方法依赖CAD模型或预扫描网格。RoboSeg利用视觉语言模型在初始观测中发现功能部件提示，并通过异步双线程在线RGB-D语义重建与任务导向抓取生成完成部件级语义重建。该方法无需CAD模型，即可获得用于操纵的部件级语义表示。实验表明RoboSeg能够为机器人操作提供更细粒度的空间感知与抓取依据。",
+      "llm_tldr": "机器人操作需要识别可操作部件而不只是物体类别，但现有方法依赖CAD模型或预扫描网格。RoboSeg利用视觉语言模型在初始观测中发现功能部件提示，并通过异步双线程在线RGB-D语义重建与任务导向抓取生成完成部件级语义重建。该方法无需CAD模型，即可获得用于操纵的部件级语义表示。实验表明RoboSeg能够为机器人操作提供更细粒度的空间感知与抓取依据。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09073v1",
+      "source": "arxiv",
+      "title": "Latent World Models with Monotone Planning Costs for Image-Goal Navigation",
+      "abstract": "Image-goal navigation with latent world models requires not only accurate future prediction, but also a planning cost that reliably ranks candidate action sequences. We define the cost as the cosine distance between the predicted future embedding and the goal embedding, and show that poor cost ordering can mislead sampling-based planners such as Cross-Entropy Method (CEM). To address this, we propose a latent world model built on a frozen DINO-family encoder and train it with two complementary objectives. An autoregressive rollout loss reduces the gap between training and multi-step planning rollouts, while a Monotone Cost Ranking (MCR) loss directly encourages increasingly perturbed action sequences to receive higher planning costs. We also study InfoNCE-based action-contrastive training and find that temporal permutation negatives distort the latent geometry and degrade planning performance. On the GNM navigation dataset, our method outperforms Navigation World Models (NWM), DINO-WM, OmniVLA, and NoMaD, achieving state-of-the-art image-goal navigation performance while reducing orientation error by $2.7\\times$ over the same-encoder DINO WM baseline. We also deploy the model zero-shot on a physical robot, where it follows goal-directed paths in unseen indoor and outdoor environments.",
+      "authors": [
+        "Amirhosein Chahe",
+        "Siwei Cai",
+        "Lifeng Zhou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T03:23:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.09073v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "latent world model with monotone planning cost for representation learning in image-goal navigation",
+      "llm_evidence_cn": "面向图像目标导航的潜在世界模型与单调规划代价，用于机器人感知与控制表示学习",
+      "llm_evidence": "面向图像目标导航的潜在世界模型与单调规划代价，用于机器人感知与控制表示学习",
+      "canonical_evidence": "面向图像目标导航的潜在世界模型与单调规划代价，用于机器人感知与控制表示学习",
+      "llm_tldr_en": "This paper trains a latent world model on a frozen DINO encoder with an autoregressive rollout loss and a monotone cost ranking loss, improving planning cost ordering for image-goal navigation with sampling-based planners.",
+      "llm_tldr_cn": "图像目标导航中的潜在世界模型不仅需要准确预测，还需要可靠的规划代价排序，否则会误导CEM等采样规划器。本文基于冻结DINO编码器构建潜在世界模型，用自回归展开损失缩小训练与多步规划差距，并用单调代价排序损失直接鼓励动作扰动的代价排序。该方法改善了规划代价的排序质量，从而提升导航规划性能。",
+      "llm_tldr": "图像目标导航中的潜在世界模型不仅需要准确预测，还需要可靠的规划代价排序，否则会误导CEM等采样规划器。本文基于冻结DINO编码器构建潜在世界模型，用自回归展开损失缩小训练与多步规划差距，并用单调代价排序损失直接鼓励动作扰动的代价排序。该方法改善了规划代价的排序质量，从而提升导航规划性能。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Representation learning for robot perception and control",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.09125v1",
+      "source": "arxiv",
+      "title": "Trajectory Divergence Horizon Decision for Reliable Dual-Arm Surgical Subtask Manipulation",
+      "abstract": "Surgical robotic systems are increasingly being adopted as clinical workload rises, motivating autonomous solutions for repetitive manipulation subtasks. Learning-based controllers improve generalization compared with rule-based and analytic approaches, but most are trained for individual tasks and remain difficult to reuse across procedures. Vision-Language-Action (VLA) models provide a unified framework that integrates visual perception, language grounding, and action generation, offering a promising path toward more composable surgical autonomy. However, existing VLA policies rely on fixed-length open-loop action sequences, where changing scene conditions can lead to accumulated errors and potential risks in surgical manipulation. To mitigate this issue, we formulate surgical VLA deployment as an adaptive execution-horizon decision problem and propose Trajectory Divergence Horizon Decision (TDHD), a test-time mechanism that estimates step-wise action reliability by measuring the divergence between two flow-matching-generated trajectories under small noise perturbations and truncates execution using a dual-threshold rule to trigger timely replanning. We further establish a real-world da Vinci-like dual-arm benchmark with synchronized multi-view perception and language instructions, and collect 600 teleoperated demonstrations across needle (reach, pick, regrasp) and tissue (reach, lift, resection) manipulation suites. On real hardware with 20 trials per task setting, TDHD consistently improves performance over the latest VLA baselines: success increases from 55\\% to 60\\% for needle manipulation and from 55\\% to 80\\% for tissue manipulation, with the largest gains observed in the final manipulation stages. These results highlight the importance of adaptive execution control for reliable deployment of VLA models in surgical robotic manipulation.",
+      "authors": [
+        "Mingwu Su",
+        "Guankun Wang",
+        "Jinsong Lin",
+        "Rulin Zhou",
+        "Ziyi Hao",
+        "Zhiwei Fang",
+        "Huxin Gao",
+        "Jiewen Lai",
+        "Jiazheng Wang",
+        "Fan Zhang",
+        "Hongliang Ren"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T05:04:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.09125v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Trajectory divergence horizon decision for VLA-based dual-arm surgical subtask manipulation",
+      "llm_evidence_cn": "VLA模型双臂手术子任务操作中的轨迹发散时域决策",
+      "llm_evidence": "VLA模型双臂手术子任务操作中的轨迹发散时域决策",
+      "canonical_evidence": "VLA模型双臂手术子任务操作中的轨迹发散时域决策",
+      "llm_tldr_en": "This paper addresses accumulated errors in open-loop VLA policies for surgical subtasks by proposing a trajectory divergence horizon decision mechanism to determine when to correct, improving dual-arm surgical manipulation reliability.",
+      "llm_tldr_cn": "手术机器人子任务依赖固定长度开环动作序列，场景变化时误差累积可能带来风险。论文针对双臂手术子任务的VLA策略提出轨迹发散时域决策机制，判断闭环干预时机以限制误差累积的影响。在手术操作环境中验证了该方法能提升操作可靠性与任务成功率，推动了VLA模型在外科手术场景中的实用化。",
+      "llm_tldr": "手术机器人子任务依赖固定长度开环动作序列，场景变化时误差累积可能带来风险。论文针对双臂手术子任务的VLA策略提出轨迹发散时域决策机制，判断闭环干预时机以限制误差累积的影响。在手术操作环境中验证了该方法能提升操作可靠性与任务成功率，推动了VLA模型在外科手术场景中的实用化。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09853v1",
+      "source": "arxiv",
+      "title": "RynnValue: Scaling Robotic Value Foundation Models with Temporal Distance",
+      "abstract": "General-purpose reward models are increasingly the bottleneck for scaling robot learning, yet the recipe for learning value-related capabilities from large-scale heterogeneous corpora remains underexplored. Existing approaches tie supervision to task-internal anchors such as preferences or normalized progress, none of which transfer cleanly across embodiments and data sources. We introduce RynnValue, an open-source value foundation model for robotic manipulation that replaces these anchors with temporal distance, the directed cost-to-go from an observation to the language-specified goal. Because temporal-distance labels can be derived directly from timestamps, RynnValue scales to over 7,000 hours and roughly 3M instruction-conditioned clips without preference or progress annotations. To make temporal-value learning reliable at scale, we combine random temporal sampling, temporal-order shuffling, and value-isolation attention, suppressing shortcuts that would leave predictions insensitive to failures and regressions. Trained without preference labels, RynnValue attains an average Kendall's tau_a of 0.675 on RBM-EVAL-OOD, surpassing the fully preference-supervised state of the art (0.655) and more than doubling a progress-only counterpart (0.292), while generalizing zero-shot to unseen tasks, embodiments, and viewpoints. Converted into dense rewards via potential-based shaping, it raises real-world policy success from 52.5% to 72.5% online and from 63.8% to 82.5% offline. These results establish temporal distance as a scalable supervision target and practical reward interface for generalist robot policies.",
+      "authors": [
+        "Dongchi Huang",
+        "Hongyin Zhang",
+        "Bohan Hou",
+        "Siteng Huang",
+        "Zhian Su",
+        "Hang Guo",
+        "Tong Lu",
+        "Zhaofeng Xu",
+        "Jiahao Tang",
+        "Jianfei Yang",
+        "Donglin Wang",
+        "Peixi Peng",
+        "Mingxiu Chen",
+        "Deli Zhao",
+        "Xin Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-10T17:09:37+00:00",
+      "link": "https://arxiv.org/pdf/2608.09853v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "trains value foundation model on large-scale heterogeneous robot data using temporal distance",
+      "llm_evidence_cn": "用时间距离在大规模异构机器人数据上训练价值基础模型",
+      "llm_evidence": "用时间距离在大规模异构机器人数据上训练价值基础模型",
+      "canonical_evidence": "用时间距离在大规模异构机器人数据上训练价值基础模型",
+      "llm_tldr_en": "RynnValue proposes temporal distance as a universal supervision signal for value foundation models, scaling to over 7,000 hours and 3M instruction-conditioned robot manipulation clips.",
+      "llm_tldr_cn": "通用奖励模型是扩大机器人学习的瓶颈，现有方法依赖偏好或进度等不便跨本体迁移的监督锚点。RynnValue提出用时间距离（从观测到语言指定目标的定向代价）作为统一监督信号，可自动从时间戳获取标注，并扩展到7000多小时的机器人操作数据。实验显示该价值基础模型在多种操作任务上有效，展示了大规模异构数据训练价值模型的可扩展性。",
+      "llm_tldr": "通用奖励模型是扩大机器人学习的瓶颈，现有方法依赖偏好或进度等不便跨本体迁移的监督锚点。RynnValue提出用时间距离（从观测到语言指定目标的定向代价）作为统一监督信号，可自动从时间戳获取标注，并扩展到7000多小时的机器人操作数据。实验显示该价值基础模型在多种操作任务上有效，展示了大规模异构数据训练价值模型的可扩展性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Training embodied foundation models with large scale heterogeneous robot data",
+      "matched_requirement_id": "req-19",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09127v1",
+      "source": "arxiv",
+      "title": "High Fidelity Capture, Reconstruction, and Transfer of Human Demonstrations for Robot-Assisted Bathing",
+      "abstract": "Despite the demand for robots in high-value clinical tasks like bathing, contemporary systems still lack the safety and reliability required for complex, sustained physical interaction with humans. A key challenge hindering the development of such systems is that collecting, understanding, and effectively transferring highly dynamic, contact-rich human bathing demonstrations is difficult, even with modern motion and tactile sensing equipment. We present a straightforward, but effective framework for doing so with high fidelity by utilizing contact regions as a key processing primitive. We use our framework to build a dataset of bathing demonstrations performed by trained clinicians on human subjects. We then use this dataset to design and control an arm-mounted dexterous soft hand to perform bathing tasks on a mannequin using open- and closed-loop strategies. Our dataset is the first to provide high quality synchronized motion, shape, contact, and force during sustained, contact-rich human-human interaction, and our transfer strategies demonstrate effective use of these data across multiple levels of the robotics stack. All relevant materials will be publicly released to enable further advancements in physical human-robot interaction (pHRI) research.",
+      "authors": [
+        "Arjun S. Lakshmipathy",
+        "Jonathan P. King",
+        "Ethan Zuo",
+        "Rohit Satishkumar",
+        "Hongyi Chen",
+        "Jeffrey Ichnowski",
+        "Dan Ding",
+        "Zackory Erickson",
+        "Nancy S. Pollard"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.GR"
+      ],
+      "published": "2026-08-10T05:07:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.09127v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Captures and transfers human clinical bathing demonstrations to robots",
+      "llm_evidence_cn": "捕获并将人类临床沐浴演示迁移到机器人",
+      "llm_evidence": "捕获并将人类临床沐浴演示迁移到机器人",
+      "canonical_evidence": "捕获并将人类临床沐浴演示迁移到机器人",
+      "llm_tldr_en": "Presents a contact-region-based framework for high-fidelity capture, reconstruction, and transfer of human bathing demonstrations; builds a clinician-performed dataset for robot-assisted bathing.",
+      "llm_tldr_cn": "机器人辅助沐浴等临床任务需要安全可靠的持续物理交互，但采集和理解接触密集的人类演示非常困难。本文提出以接触区域为核心处理原语的框架，实现人类沐浴演示的高保真捕获、重建与迁移。作者利用该框架构建了由训练有素临床医生在人类受试者上执行的演示数据集，为机器人学习提供高质量素材。该工作展示了接触信息在动态接触密集任务技能迁移中的关键作用。",
+      "llm_tldr": "机器人辅助沐浴等临床任务需要安全可靠的持续物理交互，但采集和理解接触密集的人类演示非常困难。本文提出以接触区域为核心处理原语的框架，实现人类沐浴演示的高保真捕获、重建与迁移。作者利用该框架构建了由训练有素临床医生在人类受试者上执行的演示数据集，为机器人学习提供高质量素材。该工作展示了接触信息在动态接触密集任务技能迁移中的关键作用。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "transferring human skills to robots",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09410v1",
+      "source": "arxiv",
+      "title": "Skills in Weights, Memory in Code: Hybrid Learning for Memory-Dependent Robot Manipulation",
+      "abstract": "Modern vision-language-action (VLA) policies have acquired broad manipulation skills, but typically generate each action chunk from the current observation or a short fixed-length history. However, real-world manipulation is often non-Markovian, requiring robots to retain and reason over task-relevant information from long-horizon interaction histories to determine the next action. To address this challenge, we propose HyMeS, a hybrid learning framework that leverages the reasoning and memory-management capabilities of coding agents to steer a Markovian VLA for memory-dependent manipulation. Specifically, HyMeS learns low-level motor skills through gradient-based imitation learning, while a coding agent acquires high-level memory-management strategies through heuristic learning by iteratively updating an executable heuristic system from rollout feedback. Furthermore, we close the loop between steering and execution through multimodal stage-completion verification, which updates memory using proprioceptive signals and multi-frame VLM judgments. Compared with end-to-end memory-augmented VLAs, HyMeS requires demonstrations only for reusable motor skills rather than for every history-dependent task configuration, enabling data-efficient compositional generalization. On RoboMemArena, HyMeS improves mean cumulative success from 52.5% to 66.2% and mean task success from 41.3% to 60.1% over pi0.5, while outperforming PrediMem by 4.5 points in cumulative success and 14.5 points in task success.",
+      "authors": [
+        "Yunhao Zhao",
+        "Zhenyang Ni",
+        "Haoyang Chen",
+        "Ruohan Zhang",
+        "Qi Zhu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T10:35:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.09410v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "keyword:Robot",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Hybrid memory mechanism with coding agents steering Markovian VLA for memory-dependent manipulation",
+      "llm_evidence_cn": "用编码智能体引导马尔可夫VLA，实现记忆依赖操作的混合记忆机制",
+      "llm_evidence": "用编码智能体引导马尔可夫VLA，实现记忆依赖操作的混合记忆机制",
+      "canonical_evidence": "用编码智能体引导马尔可夫VLA，实现记忆依赖操作的混合记忆机制",
+      "llm_tldr_en": "HyMeS combines gradient-based imitation learning for motor skills with coding agents for high-level memory management, enabling Markovian VLA policies to handle non-Markovian long-horizon manipulation.",
+      "llm_tldr_cn": "真实操作常非马尔可夫，需要从长程交互历史中保留并推理任务相关信息，而现行VLA只基于当前观测或短历史生成动作。本文提出HyMeS混合学习框架：底层通过梯度模仿学习获得运动技能，高层由编码智能体负责记忆管理并引导VLA决策。实验表明该方法能显著提升记忆依赖操作的完成能力。该框架为将外部记忆与机器人技能学习结合提供了新思路。",
+      "llm_tldr": "真实操作常非马尔可夫，需要从长程交互历史中保留并推理任务相关信息，而现行VLA只基于当前观测或短历史生成动作。本文提出HyMeS混合学习框架：底层通过梯度模仿学习获得运动技能，高层由编码智能体负责记忆管理并引导VLA决策。实验表明该方法能显著提升记忆依赖操作的完成能力。该框架为将外部记忆与机器人技能学习结合提供了新思路。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

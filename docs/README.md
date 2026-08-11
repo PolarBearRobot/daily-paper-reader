@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-10</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-11</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 17 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 22 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>8</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>13</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-10 20:26:02 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-11 21:22:32 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日17篇论文聚焦具身智能与世界模型，精读9篇中两篇满分9.0引领核心突破。最值得关注视觉-语言-动作模型（VLA）与世界动作模型的表征解耦方向，速读中3D场景导航与任务无关世界建模亦具亮点。建议普通读者优先追踪上述高分工作，后续可关注其跨任务泛化与机器人部署验证。</p>
+<p>今日聚焦世界动作模型，精读两篇高分工作，分别引入几何感知潜世界建模与轨迹场时空融合，显著提升VLA学习效率。</p>
+<p>最值得关注的方向是“几何+时空”双管齐下：GWM-VLA用几何先验强化世界模型，4D-WAM则通过轨迹场注入时空感知，两者均获9.0分。</p>
+<p>若想快速跟进，建议优先浏览这两篇精读论文，并以LIRA的跨层信息路由作为辅助理解VLA解码的效率优化思路。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -74,9 +76,9 @@
     <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AtlasVLA: Persistent World-Ego State Modeling for Vision-Language-Action Models">AtlasVLA: Persistent World-Ego State Modeling for Vision-Language-Action Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Decoupling Intention from Trajectory: A Representational Deduction Framework for World Action Models">Decoupling Intention from Trajectory: A Representational Deduction Framework for World Action Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="C2Dex: Contact-Consistent Reconstruction and Retargeting for Dexterous Manipulation from Monocular Video">C2Dex: Contact-Consistent Reconstruction and Retargeting for Dexterous Manipulation from Monocular Video</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="GWM-VLA: Geometry-Aware Latent World Modeling for Vision-Language-Action Learning">GWM-VLA: Geometry-Aware Latent World Modeling for Vision-Language-Action Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields">4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields</span></li><li><span class="dpr-home-dashboard-paper-title" title="Vid2WAM: Distilling Video Diffusion Priors into World Action Models">Vid2WAM: Distilling Video Diffusion Priors into World Action Models</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>8</strong></span><span class="dpr-home-dashboard-tag">data <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>8</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -84,12 +86,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">8 篇</strong>
+    <strong class="dpr-home-dashboard-count">13 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="WNM-3D: A World Navigation Model with 3D Scene Conditioning for Closed-Loop VLN">WNM-3D: A World Navigation Model with 3D Scene Conditioning for Closed-Loop VLN</span></li><li><span class="dpr-home-dashboard-paper-title" title="UniJEPA: A Unified Joint-Embedding Predictive Architecture for Task-Agnostic Visual World Modeling">UniJEPA: A Unified Joint-Embedding Predictive Architecture for Task-Agnostic Visual World Modeling</span></li><li><span class="dpr-home-dashboard-paper-title" title="Teleopit: A Full-Embodiment Humanoid Teleoperation System">Teleopit: A Full-Embodiment Humanoid Teleoperation System</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="LIRA: Local Cross-Layer Information Routing for Vision-Language-Action Decoding">LIRA: Local Cross-Layer Information Routing for Vision-Language-Action Decoding</span></li><li><span class="dpr-home-dashboard-paper-title" title="Auditing Instruction-Trajectory Mismatches in Multimodal Robot Demonstrations">Auditing Instruction-Trajectory Mismatches in Multimodal Robot Demonstrations</span></li><li><span class="dpr-home-dashboard-paper-title" title="SG-WAM: Text-Grounded and Spatial-aware Semantic Guidance for World-Action Models">SG-WAM: Text-Grounded and Spatial-aware Semantic Guidance for World-Action Models</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>5</strong></span><span class="dpr-home-dashboard-tag">data <strong>3</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>9</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
 </section>
 </div>
 
