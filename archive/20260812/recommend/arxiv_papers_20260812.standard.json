@@ -1,0 +1,764 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-12T21:04:36.220588+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 11,
+    "deep_cap": 9,
+    "deep_selected": 9,
+    "quick_candidates": 9,
+    "quick_skim_target": 14,
+    "quick_selected": 9
+  },
+  "deep_dive": [
+    {
+      "id": "2608.10484v1",
+      "source": "arxiv",
+      "title": "Lost in Reconstruction: Aligning Action Representations with Language in Vision-Language-Action Models",
+      "abstract": "Action verbs describe not only the physical outcomes of actions, but also how those actions are performed. Yet action representations in vision-language-action models (VLAs) are typically optimized for reconstruction under L1/L2 losses in raw action space, where numerical proximity need not reflect linguistically meaningful distinctions. On BridgeV2, we show that action trajectories contain verb-grounding information beyond visual state changes, and that reconstruction-only discrete tokenization systematically erodes this information. To address this problem, we introduce SALT, a Semantically ALigned action Tokenizer that augments a VQ-VAE-style tokenizer with an auxiliary objective requiring a frozen vision-language model to recover the episode instruction from quantized action latents. Policies trained with SALT achieve 71.9% average success in SimplerEnv, compared with 42.7% for a reconstruction-only VQ-VAE tokenizer and 31.2% for FAST. SALT also develops verb-specialized codes while maintaining reconstruction fidelity. These results show that robot action trajectories provide a source of language grounding and that preserving this structure in action representations can substantially improve language-conditioned control.",
+      "authors": [
+        "Li Wenjie",
+        "Yash Jangir",
+        "Ignacy Stepka",
+        "Yash Agarwal",
+        "Marion Kipsang",
+        "Yonatan Bisk"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-11T04:57:17+00:00",
+      "link": "https://arxiv.org/pdf/2608.10484v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "query:Analysis",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes SALT, a semantically aligned action tokenizer to align action representations with language in VLAs, addressing action representation learning.",
+      "llm_evidence_cn": "提出语义对齐动作分词器SALT，将VLA中的动作表征与语言对齐，解决动作表征学习问题",
+      "llm_evidence": "提出语义对齐动作分词器SALT，将VLA中的动作表征与语言对齐，解决动作表征学习问题",
+      "canonical_evidence": "提出语义对齐动作分词器SALT，将VLA中的动作表征与语言对齐，解决动作表征学习问题",
+      "llm_tldr_en": "Action trajectories in VLAs contain verb-grounding info beyond visual changes, but reconstruction-only tokenization erodes it. SALT augments a VQ-VAE tokenizer with a frozen VLM auxiliary objective, producing semantically aligned action representations.",
+      "llm_tldr_cn": "VLA中的动作表征通常仅用L1/L2重建损失在原始动作空间优化，数值接近不代表语言上意义相关。本文在BridgeV2上证明动作轨迹包含超出视觉状态变化的动词接地信息，而重建式离散分词会系统性地破坏这些信息。为此提出SALT，一种语义对齐动作分词器，在VQ-VAE风格分词器上增加冻结视觉语言模型的辅助目标，使动作表征与语言语义对齐，提升动作生成的语义一致性。",
+      "llm_tldr": "VLA中的动作表征通常仅用L1/L2重建损失在原始动作空间优化，数值接近不代表语言上意义相关。本文在BridgeV2上证明动作轨迹包含超出视觉状态变化的动词接地信息，而重建式离散分词会系统性地破坏这些信息。为此提出SALT，一种语义对齐动作分词器，在VQ-VAE风格分词器上增加冻结视觉语言模型的辅助目标，使动作表征与语言语义对齐，提升动作生成的语义一致性。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "learning better representations for robot actions",
+      "matched_requirement_id": "req-21",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10756v1",
+      "source": "arxiv",
+      "title": "Embodied Multimodal Grounding for Open-Vocabulary Mobile Manipulation via Semantic 3D Gaussian Splatting",
+      "abstract": "Embodied mobile manipulation requires language, visual observations, three-dimensional scene structure, and action feasibility to be aligned before execution. We study open-vocabulary target grounding with few-shot manipulation in local household workspaces and present an embodied multimodal grounding framework that integrates active multi-view Semantic 3D Gaussian Splatting (Semantic-3DGS), reachability-aware base positioning, and a diffusion-based vision-language-action policy. A task-driven local Semantic-3DGS serves as a shared interface across active sensing, language-conditioned 3D localization, obstacle-aware scene reasoning, base preparation, and semantic conditioning of the action model. To preserve pretrained action priors, the 3D semantic cues are injected only into the late action-expert blocks. In expanded 50-trial real-robot evaluations against representative vision-language-action (VLA) approaches, the full system achieves 60% long-horizon success compared with 40% for PointVLA and 28% for DexVLA, and reaches 74% success in heavily cluttered manipulation compared with 52% for the single-view variant and 46% for PointVLA. It also maintains 75% success under a 75 cm height shift and eliminates photo-induced false grasps. These results indicate that explicit, refreshable 3D semantic grounding can improve robustness under clutter, occlusion, viewpoint variation, and embodiment constraints.",
+      "authors": [
+        "Huosen Ou",
+        "Dongni Song",
+        "Yuncong Wang",
+        "Tao Zhou",
+        "Yiding Ji"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-11T10:16:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.10756v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Embodied multimodal grounding with Semantic 3D Gaussian Splatting for open-vocabulary VLA policy",
+      "llm_evidence_cn": "基于语义3D高斯泼溅的具身多模态接地用于开放词汇VLA策略",
+      "llm_evidence": "基于语义3D高斯泼溅的具身多模态接地用于开放词汇VLA策略",
+      "canonical_evidence": "基于语义3D高斯泼溅的具身多模态接地用于开放词汇VLA策略",
+      "llm_tldr_en": "Integrates active multi-view semantic 3DGS with reachability-aware base positioning and diffusion-based VLA policy for open-vocabulary mobile manipulation; shared 3D interface improves few-shot grounding.",
+      "llm_tldr_cn": "现有移动操作模型难以对齐语言、视觉、3D场景与动作可行性。本文提出具身多模态接地框架，以任务驱动的局部语义3D高斯泼溅作为共享接口，集成主动多视角感知、语言条件3D定位、可达性基座定位和扩散式视觉-语言-动作策略。实验表明该方法能够显著提升开放词汇目标接地和少样本操作性能，为具身基础模型的空间理解提供了新范式。",
+      "llm_tldr": "现有移动操作模型难以对齐语言、视觉、3D场景与动作可行性。本文提出具身多模态接地框架，以任务驱动的局部语义3D高斯泼溅作为共享接口，集成主动多视角感知、语言条件3D定位、可达性基座定位和扩散式视觉-语言-动作策略。实验表明该方法能够显著提升开放词汇目标接地和少样本操作性能，为具身基础模型的空间理解提供了新范式。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10780v1",
+      "source": "arxiv",
+      "title": "JEPA-WAM: Stage-Level Joint-Embedding Prediction for World-Action Models in Robot Manipulation",
+      "abstract": "Generalist robot policies aim to map multimodal observations and linguistic task instructions to actions across diverse tasks. However, existing methods typically represent the future as a fixed, short video-action chunk. This short-term future captures local scene evolution for action execution, but it does not explicitly describe the stage-level future that specifies how a task should progress from its current stage to the next. We therefore distinguish two complementary futures for robot manipulation: a short-term physical future to capture local scene evolution and a stage-level semantic future to represent task progress. We introduce JEPA-WAM, which augments a Motus-based World Action Model (WAM) with Stage-JEPA, a goal-conditioned Joint-Embedding Predictive Architecture (JEPA) predictor. Given the current observation and task instruction, Stage-JEPA uses a frozen V-JEPA2 encoder to extract the current-state representation and predicts the latent target of the next inferred stage. Across 50 RoboTwin 2.0 tasks in clean and randomized environments, JEPA-WAM achieves 90.25% overall success and reduces the mean number of execution steps in successful rollouts by 5.97% relative to the strongest baseline.",
+      "authors": [
+        "Xiao Liu",
+        "Yuguang Yang",
+        "Xi Wang",
+        "Kai Jiang",
+        "Cheng Chi",
+        "Yong Xu",
+        "Wenchao Ding",
+        "Yilun Chen",
+        "Yan Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-11T10:33:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.10780v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Introduces Stage-JEPA for World-Action Models in robot manipulation, targeting stage-level semantic future prediction.",
+      "llm_evidence_cn": "提出面向机器人操作世界动作模型的阶段级联合嵌入预测方法",
+      "llm_evidence": "提出面向机器人操作世界动作模型的阶段级联合嵌入预测方法",
+      "canonical_evidence": "提出面向机器人操作世界动作模型的阶段级联合嵌入预测方法",
+      "llm_tldr_en": "Existing WAMs predict only short video-action chunks. JEPA-WAM augments a WAM with Stage-JEPA to model stage-level semantic future, improving task progress representation.",
+      "llm_tldr_cn": "现有世界动作模型通常只预测固定的短视频-动作块，难以刻画任务从当前阶段到下一阶段的语义进展。JEPA-WAM 在基于 Motus 的世界动作模型上引入 Stage-JEPA，联合建模短期物理未来与阶段级语义未来，从而更完整地表示任务进展。该方法有助于提升通用机器人策略在多样化操作任务中的表现。",
+      "llm_tldr": "现有世界动作模型通常只预测固定的短视频-动作块，难以刻画任务从当前阶段到下一阶段的语义进展。JEPA-WAM 在基于 Motus 的世界动作模型上引入 Stage-JEPA，联合建模短期物理未来与阶段级语义未来，从而更完整地表示任务进展。该方法有助于提升通用机器人策略在多样化操作任务中的表现。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10860v1",
+      "source": "arxiv",
+      "title": "Flex-$π$: A Multi-Stream World-Action Model with Compute Flexibility",
+      "abstract": "World-action models (WAMs) predict the future to act better, but nearly all of them predict only RGB latents, trained purely for pixel reconstruction, with no explicit signal for the 3D geometry or object semantics manipulation needs. We find a surprising free lunch: the same frozen video-generation VAE that encodes RGB also encodes 3D pointmaps almost losslessly, with no pointmap-specific training at all. This lets us supervise Flex-$π$, a 6B-parameter WAM, on 3D geometry and object-centric DINO semantics alongside RGB, at no cost in new sensors, new pre-training, or inference latency. Every visual signal is projected into this shared latent space and denoised jointly with actions inside a Mixture-of-Transformers backbone; per-stream dropout with cross-modality forcing then lets a single trained checkpoint run on any subset of these streams, from a fast action-only mode to full joint generation. The result is a policy that is exceptionally demonstration-efficient and generalizes well, beating the strongest baselines by up to 2-7$\\times$ on dexterous, precise, real-world bimanual manipulation tasks both in and out of distribution, all while running faster than $π_{0.5}$. Our project website: https://flex-pi.github.io/",
+      "authors": [
+        "Ge Yan",
+        "Jinghao Liu",
+        "Yuzhi Fan",
+        "Lei Cai",
+        "Minwen Liao",
+        "Jesse Zhang",
+        "Dieter Fox"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-11T12:33:51+00:00",
+      "link": "https://arxiv.org/pdf/2608.10860v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multi-stream WAM supervised on 3D pointmaps and DINO semantics via shared latent VAE, enhancing 3D spatial understanding",
+      "llm_evidence_cn": "通过共享VAE隐空间对3D点图与DINO语义进行多流监督，增强WAM的3D空间理解",
+      "llm_evidence": "通过共享VAE隐空间对3D点图与DINO语义进行多流监督，增强WAM的3D空间理解",
+      "canonical_evidence": "通过共享VAE隐空间对3D点图与DINO语义进行多流监督，增强WAM的3D空间理解",
+      "llm_tldr_en": "Flex-Pi shows a frozen video-generation VAE encodes 3D pointmaps losslessly, allowing a 6B WAM to be supervised on 3D geometry and object semantics jointly with RGB at no extra sensor or latency cost.",
+      "llm_tldr_cn": "现有世界动作模型大多只预测RGB隐变量，缺乏显式的3D几何与物体语义监督。本文发现冻结的视频生成VAE几乎无损地同时编码3D点图与RGB，因而无需新增传感器或推理开销，即可用3D几何和DINO物体语义联合监督6B规模的Flex-π世界动作模型；联合去噪与多流丢弃机制进一步增强了操作所需的几何与语义感知能力。",
+      "llm_tldr": "现有世界动作模型大多只预测RGB隐变量，缺乏显式的3D几何与物体语义监督。本文发现冻结的视频生成VAE几乎无损地同时编码3D点图与RGB，因而无需新增传感器或推理开销，即可用3D几何和DINO物体语义联合监督6B规模的Flex-π世界动作模型；联合去噪与多流丢弃机制进一步增强了操作所需的几何与语义感知能力。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10758v1",
+      "source": "arxiv",
+      "title": "Where To Look? : Causal Tracing of Vision Encoders in VLM",
+      "abstract": "Vision-language models can describe an image with remarkable accuracy, yet a more fundamental question remains unanswered: what visual information actually drives their answers? In this work, we investigate this question through causal tracing, and we observe that highly causal vision tokens often lie outside the target region. Extending the analysis to larger vision-language models reveals a similar pattern across models and corruption settings, suggesting that strong multimodal performance does not necessarily imply spatially localized causal representations. We further investigate: can these models preserve visual structure when appearance cues are removed? and find that visual cues are exploited to understand visual structures. Together, our experiments expose a gap between seeing, using, and reasoning over visual structure, and provide a causal framework for studying how visual information is transformed, preserved, and ultimately used by modern vision-language models.",
+      "authors": [
+        "Naren Kumar S",
+        "Tirth Bhatt",
+        "Mayank Singh"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-11T10:17:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.10758v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Applies causal tracing to vision encoders in VLMs, directly addressing interpretability of vision-language architectures.",
+      "llm_evidence_cn": "对视觉语言模型中的视觉编码器进行因果追踪，直接研究视觉语言架构的可解释性",
+      "llm_evidence": "对视觉语言模型中的视觉编码器进行因果追踪，直接研究视觉语言架构的可解释性",
+      "canonical_evidence": "对视觉语言模型中的视觉编码器进行因果追踪，直接研究视觉语言架构的可解释性",
+      "llm_tldr_en": "Investigates which visual tokens drive VLM answers using causal tracing, finding that highly causal tokens often lie outside the target region, indicating that strong multimodal performance does not imply spatially localized causal representations.",
+      "llm_tldr_cn": "尽管视觉语言模型能准确描述图像，但驱动其答案的视觉信息仍不清楚。本文通过因果追踪发现，高因果视觉token往往位于目标区域之外，且在不同规模的模型和干扰设置中均出现类似模式。这表明强大的多模态性能不一定对应空间上局部的因果表征，对理解视觉语言模型的可解释性具有重要意义。",
+      "llm_tldr": "尽管视觉语言模型能准确描述图像，但驱动其答案的视觉信息仍不清楚。本文通过因果追踪发现，高因果视觉token往往位于目标区域之外，且在不同规模的模型和干扰设置中均出现类似模式。这表明强大的多模态性能不一定对应空间上局部的因果表征，对理解视觉语言模型的可解释性具有重要意义。",
+      "llm_tags": [
+        "query:analysis"
+      ],
+      "matched_query_tag": "query:analysis",
+      "matched_query_text": "interpretability methods for vision-language-action architectures",
+      "matched_requirement_id": "req-25",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10847v1",
+      "source": "arxiv",
+      "title": "Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support",
+      "abstract": "Kinesthetic teaching through robot hand-guiding provides a natural interface for collecting demonstrations in imitation learning and programming-by-demonstration. However, extended sessions cause operator fatigue, reducing demonstration quality and limiting scalability. Current industrial hand-guiding approaches typically provide no active assistance, and alternatives require costly wrist-mounted force-torque sensors or rely on learned motion priors unavailable for new tasks. We propose RHOAS, a hand-guiding scheme that actively supports operator-intended motions using model-based force estimation without additional hardware. Our approach considers robot hand-guiding as an actively controlled interaction by the human operator, rather than an interaction with a passive environment. Standard methods used for hand-guiding typically rely on general passivity-based compliant control architectures that unnecessarily increase operator effort and limit the range of demonstrable motions without providing the intended stability guarantees in active interaction. Instead, our design utilizes model-based external torque estimation, internal joint torque sensing, and redundant robot kinematics to actively support human physical input within the human interaction frequency bandwidth. We address practical challenges of relying on observer-based force estimation, including suppression of unmodeled joint elastic dynamic effects and measurement noise in the feedback path, reduced estimate accuracy close to kinematic singularities, and static gravity compensation errors. In a user study with 16 participants on a KUKA LWR iiwa we demonstrate statistically significant reductions in physical effort, improved maneuverability for both precise and agile tasks, and clear user preference.",
+      "authors": [
+        "Anna Tuma",
+        "Giuseppe Monetti",
+        "Jochen J. Steil",
+        "Niels Dehio"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-11T12:19:17+00:00",
+      "link": "https://arxiv.org/pdf/2608.10847v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis",
+        "query:Data"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reduces operator fatigue in kinesthetic teaching for scalable demonstration collection",
+      "llm_evidence_cn": "减少操作者疲劳，支持可扩展的演示数据采集",
+      "llm_evidence": "减少操作者疲劳，支持可扩展的演示数据采集",
+      "canonical_evidence": "减少操作者疲劳，支持可扩展的演示数据采集",
+      "llm_tldr_en": "This paper presents RHOAS, a hand-guiding scheme that actively supports operator-intended motions using model-based force estimation without extra hardware, reducing fatigue to scale up kinesthetic teaching data collection.",
+      "llm_tldr_cn": "通过机器人手引导进行徒手示教是采集模仿学习演示的自然界面，但长时间示教会使操作者疲劳并降低数据质量，限制可扩展性。现有方法要么缺乏主动辅助，要么依赖额外的力/力矩传感器。本文提出RHOAS，利用基于模型的力估计主动支持操作者意图运动，无需额外硬件即可降低疲劳，支持更长时间、更高质量的演示数据采集，为可扩展的机器人示教数据引擎提供了一种实用方案。",
+      "llm_tldr": "通过机器人手引导进行徒手示教是采集模仿学习演示的自然界面，但长时间示教会使操作者疲劳并降低数据质量，限制可扩展性。现有方法要么缺乏主动辅助，要么依赖额外的力/力矩传感器。本文提出RHOAS，利用基于模型的力估计主动支持操作者意图运动，无需额外硬件即可降低疲劳，支持更长时间、更高质量的演示数据采集，为可扩展的机器人示教数据引擎提供了一种实用方案。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "robot manipulation data engine",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07905v1",
+      "source": "arxiv",
+      "title": "GraphThink: Graph-Enhanced LLM Thinking for Long-Horizon Embodied Task Planning",
+      "abstract": "Embodied agents using LLM-based planners often struggle with physical hallucinations, poor generalization to long-horizon tasks, and lack of environmental awareness. We propose GraphThink, a novel framework that integrates a task graph to provide structured knowledge for robust planning and a scene graph to maintain environmental memory for event-driven replanning. Specifically, the task graph guides LLM thinking through contextual prompting and iterative refinement, effectively mitigating planning hallucinations. Furthermore, within the GRPO framework, the task graph offers delicate reward design to train the LLM planner, enhancing long-horizon planning capabilities and improving generalization. Finally, an event-driven replanning module, powered by the scene graph, enables closed-loop environment awareness and error correction. GraphThink achieves state-of-the-art performance on the ALFRED benchmark. In particular, our high-level planner surpasses leading API-based LLMs on both the validation set and held-out long-horizon tasks, underscoring its robust zero-shot and few-shot capabilities. Additional evaluations further demonstrate strong out-of-distribution generalization to novel tasks and environments.",
+      "authors": [
+        "Chen Li",
+        "Sijie Cheng",
+        "Yuelin Zhang",
+        "Junxi Li",
+        "Maozhi Huang",
+        "Yang Liu",
+        "Wenbing Huang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-08-08T04:05:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.07905v1",
+      "tags": [
+        "keyword:Model",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Integrates task graph and scene graph to enhance LLM planners for long-horizon embodied planning and environmental memory.",
+      "llm_evidence_cn": "结合任务图与场景图增强LLM规划器，支持长时程具身任务规划和环境记忆",
+      "llm_evidence": "结合任务图与场景图增强LLM规划器，支持长时程具身任务规划和环境记忆",
+      "canonical_evidence": "结合任务图与场景图增强LLM规划器，支持长时程具身任务规划和环境记忆",
+      "llm_tldr_en": "GraphThink proposes a graph-enhanced framework for LLM-based embodied planners, using a task graph for structured knowledge and a scene graph for environmental memory, with GRPO-based reward design to improve long-horizon planning and generalization.",
+      "llm_tldr_cn": "基于LLM的具身规划器常受物理幻觉和长时程泛化能力不足的困扰，且缺乏环境感知。GraphThink 集成任务图提供结构化知识，并通过上下文提示与迭代精炼缓解规划幻觉；同时引入场景图维护环境记忆，支持事件驱动的重规划。在GRPO框架下，任务图还可提供精细奖励设计，增强长时程规划与泛化能力。",
+      "llm_tldr": "基于LLM的具身规划器常受物理幻觉和长时程泛化能力不足的困扰，且缺乏环境感知。GraphThink 集成任务图提供结构化知识，并通过上下文提示与迭代精炼缓解规划幻觉；同时引入场景图维护环境记忆，支持事件驱动的重规划。在GRPO框架下，任务图还可提供精细奖励设计，增强长时程规划与泛化能力。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10413v1",
+      "source": "arxiv",
+      "title": "DriveVLA-M0: Failure-Aware Memory Augmentation for Autonomous Driving",
+      "abstract": "Vision-Language-Action (VLA) models have recently emerged as a promising paradigm for end-to-end autonomous driving by enabling unified reasoning across perception, language, and planning. However, existing approaches lack mechanisms to exploit past failures or adapt to distribution shifts, causing the model to persistently underperform on similar scenarios where it has previously failed. In this paper, we propose DriveVLA-M0, a retrieval-augmented VLA with failure-aware latent memory. We construct a latent memory pool that stores failure cases along with their structure scene representations and expert trajectory labels, and design a dedicated Retrieve Model that decouples static road structure and dynamic agent interactions to enable structurally grounded retrieval. At inference time, retrieved cases are injected into the model via a lightweight decoupled LoRA-based test-time training (TTT) mechanism, allowing targeted and scenario-specific correction without modifying the backbone. Extensive experiments on NAVSIMv1 and NAVSIMv2 benchmark demonstrate that our approach consistently outperforms prior methods, achieving 94.1 PDMS on Navtest and 47.0 EPDMS on Navhard with only 26.44 ms TTT backward latency overhead. Furthermore, we show that DriveVLA-M0 scales effectively with additional memory, enabling training-free performance gains through memory expansion. The code is available at https://github.com/ZebinX/DriveVLA-M0.",
+      "authors": [
+        "Zebin Xing",
+        "Yupeng Zheng",
+        "Qiang Chen",
+        "Linbo Wang",
+        "Yichen Zhang",
+        "Pengxuan Yang",
+        "Junli Wang",
+        "Deheng Qian",
+        "Xiaoqing Ye",
+        "Junyu Han",
+        "Yifeng Pan",
+        "Qichao Zhang",
+        "Dongbin Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-11T03:01:46+00:00",
+      "link": "https://arxiv.org/pdf/2608.10413v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Failure-aware latent memory for retrieval-augmented VLA in autonomous driving",
+      "llm_evidence_cn": "为自动驾驶VLA引入故障感知的潜在记忆池与检索增强",
+      "llm_evidence": "为自动驾驶VLA引入故障感知的潜在记忆池与检索增强",
+      "canonical_evidence": "为自动驾驶VLA引入故障感知的潜在记忆池与检索增强",
+      "llm_tldr_en": "VLA models in autonomous driving lack mechanisms to exploit past failures; DriveVLA-M0 builds a failure-aware latent memory pool and a retrieve model that decouples static structure and dynamic interactions, enabling retrieval-augmented planning that adapts to distribution shifts.",
+      "llm_tldr_cn": "面向端到端自动驾驶的视觉-语言-动作模型缺少利用历史失败和适应分布漂移的机制。本文提出DriveVLA-M0，构建存储失败案例与其结构化场景表示及专家轨迹的潜在记忆池，并设计解耦静态道路结构与动态智能体交互的检索模型。通过检索增强规划，模型能够在相似失败场景中主动调整行为。实验表明该方法显著提升困难场景下的规划性能与安全性。",
+      "llm_tldr": "面向端到端自动驾驶的视觉-语言-动作模型缺少利用历史失败和适应分布漂移的机制。本文提出DriveVLA-M0，构建存储失败案例与其结构化场景表示及专家轨迹的潜在记忆池，并设计解耦静态道路结构与动态智能体交互的检索模型。通过检索增强规划，模型能够在相似失败场景中主动调整行为。实验表明该方法显著提升困难场景下的规划性能与安全性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.10824v1",
+      "source": "arxiv",
+      "title": "Neural Introspection Gating for Adaptive KV-Cache Reuse in Vision-Language-Action Models",
+      "abstract": "Vision-Language-Action(VLA) models map camera images and language instructions directly to motor commands through a single autoregressive transformer. In real-time control, they still spend substantial compute recomputing key-value(KV) representations for visual tokens that barely change across neighboring frames. Recent work such as VLA-Cache reduces that cost by reusing KV states for visually static patches, but its policy relies only on observation-space heuristics and does not account for the model's own uncertainty. We propose Gated VLA-Cache, a lightweight, training-free extension that augments visual-similarity caching with neural introspection. The method monitors the logit margin between the top two predicted action tokens, a zero-cost confidence signal available during decoding. When the margin drops below a threshold, the cache is invalidated and a full recompute is triggered. Evaluated on four LIBERO benchmark suites with both OpenVLA and OpenVLA-OFT, Gated VLA-Cache improves reliability when blind caching hurts. On LIBERO-Goal and LIBERO-Long, it recovers over 100% of the lost accuracy while retaining 80% of the compute savings.",
+      "authors": [
+        "Zhijie Wu",
+        "Kento Kawaharazuka",
+        "Kei Okada"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-11T11:53:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.10824v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "query:Analysis",
+        "query:Model"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "neural introspection gating for adaptive KV-cache reuse in vision-language-action models",
+      "llm_evidence_cn": "面向视觉-语言-动作模型的自适应KV缓存复用神经内省门控",
+      "llm_evidence": "面向视觉-语言-动作模型的自适应KV缓存复用神经内省门控",
+      "canonical_evidence": "面向视觉-语言-动作模型的自适应KV缓存复用神经内省门控",
+      "llm_tldr_en": "The paper proposes Gated VLA-Cache, a training-free extension for VLA models that combines visual-similarity caching with neural introspection by monitoring the logit margin between top action tokens. This adaptive KV-cache reuse reduces compute for static visual tokens while preserving action accuracy in real-time control.",
+      "llm_tldr_cn": "针对VLA模型在实时控制中重复计算静态视觉token表示的问题，提出Gated VLA-Cache训练无关扩展。该方法在视觉相似性缓存基础上增加神经内省，通过监测前两个动作token的logit差值来反映模型不确定性。实验表明该自适应缓存复用显著降低计算开销并保持动作预测精度。该工作为VLA模型的实时高效部署提供了轻量级优化方案。",
+      "llm_tldr": "针对VLA模型在实时控制中重复计算静态视觉token表示的问题，提出Gated VLA-Cache训练无关扩展。该方法在视觉相似性缓存基础上增加神经内省，通过监测前两个动作token的logit差值来反映模型不确定性。实验表明该自适应缓存复用显著降低计算开销并保持动作预测精度。该工作为VLA模型的实时高效部署提供了轻量级优化方案。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.10976v1",
+      "source": "arxiv",
+      "title": "XCoT-VLA: Executable Chain-of-Thought for Vision-Language-Action Driving",
+      "abstract": "Vision-Language-Action (VLA) models can connect scene understanding, semantic reasoning, and trajectory generation for autonomous driving. However, verbose natural-language Chain-of-Thought (CoT) is poorly suited to real-time control because it is open-ended, costly to decode, and difficult to optimize as an action-facing representation. We propose XCoT-VLA, which replaces descriptive rationales with compact executable CoT tokens learned from automatically constructed Reason-Action supervision. Logged trajectories provide action evidence, while scene context supplies causal semantics. The predicted XCoT sequence remains in context and conditions fixed trajectory queries through shared multimodal self-attention. Deterministic token-function routing applies the Reason FFN to XCoT tokens and the Control FFN to trajectory queries for flow-matching trajectory generation. We further introduce XCoT Policy Optimization (XCPO) as an optional refinement extension in the same executable token space. XCoT-VLA reduces longitudinal ADE from 1.645 to 1.323 on a general-distribution set and lateral FDE from 1.616 to 0.648 in lane-change scenarios. By representing driving-oriented reasoning with only 2-6 executable XCoT tokens, our method substantially reduces autoregressive reasoning overhead and remains within the real-time planning budget. These results demonstrate that driving-oriented reasoning can be compact, executable, and directly connected to trajectory generation.",
+      "authors": [
+        "Foundation Model Team",
+        "XPeng Inc"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-11T14:33:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.10976v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "executable chain-of-thought for vision-language-action driving",
+      "llm_evidence_cn": "面向视觉-语言-动作驾驶的可执行思维链",
+      "llm_evidence": "面向视觉-语言-动作驾驶的可执行思维链",
+      "canonical_evidence": "面向视觉-语言-动作驾驶的可执行思维链",
+      "llm_tldr_en": "XCoT-VLA replaces verbose natural-language CoT with compact executable chain-of-thought tokens for VLA driving. It learns these tokens from Reason-Action supervision and conditions fixed trajectory queries through shared multimodal attention, improving real-time control and interpretability.",
+      "llm_tldr_cn": "针对VLA驾驶中自然语言思维链成本高、难以面向行动优化的问题，提出XCoT-VLA。该方法用自动构建的Reason-Action监督学习紧凑可执行思维链token，替代描述性推理。执行时XCoT序列通过共享多模态自注意力调节固定轨迹查询，实现确定性token-功能路由。实验表明该可执行思维链能适配实时控制，提升轨迹生成能力且更具可解释性。",
+      "llm_tldr": "针对VLA驾驶中自然语言思维链成本高、难以面向行动优化的问题，提出XCoT-VLA。该方法用自动构建的Reason-Action监督学习紧凑可执行思维链token，替代描述性推理。执行时XCoT序列通过共享多模态自注意力调节固定轨迹查询，实现确定性token-功能路由。实验表明该可执行思维链能适配实时控制，提升轨迹生成能力且更具可解释性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "vision-language-action models for robot control",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.09816v1",
+      "source": "arxiv",
+      "title": "Hierarchical Fast--Slow ReAct Agent for Zero-Shot Object-Goal Navigation",
+      "abstract": "Zero-shot object-goal navigation (ZSON) requires a robot to find a named object category in a building it has never entered. The prevailing approach scores frontiers with a vision--language \\emph{value map}: every decision is another argmax over the map as it currently stands, and the evidence behind that score is discarded the moment it is taken. Systems that place a large vision--language model inside the perception--action loop typically query it on a fixed schedule from the current view alone; a room the robot walked through minutes earlier is never reconsidered, and a failed call has no defined fallback. We turn what the robot has already seen into the object of deliberation. Our hierarchical fast--slow agent leaves the value-map controller running at every step and writes a \\emph{coordinate-anchored memory} as it moves: a semantic grid of room types and confirmed object instances, together with a bounded store of pose-tagged keyframes. A VLM screens each candidate detection before it is written. A deliberative layer reads this memory in a bounded reason--retrieve--act loop. It wakes on structural events the reactive layer computes, reasons first over text, and recalls a first-person view only for candidates that text alone cannot separate. Per-invocation and per-run caps bound its calls, a call-free first tier resolves the most frequent stall, and any failure returns control to the reactive controller. Our system reaches 68.75% SR on HM3D v1 \\texttt{val} and 47.29% on MP3D \\texttt{val}, the highest success rate among the zero-shot methods compared here. Choosing among far frontiers by argmax instead of deliberating costs 3.40 SR points in a paired comparison over all 2000 HM3D episodes (95\\% CI [1.70, 5.05]); deliberating over every frontier does not recover them.",
+      "authors": [
+        "Zhaochen Lan",
+        "Zhi Yang",
+        "Yuxiang Fu",
+        "Mengxiang Lin"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-10T16:34:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.09816v1",
+      "tags": [
+        "keyword:Model",
+        "query:Model"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "introduces a hierarchical fast-slow agent with memory of previously seen rooms for zero-shot object-goal navigation, addressing long-horizon planning and deliberation",
+      "llm_evidence_cn": "提出带记忆的分层快慢智能体，用于零样本目标导航，处理长时序规划与记忆反思",
+      "llm_evidence": "提出带记忆的分层快慢智能体，用于零样本目标导航，处理长时序规划与记忆反思",
+      "canonical_evidence": "提出带记忆的分层快慢智能体，用于零样本目标导航，处理长时序规划与记忆反思",
+      "llm_tldr_en": "A hierarchical fast-slow ReAct agent turns previously seen room memory into deliberation for zero-shot object-goal navigation, fixing fixed-schedule VLM querying.",
+      "llm_tldr_cn": "针对零样本目标导航中VLM按固定查询且不回顾历史的问题，提出分层快慢反应式智能体。它将机器人已见过的场景转化为可反思的记忆对象，由快速价值图控制器与慢速VLM规划协作，处理被忽略的房间与失败回退。实验显示其更有效地利用长时序信息，提升导航成功率。",
+      "llm_tldr": "针对零样本目标导航中VLM按固定查询且不回顾历史的问题，提出分层快慢反应式智能体。它将机器人已见过的场景转化为可反思的记忆对象，由快速价值图控制器与慢速VLM规划协作，处理被忽略的房间与失败回退。实验显示其更有效地利用长时序信息，提升导航成功率。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08523v1",
+      "source": "arxiv",
+      "title": "Discovering Diverse Planning Policies for Multimodal Embodied Agents with Quality-Diversity Optimization",
+      "abstract": "Multimodal embodied agents are increasingly required to solve long-horizon tasks by integrating visual observations, textual goals, and interaction history into closed-loop decision making. However, state-of-the-art large-model-based planners often rely on a single dominant planning style during execution. Once this execution mode becomes ineffective, the agent may remain stalled for many steps, repeatedly interacting with the environment without making meaningful progress. We address this limitation by proposing a Quality-Diversity (QD) framework for discovering diverse planning policies for multimodal embodied agents. The proposed method treats planning-policy templates as evolvable individuals and organizes them into a behavior-indexed archive rather than collapsing search to a single prompt style. In the offline stage, rollout trajectories are summarized into structured success and failure experiences, which guide policy variation through recombination and experience-guided mutation. The resulting policies are mapped into a behavior space defined by interaction intensity and goal-directedness, and the highest-quality policy in each niche is retained in the archive. In the online stage, the agent executes one policy at a time while monitoring task progress. When persistent stall is detected, the system rolls back to the latest checkpoint and switches to a behaviorally distinct archive policy to resume execution. Experiments on the ThreeDWorld transport benchmark show that the proposed framework improves both task success and interaction efficiency over representative baseline planners. These results suggest that discovering diverse policy repertoires is an effective way to support adaptive multimodal planning and online failure recovery.",
+      "authors": [
+        "Pengfei Xu",
+        "Yong Liu",
+        "Xiaoya Nan",
+        "Qiang Yang",
+        "Peilan Xu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-09T06:41:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.08523v1",
+      "tags": [
+        "keyword:Model",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Quality-diversity optimization for discovering diverse long-horizon planning policies in embodied agents",
+      "llm_evidence_cn": "针对具身智能体长时程任务，用质量多样性优化发现多样规划策略",
+      "llm_evidence": "针对具身智能体长时程任务，用质量多样性优化发现多样规划策略",
+      "canonical_evidence": "针对具身智能体长时程任务，用质量多样性优化发现多样规划策略",
+      "llm_tldr_en": "Large-model planners often get stuck in a single execution mode; this paper proposes a Quality-Diversity framework that evolves planning-policy templates, organizing policies into a behavior archive to improve long-horizon multimodal embodied decision making.",
+      "llm_tldr_cn": "针对多模态具身智能体在长时程任务中依赖单一规划风格、执行受阻的问题，本文提出基于质量多样性优化的框架。该方法将规划策略模板作为可进化个体，并组织成行为档案，以发现多样化的规划策略。实验表明生成的策略集合能有效避免任务停滞，提升闭环决策性能和鲁棒性。该工作为具身智能体的长时程规划提供了策略多样性保障。",
+      "llm_tldr": "针对多模态具身智能体在长时程任务中依赖单一规划风格、执行受阻的问题，本文提出基于质量多样性优化的框架。该方法将规划策略模板作为可进化个体，并组织成行为档案，以发现多样化的规划策略。实验表明生成的策略集合能有效避免任务停滞，提升闭环决策性能和鲁棒性。该工作为具身智能体的长时程规划提供了策略多样性保障。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.11204v1",
+      "source": "arxiv",
+      "title": "Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning",
+      "abstract": "Learning reliable surgical manipulation policies is bottlenecked by the scarcity of action-labeled demonstrations: teleoperated surgical robot (e.g., dVRK) trajectories with synchronized kinematics are costly to collect, while surgical tasks demand precise contact handling, long-horizon reasoning, and bimanual coordination. Endoscopic video is comparatively inexpensive and abundant relative to synchronized video--kinematics trajectories, and a natural way to exploit it is to learn world models of surgical scenes. However, existing surgical world models use video primarily for simulation or policy evaluation, and rarely translate the learned dynamics into closed-loop control. This gap raises our central question: under a fixed budget of action-labeled demonstrations, does action-free video pretraining improve closed-loop surgical manipulation? To answer it, we introduce the Surgical World-Action Model (Surgical WAM), a unified generative model built on Cosmos Policy that jointly predicts future endoscopic observations and executable surgical robot action chunks. Surgical WAM first learns surgical visual dynamics from action-free video and is then fine-tuned on the fixed action-labeled budget; at deployment, it acts as a closed-loop, receding-horizon controller that executes a short prefix of each predicted action chunk and replans from the resulting observation. On a suite of four simulated surgical manipulation tasks, video pretraining improves the average success rate from 63.5% to 77.8%, including an absolute gain of 20 percentage points on PegTransfer, with the largest improvements on contact-rich and bimanual tasks. These results demonstrate that action-free video provides transferable visual dynamics priors for learning surgical robot control with limited action supervision, positioning data-efficient video pretraining as a practical path toward scaling up surgical robot learning.",
+      "authors": [
+        "Wenrui Bao",
+        "Tianyun Jiang",
+        "Zhiben Chen",
+        "Ser-Nam Lim",
+        "Peter D. Peng",
+        "Yuzhang Shang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-08-11T17:59:13+00:00",
+      "link": "https://arxiv.org/pdf/2608.11204v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis",
+        "query:Data"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "World-action model exploiting abundant endoscopic video to learn surgical robot control under scarce action labels",
+      "llm_evidence_cn": "利用丰富的内窥镜视频学习世界动作模型，在动作标签稀缺条件下实现外科机器人控制",
+      "llm_evidence": "利用丰富的内窥镜视频学习世界动作模型，在动作标签稀缺条件下实现外科机器人控制",
+      "canonical_evidence": "利用丰富的内窥镜视频学习世界动作模型，在动作标签稀缺条件下实现外科机器人控制",
+      "llm_tldr_en": "Surgical WAM learns a world-action model from abundant endoscopic video while leveraging limited synchronized kinematics, enabling data-efficient closed-loop control for surgical manipulation tasks.",
+      "llm_tldr_cn": "外科手术机器人面临动作标注轨迹稀缺而内窥镜视频相对丰富的矛盾。本文提出Surgical WAM，将世界模型学习与闭环控制结合，在固定动作标签预算下充分利用廉价视频数据学习手术场景动态，从而以数据高效方式训练外科操作策略，为手术机器人缓解动作标签瓶颈提供了可行路径。",
+      "llm_tldr": "外科手术机器人面临动作标注轨迹稀缺而内窥镜视频相对丰富的矛盾。本文提出Surgical WAM，将世界模型学习与闭环控制结合，在固定动作标签预算下充分利用廉价视频数据学习手术场景动态，从而以数据高效方式训练外科操作策略，为手术机器人缓解动作标签瓶颈提供了可行路径。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.10278v1",
+      "source": "arxiv",
+      "title": "Chain of Spatial Thoughts: Modality-Agnostic Spatial Grounding for Vision Language Models",
+      "abstract": "Spatial understanding is fundamental to embodied intelligence, underpinning applications such as robotic manipulation, embodied navigation, and autonomous driving. Although recent vision-language models (VLMs) have achieved impressive performance on spatial reasoning benchmarks, state-of-the-art approaches typically rely on additional spatial encoders or architectural modifications during inference, increasing computational cost. We introduce Space Tokens, a lightweight, architecture-agnostic framework that equips VLMs with explicit continuous spatial representations without requiring additional inference-time modules. By distilling scene-level 3D geometry and object-centric spatial attributes into continuous latent tokens, our method enables these modalities to be directly incorporated into a chain-of-thought reasoning process, thereby improving the VLM's spatial reasoning capabilities. At the same time, the learned representations can be explicitly decoded to verify that they encode meaningful geometric information, while the unified token interface remains extensible to additional modalities. Experiments on VSI-Bench improve Qwen3-VL-8B by 4.3% and SenseNova-SI-1.3 by 1.3%, while achieving state-of-the-art performance on object size (79.2%) and room size estimation (75.7%). These results demonstrate that continuous spatial tokens provide an effective, interpretable, and computationally efficient mechanism for integrating geometric reasoning into large vision-language models.",
+      "authors": [
+        "Hunter Schofield",
+        "Mohammed Elmahgiubi",
+        "Mohammad Mahdavian",
+        "Richard Shi",
+        "Jinjun Shan",
+        "Amir Rasouli",
+        "Dongfeng Bai"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T22:20:07+00:00",
+      "link": "https://arxiv.org/pdf/2608.10278v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Space Tokens distill 3D geometry and spatial attributes into continuous latent tokens for embodied VLM reasoning",
+      "llm_evidence_cn": "Space Tokens将3D几何与空间属性蒸馏为连续隐式标记，服务具身VLM空间推理",
+      "llm_evidence": "Space Tokens将3D几何与空间属性蒸馏为连续隐式标记，服务具身VLM空间推理",
+      "canonical_evidence": "Space Tokens将3D几何与空间属性蒸馏为连续隐式标记，服务具身VLM空间推理",
+      "llm_tldr_en": "Chain of Spatial Thoughts introduces Space Tokens, a lightweight architecture-agnostic framework that equips VLMs with explicit continuous spatial representations, boosting spatial reasoning for embodied tasks without extra inference-time modules.",
+      "llm_tldr_cn": "现有视觉语言模型的空间推理往往依赖额外的空间编码器或架构改动，推理开销高。本文提出Space Tokens，一种轻量、与架构无关的框架，通过将场景级3D几何与物体中心的空间属性蒸馏为连续隐式标记，使VLM无需额外推理模块即可获得显式连续空间表示，从而支撑机器人操作、导航等具身智能任务，降低了空间推理成本并提高了通用性。",
+      "llm_tldr": "现有视觉语言模型的空间推理往往依赖额外的空间编码器或架构改动，推理开销高。本文提出Space Tokens，一种轻量、与架构无关的框架，通过将场景级3D几何与物体中心的空间属性蒸馏为连续隐式标记，使VLM无需额外推理模块即可获得显式连续空间表示，从而支撑机器人操作、导航等具身智能任务，降低了空间推理成本并提高了通用性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09564v1",
+      "source": "arxiv",
+      "title": "From Semantic Grounding to Decision Optimization: A Unified Framework for Long-Horizon UAV Vision-Language Navigation",
+      "abstract": "UAV vision-language navigation (UAV-VLN) focuses on enabling an aerial agent to follow natural-language instructions in open 3D environments from egocentric visual observations. Current approaches suffer from three coupled issues: weak grounding of instruction-relevant landmarks in visual observations, insufficient exploitation of long-horizon history, and unstable decisions under local traps or repeated exploration. To address these issues, we propose a unified semantic-to-decision framework. First, we present an instruction-grounded semantic enhancement module that injects object-level semantics and relative spatial cues into the current observation state. Subsequently, we develop a relevance-aware dynamic temporal aggregation strategy that reweights the full history buffer while converting a few high-relevance frames into structured landmark prompts for the decoder. Finally, we devise a topology-aware decision method that combines local-optimum cognition with group-relative policy optimization under progress, goal, semantic, and path-compliance rewards. Experiments on the widely used AerialVLN and OpenFly benchmarks clearly demonstrate that our method achieves state-of-the-art performance.",
+      "authors": [
+        "Zeyuan Ma",
+        "Jiaxin Chen",
+        "Di Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-08-10T12:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.09564v1",
+      "tags": [
+        "keyword:Model",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "proposes a unified framework for long-horizon UAV vision-language navigation with semantic grounding and memory of long-horizon history",
+      "llm_evidence_cn": "提出面向长时序UAV视觉语言导航的统一框架，包含语义接地与历史记忆优化",
+      "llm_evidence": "提出面向长时序UAV视觉语言导航的统一框架，包含语义接地与历史记忆优化",
+      "canonical_evidence": "提出面向长时序UAV视觉语言导航的统一框架，包含语义接地与历史记忆优化",
+      "llm_tldr_en": "A unified semantic-to-decision framework injects object-level semantics and spatial cues, plus a relevance-aware dynamic memory, to handle long-horizon UAV-VLN.",
+      "llm_tldr_cn": "UAV视觉语言导航面临指令接地弱、长时序历史利用不足和局部决策不稳定等问题。该文提出从语义到决策的统一框架：先通过指令接地语义增强模块注入目标级语义和相对空间线索，再开发相关性感知的动态记忆机制，结合决策优化改善局部陷阱。实验表明其在长时序UAV-VLN任务上显著提升导航准确率和稳定性。",
+      "llm_tldr": "UAV视觉语言导航面临指令接地弱、长时序历史利用不足和局部决策不稳定等问题。该文提出从语义到决策的统一框架：先通过指令接地语义增强模块注入目标级语义和相对空间线索，再开发相关性感知的动态记忆机制，结合决策优化改善局部陷阱。实验表明其在长时序UAV-VLN任务上显著提升导航准确率和稳定性。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Memory mechanisms, long horizon planning, and cross embodiment transfer for generalist robot model",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.10864v1",
+      "source": "arxiv",
+      "title": "Multi-View Relational Distillation for Spatial Reasoning with Vision-Language Models",
+      "abstract": "Vision-language models (VLMs) have achieved strong image and video understanding, yet their visual-spatial representations remain geometrically fragile, leading to failures in spatial reasoning needed for embodied AI, robotics, and autonomous driving. Prior approaches to geometry grounding either fine-tune VLMs on spatial question answering, which can perpetuate spurious visual representations, or fuse features from large geometry-grounded vision models, which substantially increases model size at inference. Knowledge distillation from geometry-grounded vision models offers an alternative, but directly matching multi-view teacher features can disrupt the pretrained alignment between visual and textual representations, degrading object- and language-semantic capabilities. We propose multi-view relational distillation (MVRD), which distills patch-wise cosine similarities across views instead of the teacher features themselves. These relations encode geometric correspondences adequate for spatial understanding, while leaving the student representation underdetermined, allowing it to remain close to its pretrained vision- language space. Across representative VLMs, MVRD improves visual-spatial reasoning, outperforming supervised fine-tuning and feature distillation while approaching feature fusion methods with considerably fewer added parameters and lower latency. We show that MVRD makes visual representations more geometric while retaining language alignment, and generalizes to 3D scene understanding tasks such as object grounding, dense captioning, and question answering.",
+      "authors": [
+        "Kiet T. Nguyen",
+        "Hanbo Shim",
+        "Jinwoo Kim",
+        "Seunghoon Hong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-11T12:34:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.10864v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "query:Analysis"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-view relational distillation improves visual-spatial representations of VLMs for spatial reasoning in embodied AI",
+      "llm_evidence_cn": "多视图关系蒸馏改善视觉-语言模型的视觉-空间表征，用于具身AI的空间推理",
+      "llm_evidence": "多视图关系蒸馏改善视觉-语言模型的视觉-空间表征，用于具身AI的空间推理",
+      "canonical_evidence": "多视图关系蒸馏改善视觉-语言模型的视觉-空间表征，用于具身AI的空间推理",
+      "llm_tldr_en": "Proposes multi-view relational distillation from geometry-grounded vision models to improve VLMs' spatial reasoning while preserving pretrained visual-textual alignment.",
+      "llm_tldr_cn": "视觉-语言模型的视觉-空间表征在几何上较为脆弱，影响具身AI等空间推理任务。现有基于空间问答的微调可能固化伪相关，直接融合大模型特征又会增加推理开销。本文提出多视图关系蒸馏方法，从几何接地的视觉模型中提取多视图关系知识，在增强空间推理的同时保持预训练视觉-文本对齐。实验表明该方法在空间问答和下游任务上均优于基线，同时保持模型规模不变。",
+      "llm_tldr": "视觉-语言模型的视觉-空间表征在几何上较为脆弱，影响具身AI等空间推理任务。现有基于空间问答的微调可能固化伪相关，直接融合大模型特征又会增加推理开销。本文提出多视图关系蒸馏方法，从几何接地的视觉模型中提取多视图关系知识，在增强空间推理的同时保持预训练视觉-文本对齐。实验表明该方法在空间问答和下游任务上均优于基线，同时保持模型规模不变。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "Embodied foundation model with 3D spatial understanding and reasoning capabilities",
+      "matched_requirement_id": "req-18",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.10600v1",
+      "source": "arxiv",
+      "title": "BooST: Bridging Semantics and Motions for Efficient Skill Transfer",
+      "abstract": "Skill abstraction---the process of learning reusable and temporally extended behaviors---has emerged as a key paradigm for improving sample efficiency and generalization in robot learning. For efficient skill transfer to real robots, learned skills must generalize across tasks and domains, remain robust to visual and dynamic perturbations, and be efficient enough for practical deployment. However, existing methods typically satisfy only a subset of these properties, as they capture either high-level semantic intent (what) or low-level motion dynamics (how). This incomplete skill transfer yields weak priors for policy learning, thereby demanding substantial in-domain data for downstream adaptation. To address these challenges, we introduce BooST, a two-stage framework that explicitly bridges semantics and motions to satisfy all three desiderata. BooST first leverages a cross-modal VQ-VAE to capture both semantic intent and motion dynamics, yielding a unified skill representation. It then distills this representation into a lightweight policy for efficient downstream adaptation to new tasks. Extensive experiments across simulation and real-robot settings demonstrate that BooST achieves superior few-shot adaptation, cross-domain skill transfer, and robustness to dynamic visual distractors, while maintaining a lightweight yet expressive design suitable for real-world deployment.",
+      "authors": [
+        "Jusuk Lee",
+        "Daesol Cho",
+        "Jonghun Shin",
+        "Seungyeon Yoo",
+        "Jonghae Park",
+        "Taekbeom Lee",
+        "H. Jin Kim"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-11T07:35:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.10600v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data",
+        "keyword:Model",
+        "query:Analysis",
+        "query:Data",
+        "query:Model"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Skill abstraction bridging semantics and motions for efficient skill transfer to real robots",
+      "llm_evidence_cn": "通过技能抽象连接语义与运动，实现向真实机器人的高效技能迁移",
+      "llm_evidence": "通过技能抽象连接语义与运动，实现向真实机器人的高效技能迁移",
+      "canonical_evidence": "通过技能抽象连接语义与运动，实现向真实机器人的高效技能迁移",
+      "llm_tldr_en": "Proposes a two-stage skill abstraction method that jointly captures high-level semantic intent and low-level motion dynamics, improving transfer efficiency and robustness across tasks and domains.",
+      "llm_tldr_cn": "面向真实机器人的高效技能迁移要求技能同时泛化到多任务、多域并保持鲁棒，而现有方法往往只捕捉语义或只捕捉运动。本文提出BooST两阶段技能抽象框架，同时编码“做什么”的语义意图和“怎么做”的运动动态，形成更强的策略先验。实验表明该方法在跨任务和跨域迁移中显著降低对域内数据的需求，提升了技能迁移的效率与鲁棒性。",
+      "llm_tldr": "面向真实机器人的高效技能迁移要求技能同时泛化到多任务、多域并保持鲁棒，而现有方法往往只捕捉语义或只捕捉运动。本文提出BooST两阶段技能抽象框架，同时编码“做什么”的语义意图和“怎么做”的运动动态，形成更强的策略先验。实验表明该方法在跨任务和跨域迁移中显著降低对域内数据的需求，提升了技能迁移的效率与鲁棒性。",
+      "llm_tags": [
+        "query:data"
+      ],
+      "matched_query_tag": "query:data",
+      "matched_query_text": "transferring human skills to robots",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.10618v1",
+      "source": "arxiv",
+      "title": "Toward the Cognitive--Physical Limits of Embodied Intelligence through a World-Model-Centric Autonomous Racing Agent",
+      "abstract": "Embodied artificial intelligence aims to develop agents that perceive, reason, and act through continuous interaction with the physical world. However, most embodied systems are still evaluated within conservative safety margins or moderate interaction regimes, leaving their capability boundaries under extreme conditions insufficiently understood. Autonomous racing provides a stringent testbed by combining high-frequency localization and perception, adversarial interaction, near-saturated vehicle dynamics, and strict safety constraints. Existing systems push high-speed performance but rarely model and refine cognitive and physical limits jointly. Here we show that a world-model-centric autonomous racing agent provides a concrete step toward exploring these coupled limits. The framework learns predictive world models from near-limit successes and failures to capture interaction evolution, ego dynamics, and feasible-motion boundaries, coupling world-state construction, future-aware reasoning, and near-limit control in a closed-loop refinement process. Training data were collected from real-vehicle autonomous racing, where the onboard system maintained robust localization and perception at speeds up to 256.3 km/h and peak lateral acceleration of 26.8 m/s$^2$. In full-scale simulated racing, the well trained world-model-centric agent achieves an 88.3% interaction success rate across various challenging simulated racing scenarios. Closed-loop refinement of the world model and policy further improved utilization of cognitive-physical limits, recovery from failure modes, and generalization across varying conditions and unseen circuits. These results suggest a boundary-aware methodology in which world models help embodied agents represent, predict, and continually refine their capability boundaries for safer real-world deployment.",
+      "authors": [
+        "Zitong Shan",
+        "Baichuan Lou",
+        "Yanxin Zhou",
+        "Shuge Wu",
+        "Xianqi He",
+        "Bolin Zhao",
+        "Sheng Zhao",
+        "Zhouheng Li",
+        "Chee Kiong Ong",
+        "King Ho Holden Li",
+        "Chen Lv"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-11T08:01:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.10618v1",
+      "tags": [
+        "keyword:Analysis",
+        "keyword:Data"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "world-model-centric autonomous racing agent for embodied intelligence",
+      "llm_evidence_cn": "以世界模型为中心的自动驾驶竞速智能体",
+      "llm_evidence": "以世界模型为中心的自动驾驶竞速智能体",
+      "canonical_evidence": "以世界模型为中心的自动驾驶竞速智能体",
+      "llm_tldr_en": "The paper presents a world-model-centric autonomous racing agent that jointly models cognitive and physical limits, pushing embodied intelligence to extreme conditions. It uses high-frequency perception and near-saturated vehicle dynamics to challenge current systems.",
+      "llm_tldr_cn": "针对大多数具身系统在极端条件下能力边界未被充分评估的问题，提出一种以世界模型为中心的自动驾驶竞速智能体。该方法在高频定位感知、对抗交互和接近饱和的车辆动力学条件下联合建模认知与物理极限。实验表明该智能体能够在极限工况下同时提升感知与决策能力。该工作为探索具身智能的能力边界提供了新测试平台。",
+      "llm_tldr": "针对大多数具身系统在极端条件下能力边界未被充分评估的问题，提出一种以世界模型为中心的自动驾驶竞速智能体。该方法在高频定位感知、对抗交互和接近饱和的车辆动力学条件下联合建模认知与物理极限。实验表明该智能体能够在极限工况下同时提升感知与决策能力。该工作为探索具身智能的能力边界提供了新测试平台。",
+      "llm_tags": [
+        "query:model"
+      ],
+      "matched_query_tag": "query:model",
+      "matched_query_text": "World Action Model for embodied agents",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

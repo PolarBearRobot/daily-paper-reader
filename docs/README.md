@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-08-11</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-12</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 22 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 18 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>9</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>13</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>9</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-11 21:22:32 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-12 21:13:42 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,9 +62,10 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日聚焦世界动作模型，精读两篇高分工作，分别引入几何感知潜世界建模与轨迹场时空融合，显著提升VLA学习效率。</p>
-<p>最值得关注的方向是“几何+时空”双管齐下：GWM-VLA用几何先验强化世界模型，4D-WAM则通过轨迹场注入时空感知，两者均获9.0分。</p>
-<p>若想快速跟进，建议优先浏览这两篇精读论文，并以LIRA的跨层信息路由作为辅助理解VLA解码的效率优化思路。</p>
+<p>今日共生成 18 篇推荐（精读 9 篇，速读 9 篇）</p>
+<p>精读：《Lost in Reconstruction: Aligning Action Representations with Language in Vision-Language-Action Models》（9.0/10）, 《Embodied Multimodal Grounding for Open-Vocabulary Mobile Manipulation via Semantic 3D Gaussian Splatting》（9.0/10）</p>
+<p>速读：《XCoT-VLA: Executable Chain-of-Thought for Vision-Language-Action Driving》（8.0/10）, 《Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning》（8.0/10）, 《Hierarchical Fast--Slow ReAct Agent for Zero-Shot Object-Goal Navigation》（7.0/10）</p>
+<p>这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -76,9 +77,9 @@
     <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="GWM-VLA: Geometry-Aware Latent World Modeling for Vision-Language-Action Learning">GWM-VLA: Geometry-Aware Latent World Modeling for Vision-Language-Action Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields">4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields</span></li><li><span class="dpr-home-dashboard-paper-title" title="Vid2WAM: Distilling Video Diffusion Priors into World Action Models">Vid2WAM: Distilling Video Diffusion Priors into World Action Models</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Lost in Reconstruction: Aligning Action Representations with Language in Vision-Language-Action Models">Lost in Reconstruction: Aligning Action Representations with Language in Vision-Language-Action Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Embodied Multimodal Grounding for Open-Vocabulary Mobile Manipulation via Semantic 3D Gaussian Splatting">Embodied Multimodal Grounding for Open-Vocabulary Mobile Manipulation via Semantic 3D Gaussian Splatting</span></li><li><span class="dpr-home-dashboard-paper-title" title="JEPA-WAM: Stage-Level Joint-Embedding Prediction for World-Action Models in Robot Manipulation">JEPA-WAM: Stage-Level Joint-Embedding Prediction for World-Action Models in Robot Manipulation</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>8</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>1</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>6</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -86,12 +87,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">13 篇</strong>
+    <strong class="dpr-home-dashboard-count">9 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="LIRA: Local Cross-Layer Information Routing for Vision-Language-Action Decoding">LIRA: Local Cross-Layer Information Routing for Vision-Language-Action Decoding</span></li><li><span class="dpr-home-dashboard-paper-title" title="Auditing Instruction-Trajectory Mismatches in Multimodal Robot Demonstrations">Auditing Instruction-Trajectory Mismatches in Multimodal Robot Demonstrations</span></li><li><span class="dpr-home-dashboard-paper-title" title="SG-WAM: Text-Grounded and Spatial-aware Semantic Guidance for World-Action Models">SG-WAM: Text-Grounded and Spatial-aware Semantic Guidance for World-Action Models</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="XCoT-VLA: Executable Chain-of-Thought for Vision-Language-Action Driving">XCoT-VLA: Executable Chain-of-Thought for Vision-Language-Action Driving</span></li><li><span class="dpr-home-dashboard-paper-title" title="Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning">Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Hierarchical Fast--Slow ReAct Agent for Zero-Shot Object-Goal Navigation">Hierarchical Fast--Slow ReAct Agent for Zero-Shot Object-Goal Navigation</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>9</strong></span><span class="dpr-home-dashboard-tag">analysis <strong>2</strong></span><span class="dpr-home-dashboard-tag">data <strong>2</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">model <strong>8</strong></span><span class="dpr-home-dashboard-tag">data <strong>1</strong></span></div>
 </section>
 </div>
 

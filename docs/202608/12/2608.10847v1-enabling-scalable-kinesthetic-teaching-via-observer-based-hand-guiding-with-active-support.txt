@@ -1,0 +1,244 @@
+Title: Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support
+
+URL Source: https://arxiv.org/pdf/2608.10847v1
+
+Published Time: Wed, 12 Aug 2026 01:18:19 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support 
+
+Anna Tuma 1,2, Giuseppe Monetti 1, Jochen J. Steil 2 and Niels Dehio 1,2
+
+Abstract — Kinesthetic teaching through robot hand-guiding provides a natural interface for collecting demon-strations in imitation learning and programming-by-demonstration. However, extended sessions cause operator fatigue, reducing demonstration quality and limiting scala-bility. Current industrial hand-guiding approaches typically provide no active assistance, and alternatives require costly wrist-mounted force-torque sensors or rely on learned mo-tion priors unavailable for new tasks. We propose RHOAS, a hand-guiding scheme that actively supports operator-intended motions using model-based force estimation with-out additional hardware. Our approach considers robot hand-guiding as an actively controlled interaction by the human operator, rather than an interaction with a passive environment. Standard methods used for hand-guiding typically rely on general passivity-based compliant control architectures that unnecessarily increase operator e ff ort and limit the range of demonstrable motions without providing the intended stability guarantees in active interaction. Instead, our design utilizes model-based external torque estimation, internal joint torque sensing, and redundant robot kinematics to actively support human physical input within the human interaction frequency bandwidth. We address practical challenges of relying on observer-based force estimation, including suppression of unmodeled joint elastic dynamic eff ects and measurement noise in the feedback path, reduced estimate accuracy close to kinematic singularities, and static gravity compensation errors. In a user study with 16 participants on a KUKA LWR iiwa we demonstrate statistically significant reductions in physical eff ort, improved maneuverability for both precise and agile tasks, and clear user preference. 
+
+I. INTRODUCTION Collaborative robots feature a hand-guiding mode that provides a natural interface for programming complex tasks through kinesthetic teaching [1]. This mode is increasingly important as data-driven robot learning methods — including imitation learning and programming-by-demonstration — frequently require large demonstration datasets, for which hand-guiding off ers an intuitive and accessible approach. In practice,  
+
+> Accepted for publication at the 2026 IEEE International Confer-ence on Robot and Human Interactive Communication (RO-MAN).
+> ©2026 IEEE. Personal use of this material is permitted. Permission from IEEE must be obtained for all other uses, in any current or future media, including reprinting /republishing this material for advertising or promotional purposes, creating new collective works, for resale or redistribution to servers or lists, or reuse of any copyrighted component of this work in other works. This work was supported by KUKA Deutschland GmbH and conducted at KUKA premises in Augsburg, Germany.
+> 1Technology & Innovation Center, KUKA, Augsburg, Germany
+> 2Institute of Robotics and Process Control, Technische Universit¨ at Braunschweig, Braunschweig, Germany
+
+however, collecting such data can take several hours of interaction, particularly in scenarios with high process or environment variance [2]. During extended sessions, operator fatigue becomes a critical limitation: it in-creases physical strain and progressively degrades the quality and consistency of demonstrations [3]. The standard industrial hand-guiding modes com-pensate for gravity e ff ects, while (for some manip-ulators) an internal high-frequency feedback reduces the apparent inertia of the motors [4]. Consequently, operators can interact safely as the robot responds to external forces and moves accordingly. However, grav-ity compensation provides no active assistance, leaving the operator to perform all the work of initiating and directing the motion against the robot’s inertia, which becomes exhausting over time. For redundant manip-ulators, the need to simultaneously manage TCP and nullspace motion further increases the di ffi culty [5]. To address this challenge, several works have uti-lized wrist-mounted force-torque (FT) sensors to infer motion intent and enhance the hand-guiding experi-ence. Measured interaction forces have been employed in adaptive [6], [7], learning-based [8], [9], and model-based [10], [11] and hybrid [12], [13] controllers de-signed to alleviate operator e ff ort. Despite decreasing FT sensor prices, these devices remain costly relative to collaborative robot platforms, making the high-quality kinesthetic teaching at scale particularly expensive. External forces applied to the robot can also be esti-mated without direct measurement using the dynamic robot model and integrated joint torque sensors. This has been extensively studied for collision detection [14], with numerous observers [15], [16] and estimators [17], [18] established in research and industry. For robots with integrated elastic joint torque sensors, motor-side friction is separated from the external torque in the link dynamics, making the estimate significantly more suitable for inferring user intentions [19], [20]. Prior work on sensorless hand-guiding uses such estimates to enable basic guidance on robots lacking joint torque sensors by compensating friction [19], [20] — a di ff erent problem from actively supporting operator-intended motions. To our knowledge, observer-based force es-timation has not been applied for closed-loop active motion support during hand-guiding. Another group of methods, applicable for hand-guiding, relies on general compliant control architec-tures, where passivity-based design ensures stable be-arXiv:2608.10847v1 [cs.RO] 11 Aug 2026 (a) Estimate-based assisted acceleration towards target 
+
+> (b) Assisted deceleration before reaching target
+> (c) Converging at target location
+> (d) Assisted acceleration towards next target
+
+Fig. 1: Visualization of the proposed active support during a hand-guiding experiment (see supplementary video). The transparent robot shadow shows the e ff ect of the supportive torque action by displaying a proxy of the velocity setpoint (10) mapped to robot joint space. The shadow intuitively reveals how the observer-based processing pipeline translates operator-applied forces into responsive motion support — assisting both acceleration and deceleration phases without noticeable artifacts from modelling inaccuracies or estimation delays. havior under the assumption that the environment is passive [4], [21]. However, hand-guiding is a special case of compliant interaction in which the human operator actively controls the robot throughout the demonstration, rather than constituting an unknown passive environment. Since the passivity assumption is not satisfied during hand-guiding, the associated conservatism unnecessarily increases operator eff ort and limits the range of demonstrable motions, without providing the intended stability guarantees. We propose RHOAS (Robot Hand-guiding with Observer-based Active Support), a hand-guiding scheme built on three key design principles. First, we consider hand-guiding as a special case of compliant interaction where the interacting system is not passive, but actively controlling the robot. Second, we design the controller to actively support the human actions in the range of their motor capabilities, in terms of both re-sponse bandwidth and gain magnitude; this is achieved through a combination of response frequency filtering and a suitable control architecture. Third, we utilize the momentum-based force estimation and leverage it’s advantages such as lower noise sensitivity and suitabil-ity for robotic arms with direct joint torque sensing, to achieve reliable and e ff ective motion assistance. Our contributions are: 1. Robot response shaped to match human motor capabilities : by treating the human operator as the controller of the human-robot system rather than an unknown environment, we design the robot response to be well-suited for typical hu-man motor and proprioceptive capabilities. 2. Reduced operator eff ort : enabling extended teaching sessions and large-scale data collection by significantly lowering the physical e ff ort. 3. Enabling demonstration of fast and agile motions : otherwise very di ffi cult with cur-rent gravity-compensation, passivity-based, or learning-based compliant control approaches. 4. Scalability : high-quality motion data-collection with collaborative manipulators, without the ad-ditional cost of wrist-mounted FT sensors. 5. Improved demonstration quality : enhanced pre-cision, maneuverability, and user perception. The design is validated in a user study with 16 participants, demonstrating statistically significant re-ductions in physical e ff ort ( p < 10 −4), improved user preference ( p < 10 −5), and substantially enhanced ma-neuverability in agile tasks. II. PRELIMINARIES Our approach considers a fixed-base lightweight torque-controlled robot manipulator that is equipped with motor encoders for joint position measurements and joint-embedded torque sensors measuring elas-tic torque. In this section, we (i) provide a concise overview of the robot dynamics and (ii) revisit the state-of-the-art momentum observer used for external force estimation. 
+
+A. ROBOT DYNAMICS 
+
+Consider a kinematic chain with n joints. Link dy-namics are modeled (in the reduced form [22]) as 
+
+M (q)¨q + C(q, ˙q) ˙q + g(q) = τJ + τext , (1) where q, ˙q, ¨q ∈ Rn are the joint positions, velocities and accelerations respectively, M (q) ∈ Rn×n is the generalized inertia matrix, C(q, ˙q) ∈ Rn×n is the matrix of Coriolis and centrifugal terms, and g(q) ∈ Rn is the vector of torques due to gravity. On the right-hand side, τJ ∈ Rn is the joint elastic torque, containing the contribution of motor torques and the e ff ects of joint elasticity and motor dynamics. Lastly, τext ∈ Rn is the external torque, resulting from the forces applied to the robot by a human operator during hand-guiding, as shown in Fig. 2, influenced by unmodeled dynamics and other disturbances. In the following, we expect the forces applied by the human operator to be dominant to other mentioned e ff ects, and use their estimation to improve the hand-guiding interaction. Eq. (1) assumes that joint damping and friction on the link side of the transmission are negligible. 
+
+B. Estimation of Externally Applied Spatial Force 
+
+To estimate the external torque τext in (1), we utilize the momentum observer approach introduced by [15] with the following form 
+
+ˆτext = L
+
+"
+
+ˆp −
+
+Z t
+
+> 0
+
+τJ + ˆτext + ˆC(q, ˙q)T ˙q − ˆg(q) dt 
+
+#
+
+,
+
+(2) where ˆp = ˆM (q) ˙q − ˆM (q0) ˙q0 ∈ Rn is the estimated generalized momentum. This observer has the dynam-ics of n decoupled first-order filters and a time constant determined by a diagonal positive definite gain matrix 
+
+L ∈ Rn×n. In this formulation, we rely on the identified robot model in the form of the Coriolis and centrifugal matrix ˆC(q, ˙q) ∈ Rn×n and the gravity torque ˆ g(q) ∈ Rn,and the availability of joint position q, joint velocity ˙q
+
+and joint elastic torque τJ vectors. For the purpose of our hand-guiding control scheme, we focus on the case where the user is mainly apply-ing forces at the tool center point (TCP). The spatial force ˆFext ∈ R6 applied at the tool is obtained from the estimated external torques ˆτext through 
+
+ˆFext = JT(q)#
+
+ˆτext , (3) using the Jacobian pseudoinverse solution [14]. It follows that the quality of the estimate ˆFext is significantly influenced by model inaccuracies, unmod-eled dynamics, observer dynamics and other factors. This fact makes it non-trivial to use ˆFext in the context of physical human-robot interaction for hand-guiding with active support, and requires special care compared to common FT sensor-based hand-guiding control ar-chitectures. III. APPROACH We introduce RHOAS, a control approach that ac-tively supports operator-intended motions using es-timated externally applied forces, without requiring a wrist-mounted FT sensor. Our approach uses the estimated externally applied spatial force as feedback to decrease the human e ff ort required for moving the robot by hand. We address the challenges involved in integrating the estimate in the control loop, particularly in relation to singular configurations and model inac-curacies (Sec. III-A). Following this, we design a control scheme that leverages the estimate to actively assist the user’s intended TCP motion (Sec. III-B). 
+
+Fig. 2: Overview of the proposed control scheme. To ini-tiate desired robot motion, the operator applies forces that are estimated (Sec. II-B) based on the measurement of joint position and joint elastic torque. This informa-tion is postprocessed (Sec. III-A) and utilized to actively support the intended movement (Sec. III-B). 
+
+A. Control-Oriented Estimate Processing Pipeline 1) Limiting the estimate and robot response bandwidth: 
+
+First, we limit the bandwidth of the force estimate (3) to human interaction frequencies and thereby avoid ex-citation of the unmodeled joint elastic dynamic modes in the feedback loop. According to the study by [23], human control actions are generally restricted to fre-quencies no higher than 2 Hz. Therefore, we filter the estimated external force ˆFext with a low-pass filter at a cuto ff frequency of 5 Hz to match the expected human bandwidth, yielding ˆF′
+
+> ext
+
+. This su ffi ciently reduces the influence of high-frequency information that cannot be attributed to the human actions, while avoiding un-necessarily increased resistance during typical human motions, and results in a more natural robot behavior for the operator. Note that low-pass filtering introduces delay, which could be problematic when combined with a less effi cient external torque estimation approach. In our case, however, the total response delay remains below the threshold of human perception, ensuring that the operator’s ability to control the robot and the perceived robot responsiveness are not negatively a ff ected. 
+
+2) Confidence factor: Accounting for reduced accuracy of ˆFext , near kinematic singularities is critical when integrating it within the control loop. Inspired by re-lated works that modify singular values in projection operators [24], we tackle this issue by introducing a configuration-dependent confidence factor c f (λmin ) ∈
+
+[0 , 1] to reduce the magnitude of estimated and filtered external spatial force ˆF′ 
+
+> ext
+
+as singular configurations are approached 
+
+ˆF′′  
+
+> ext
+
+= c f (λmin ) · ˆF′ 
+
+> ext
+
+. (4) This e ff ectively disables the estimate-based motion sup-port when the confidence is low, transitioning to pure zero-gravity torque mode 1. Our solution enables us 
+
+> 1Gravity compensation is not a ff ected by singularities.
+
+0 0.1 0.2 0.3 0.4 0.500.51
+
+λmin 
+
+> c f (λmin )
+
+Fig. 3: Confidence function for σ = 0.11, selected in the experiments. The function values close to zero λmin 
+
+scale down the estimate magnitude and thereby transi-tion from the active support to pure zero-gravity mode. to enhance the ease of hand-guiding through active support in most regions of the workspace, while main-taining safe behavior (e.g., gravity compensation only) near singularities. The scalar confidence factor c f is determined via an exponential decay function applied to the smallest singular value λmin ∈ R of the TCP Jacobian matrix 
+
+c f (λmin ) = 1 − exp −
+
+ λmin 
+
+σ
+
+6!
+
+, (5) to ensure a smooth transition and su ffi cient flatness to suppress the active control when λmin exceeds the selected confidence threshold σ ∈ R. Fig. 3 shows the graph of the function for a threshold of σ = 0.11. 
+
+3) Estimate projection: Lastly, the estimate accuracy is impacted on low frequencies by the e ff ect of grav-ity compensation imperfections 2, resulting in residual torque acting on the robot body. This torque is regarded as external and, unless special precautions are taken, it is further magnified by the control architecture intro-duced in Sec. III-B. To mitigate amplification of this eff ect, we avoid using the external force estimate in the direction of the gravity vector, achieved through an orthogonal projection Pxy = diag {1, 1, 0, 0, 0, 1} in the world-coordinate system 
+
+ˆFp 
+
+> ext
+
+= Pxy ˆF′′  
+
+> ext
+
+, (6) selecting the estimate components parallel to the ground. Ideally, the external force should be projected orthogonal to the anticipated gravity compensation er-ror direction, taking into account the robot’s dynamics. This approach may allow for further improvements in future work. 
+
+B. Hand-guiding Control Architecture 
+
+We here introduce a control scheme specifically de-signed to utilize the postprocessed external spatial force 
+
+> 2Imperfect compensation of Coriolis and centrifugal forces is neg-ligible for slow velocities during handguiding.
+
+estimate ˆFp 
+
+> ext
+
+for actively supporting user motions. The aim of our architecture is to ensure that the hand-guiding is e ff ortless for the user, while maintaining intuitive and natural physical behavior. Fig. 4 shows the proposed control structure, with the final command τcmd ∈ Rn consisting of the actively supporting controller τact ∈ Rn, composed of the veloc-ity controller τvel (Sec. III-B.1), reflex extension τre f lex 
+
+(Sec. III-B.2), and nullspace damping τnull (Sec. III-C): 
+
+τact = τvel + τre f lex + τnull , (7) as well as the repulsive constraint avoidance torque 
+
+τrepulsive ∈ Rn and gravity compensation torque ˆ g(q)
+
+τcmd = τact + τrepulsive + ˆg(q) . (8) 
+
+1) Cartesian Velocity Controller: The active support of the TCP motion is designed on the velocity level, where the estimated and postprocessed external spatial force ˆFp 
+
+> ext
+
+applied by the user is mapped to a desired TCP spatial velocity Vdes ∈ R6 through a diagonal pos-itive definite force-to-velocity gain matrix Kv ∈ R6×6
+
+as 
+
+Vdes = Kv ˆFp 
+
+> ext
+
+. (9) A feedback controller maps the velocity error through proportional gain matrix Pv ∈ R6×6 onto a reference acceleration, and through spatial inertia matrix Λ(q) ∈
+
+R6×6 to obtain the spatial force command. Then we obtain τvel by converting the spatial force command to joint torques via TCP Jacobian matrix transpose J(q)T ∈
+
+Rn×6 as 
+
+τvel = J(q)T [Λ(q)Pv(Vdes − Vcur )] , (10) where Vcur = J(q) ˙q is the current spatial velocity of TCP. We deliberately avoid relying on the low-level position control interface that is commonly utilized for admittance control implementation. When using the observer instead of a direct external force mea-surement, the integration of the desired velocity for position-level control command leads to the accumula-tion of model inaccuracies during estimation. Further-more, this integral action introduces an unnecessary delay, which combined with the observer delay, results in a negative impact on the overall response. Another advantage of our formulation is the unique representation of spatial velocity, which avoids the need of choosing a particular orientation format. In preliminary experiments, we confirmed that relying solely on velocity tracking shows better performance in observer-based hand-guiding control compared to integration for position. Furthermore, selecting a relatively slow response in (10), which feels natural and safe for human operators, mitigates the stability issues related to force feedback in contact with a rigid environment. As stated by [26], Fig. 4: Proposed hand-guiding control architecture (7). At the core is the Cartesian velocity controller (Sec. III-B.1), actively supporting TCP motion by controlling the spatial velocity to desired value, proportional to the estimated external forces. It can be extended with reflex action (Sec. III-B.2), and with nullspace task for redundant robots (Sec. III-C). Additionally repulsive torques [25] are added for avoiding joint constraints and gravity torques are compensated by the built-in low-level controller (8). the closed-loop system stability with force feedback can be determined by the criterion 0 < TGK e < 1 , (11) where T is the sampling rate, G is the force feedback gain, and Ke is the combined sti ff ness of the sensor and the environment (in this case the human, any encountered objects and unmodelled dynamics or dis-turbances). The problematic characteristics of sti ff FT sensors [21] are mitigated by replacing them with an observer, limiting Ke even in contact with rigid objects. The combination of limited environment sti ff ness and low force feedback gain ensures su ffi cient robustness of the hand-guiding controller in practical experiments, including collisions with rigid objects. 
+
+2) Reflex extension: A second component τre f lex is dedicated to achieve active support via direct external force feedback. We denote this component as reflex due to its resemblance to the reflex reaction strategy in [27]. This extension further increases the responsiveness of the robot to user actions and reduces the robot’s resis-tance to movement during interaction. The reflex action τre f lex is computed based on the estimated externally applied spatial force ˆFext , using a diagonal reflex gain matrix Kr ∈ R6×6 and the TCP Jacobian to map the action to the joint torque command 
+
+τre f lex = J(q)TKr ˆFext . (12) 
+
+C. Role of kinematic redundancy in control robustness 
+
+During the handguiding of redundant arms, the need for simultaneous handling of both tool and nullspace motion in a kinematically redundant subspace addi-tionally increases handguiding di ffi culty [5]. In our design, we utilize this kinematic redundancy to our benefit by introducing an additional projected dissipative (damping) torque τnull into the tool velocity nullspace. This serves two purposes: firstly, we improve the controllability of the robot arm for the human who can still utilize full support of the observer in TCP velocity space, but does not need to fully control the rest of the motion. Secondly, this additional dissipation improves overall control robustness against modeling inaccuracies or resonance modes that could be excited through the observer-based feedback path. IV. USER STUDY The following user study was examined and ap-proved in assessment process of KUKA Deutschland GmbH, evaluating experiment methodology, safety and data protection. Consent from the human subjects in the research was obtained prior to each trial. To en-sure the safety of our subjects, we conducted a risk assessment, implemented various safety measures and informed the subjects of any associated risks. 
+
+A. Methodology and Demographics 
+
+The group of 16 user study participants was selected to the best of our ability to provide a wide variety of physiological characteristics (height, strength), gender representation, and various professional background and experience with robotics. The experiments (precision and agility) were per-formed in two rounds with blind and randomly shuf-fled order of compared approaches for each user, in or-der to minimize any bias caused by execution sequence or naming. In total, each user performed 32 individual experiments, resulting in a total of 256 evaluated trials. 
+
+B. Experiment Design 
+
+Two experiments have been designed to assess the performance of our control scheme, each representing the opposite extremes of hand-guiding challenges. 
+
+Precision Experiment: In the first experiment, we focus on precision-oriented motions, instructing users to trace a rectangular path using a marker mounted on our robot’s hand-guiding tool. The path is outlined on a soft pad, depicted in Fig. 5. This experimental setup allows us to evaluate how our proposed method performs during both linear TCP motions and abrupt motion changes, which are challenging to execute ac-curately when hand-guiding articulated robots. 
+
+Agility Experiment: In the second experiment, we investigate the behavior during larger, more agile mo-tions. Participants were asked to move the tool between two small boxes located approx. 60 cm apart from each other at a challenging pace of 45 bpm, set by a metronome, and contact with the attached pen the box on each beat (refer to Fig. 5). The challenging pace requires fast robot manoeuvrability and operates close to the limit of non-expert human motor capabilities. Fig. 5: Setup of precision and agility experiments. On the top is the precision experiment, where the user is guiding the robot to follow a reference path and adjusting the body with the other hand. On the bottom is the agility experiment, showcasing fast, repetitive movement with a pacer between target boxes. 
+
+Experimental Platform: All experiments were con-ducted on the redundant 7 DoF KUKA LWR iiwa in the 7 kg payload version, controlled through Fast Research Interface (FRI) [28] at 5ms update rate, utilizing the gravity torque and friction compensation provided by the manufacturer. To ensure a reliable metric calcula-tion in the evaluation and verification of our control approach, irrespective of the quality of the external force estimation, we additionally measured the spatial force applied to the TCP using an ATI mini 58 wrist-mounted FT sensor with NetBox for communication over Ethernet (not used within the control loop). We further utilized the provided low-pass filter options and compensated the signal delay in postprocessing steps. We also designed a custom 3D-printed tool with an ergonomic grip (see Fig. 5). 
+
+C. Compared Control Methods 
+
+In the user study, we compare our RHOAS approach in two di ff erent variants (w /wo reflex extension) with two baselines. In the following, we briefly introduce the compared methods and their abbreviations. 1. CV (Cartesian Velocity Controller): Our observer-based approach as introduced in (8) without the reflex action, i.e. Kr = 0, supporting the TCP movement and suppressing motions in the nullspace with gains Kv = 0.15 · I6×6, and Pv =
+
+0.7 · I6×6.2. CVR (Cartesian Velocity-Reflex Controller): Extended version of the CV controller with iden-tical gains Kv and Pv, including the reflex action in (8) with Kr = 0.1 · I6×6.3. G (Gravity Compensation Controller): Zero-gravity compensation scheme as provided by the low-level controllers of KUKA LWR iiwa with additional joint constraint avoidance on high-level, without any further high-level com-mands, i.e. Pv = Kr = 0 in (8). Included as the standard approach to hand-guiding control. 4. CAD (Cartesian Adaptive Damping Controller): Alternative approach to our proposed controller design, inspired by [6], however, based on the force estimate instead of a FT-sensor signal. This controller utilizes the external spatial force in a passive way for the adaptation of Cartesian damping. The adaptation is performed in linear dependence on the magnitude of the force, de-creasing the damping when the applied forces are higher (to facilitate larger movements) and increasing when the applied forces are lower (to make more precise movements easier to execute). 
+
+D. Metrics 
+
+We assess hand-guiding methods by analyzing three performance aspects: human e ff ort, user preferences, and task execution quality. To evaluate human e ff ort ,we compute the energy required to complete the task by integrating human power throughout the experi-ment execution: R 
+
+> t
+
+f(t)T v(t), where v(t) is the TCP twist, and f(t) is the external wrench measured by a wrist-mounted FT-sensor. In the precision experiment, this spans the entire reference path, while in the agility experiment, we evaluate movement between two boxes for 30 seconds at identical pace for all users. Next, we evaluate the user preferences across the four control methods (CV, CVR, G, CAD). In each round of the experiment, the users provide a relative ranking of controllers by ordering them from best (1) to worst (4) according to their preference for the specific task. To ensure unbiased ranking, the order of the con-trollers was unknown to the users during evaluation and randomized in each round. Lastly, we assess the task execution quality . This involves evaluation of the mean distance deviation from the reference path for the precision experiment, and the mean time deviation from the reference pace on every metronome beat for the agility experiment. Additionally, we track the number of beats that were TABLE I: Experimental results comparing the proposed (CV, CVR) and baseline (G, CAD) controllers across all evaluated metrics. Each value in table is reported as mean (standard deviation). Lower values indicate better performance for all metrics. Additionally, one-way ANOVA ( F statistic and p-value) is calculated for each metric based on all collected data.                                          
+
+> CV CVR GCAD
+> Human e ff ort : Exerted energy (%) normalized by the total energy exerted by individual user ( F=9.29, p<10 −4).
+> Precision 24.2 (3.3) 24.2 (5.7) 25.4 (3.9) 26.2 (5.2)
+> Agility 23.0 (3.7) 22.8 (4.8) 27.3 (3.5) 26.9 (4.4)
+> Overall 23.6 (3.5) 23.5 (5.3) 26.3 (3.8) 26.5 (4.9)
+> Human e ff ort : Exerted energy (J) before normalization per user and experiment round ( F=0.45, p>0.05).
+> Precision 20.8 (15.6) 21.2 (18.0) 21.1 (13.1) 23.3 (18.2)
+> Agility 183.5 (78.4) 186.1 (94.7) 222.0 (99.1) 209.0 (80.4)
+> User preference : Relative controller ranking by users in each round ( F=9.71, p<10 −5).
+> Precision 2.44 (1.03) 2.59 (1.09) 2.53 (1.09) 2.44 (1.20)
+> Agility 1.88 (0.79) 1.66 (0.78) 3.06 (0.97) 3.41 (0.79)
+> Overall 2.16 (0.96) 2.13 (1.06) 2.80 (1.09) 2.92 (1.12)
+> Task quality : Count of missed metronome beats during single agility experiment ( F=0.51, p>0.05).
+> Agility 1.16 (1.91) 1.16 (2.55) 1.56 (2.89) 2.06 (4.16)
+
+missed completely during task execution due to user’s di ffi culties with the desired pace. 
+
+E. Experimental Results 
+
+In the following, we present both descriptive and inferential analysis of the experimental results. The comparison of controllers in terms of mean and stan-dard deviation of the observed metrics is reported in Tab. I. Additionally, we performed a one-way Welch’s ANOVA (analysis of variance) to assess the statistical significance of the results. For the results with high significance based on ANOVA ( p < 0.05) we further perform a pairwise one-tailed Welch’s t-test (see Tab. II) to assess individual controller’s performance drop or increase against the baselines. To account for di ff erences in movement e ffi ciency between individual users, we normalize the exerted energy by the total exerted energy by the concrete user in the evaluated experiment round. With this, we can mitigate the variance in data caused by individual user’s capabilities and better isolate the impact of using the evaluated controllers. TABLE II: One-tailed Welch’s t-test results comparing means of proposed and baseline controllers for statisti-cally significant ANOVA results ( H0 : μproposed ≥ μbaseline ).                                            
+
+> Proposed Baseline t-statistic p-value
+> Human e ff ort : Normalized exerted energy by human. CV G−4.11 3.53 ·10 −5
+> CV CAD −3.81 1.11 ·10 −4
+> CVR G−3.42 4.32 ·10 −4
+> CVR CAD −3.31 5.96 ·10 −4
+> User preference : Relative controller ranking by users. CV G−3.50 3.20 ·10 −4
+> CV CAD −4.12 3.41 ·10 −5
+> CVR G−3.51 3.07 ·10 −4
+> CVR CAD −4.11 3.55 ·10 −5
+
+Both proposed controllers outperform the baselines in terms of reducing the required human e ff ort. The en-ergy required to follow the trajectory from start to end, or to move the TCP between boxes at a specified pace, using CV and CVR controllers, was lower than with pure gravity compensation (G) and Cartesian adaptive damping controller (CAD) (see. Tab. I). This improve-ment suggests both positive impact on lowering the resistance to motion, as well as, better controllability of the TCP movement. Merely relying on low motion resistance without reshaping the robot’s reaction in user’s intended direction leads to more frequent and aggressive path corrections. This e ff ect was prevalent with the gravity compensation controller, where the user has to move a system with significant inertia unassisted, making it di ffi cult to control the motion direction. The distribution of normalized energy values from both experiments is shown in Fig. 6. Also in terms of user preferences, the proposed con-trollers obtained a better mean rating compared to the baseline methods, with a high level of statistical signifi-cance ( p < 10 −3) compared to the baselines as shown in Tab. II. Both CV and CVR obtained comparable overall user preference, with CV favored in precision tasks and CVR in agility tasks. Finally, the results also suggest improvement in terms of task execution quality, however, this trend could not be confirmed with statistical significance based on the collected data. The reduced number of missed beats while performing agility task at desig-nated pace would again correspond to increased ma-neuverability obtained with CV and CVR controllers. To validate this hypothesis and draw conclusions about other quality metrics, a more extensive user study would be required to isolate these e ff ects from the individual di ff erences in human performance. Fig. 6: Distribution of normalized exerted human en-ergy values. Both the CV and CVR controllers show im-provement over the baselines, especially in the agility experiment. Data distribution is depicted with the quartiles and data range as solid lines and the mean value as green dashed line. V. CONCLUSIONS We presented RHOAS, a hand-guiding control scheme that actively supports operator-intended mo-tions using observer-based force estimation. Our de-sign exploits the fundamental di ff erence between hand-guiding and general compliant interaction: the human operator actively controls the robot, and the robot’s response is shaped to match their motor capabilities. A user study with 16 participants confirmed statistically significant reductions in physical e ff ort, improved ma-neuverability and clear user preference over baseline methods. By not requiring external sensors, RHOAS makes enhanced hand-guiding accessible for scalable kinesthetic teaching and large-scale demonstration col-lection. Desirable future work would include validation on other robot platforms, as well as an ablation study of the individual design components and parameters. References 
+
+[1] H. Ravichandar, A. S. Polydoros, S. Chernova, and A. Billard, “Recent advances in robot learning from demonstration,” Annu. Rev. Control Robot. Auton. Syst. , vol. 3, no. 1, pp. 297–330, 2020. [2] G. Meli and N. Dehio, “Robot Cell Modeling via Exploratory Robot Motions: A Novel and Accessible Data-Driven Ap-proach,” IEEE Robot. Autom. Mag. , 2025. [3] L. Peternel, N. Tsagarakis, D. Caldwell, and A. Ajoudani, “Adaptation of robot physical behaviour to human fatigue in human-robot co-manipulation,” in 2016 IEEE-RAS 16th Inter-national Conference on Humanoid Robots (Humanoids) , 2016, pp. 489–494. [4] A. Albu-Sch¨ aff er, C. Ott, and G. Hirzinger, “A Unified Passivity-based Control Framework for Position, Torque and Impedance Control of Flexible Joint Robots,” The Int. Journal of Robotics Research , vol. 26, no. 1, pp. 23–39, 2007. [5] S. Wrede, C. Emmerich, R. Gr ¨ unberg, A. Nordmann, A. Swadzba, and J. Steil, “A user study on kinesthetic teaching of redundant robots in task and configuration space,” 
+
+J. Hum.-Robot Interact. , vol. 2, no. 1, pp. 56–81, 2013. [6] S. Gopinathan, S. Otting, and J. Steil, “A user study on person-alized adaptive sti ff ness control modes for human-robot inter-action,” in 26th IEEE Int. Symp. on Robot and Human Interactive Communication (RO-MAN) . IEEE, 2017, pp. 831–837. [7] Y. M. Hamad, Y. Aydin, and C. Basdogan, “Adaptive Human Force Scaling via Admittance Control for Physical Human-Robot Interaction,” IEEE Trans. on Haptics , vol. 14, no. 4, pp. 750–761, 2021. [8] A. Al-Yacoub, Y. C. Zhao, W. Eaton, Y. M. Goh, and N. Lohse, “Improving human robot collaboration through Force /Torque based learning for object manipulation,” Robotics and Computer-Integrated Manufacturing , vol. 69, p. 102111, 2021. [9] D. Nicolis, A. M. Zanchettin, and P. Rocco, “Human Intention Estimation based on Neural Networks for Enhanced Collabora-tion with Robots,” in IEEE /RSJ Int. Conf. on Intelligent Robots and Systems (IROS) , 2018, pp. 1326–1333. [10] R. Gregor, A. Babinec, F. Ducho ˇ n, and M. Dobiˇ s, “Hand Guid-ing a Virtual Robot Using a Force Sensor,” Acta Mechanica et Automatica , vol. 15, no. 3, pp. 177–186, 2021. [11] Y. S. Shao, T. Li, S. Keyvanian, P. Chaudhari, V. Kumar, and N. Figueroa, “Constraint-Aware Intent Estimation for Dynamic Human-Robot Object Co-Manipulation,” in Robotics: Science and Systems (RSS) , 2024. [12] K. Haninger, C. Hegeler, and L. Peternel, “Model Predictive Control with Gaussian Processes for Flexible Multi-Modal Phys-ical Human Robot Interaction,” in Int. Conf. on Robotics and Automation (ICRA) , 2022, pp. 6948–6955. [13] M. Lawitzky, J. R. Medina, D. Lee, and S. Hirche, “Feedback motion planning and learning from demonstration in physical robotic assistance: di ff erences and synergies,” in IEEE /RSJ Int. Conf. on Intelligent Robots and Systems . IEEE, 2012, pp. 3646– 3652. [14] S. Haddadin, A. De Luca, and A. Albu-Sch¨ aff er, “Robot Col-lisions: A Survey on Detection, Isolation, and Identification,” 
+
+IEEE Transactions on Robotics , vol. 33, pp. 1292–1312, 2017. [15] A. De Luca, A. Albu-Scha ff er, S. Haddadin, and G. Hirzinger, “Collision detection and safe reaction with the DLR-III lightweight manipulator arm,” in IEEE /RSJ Int. Conf. on Intel-ligent Robots and Systems , 2006, pp. 1623–1630. [16] G. Garofalo, N. Mansfeld, J. Jankowski, and C. Ott, “Sliding Mode Momentum Observers for Estimation of External Torques and Joint Acceleration,” in Int. Conf. on Robotics and Automation (ICRA) . IEEE, 2019, pp. 6117–6123. [17] A. Wahrburg, E. Morara, G. Cesari, B. Matthias, and H. Ding, “Cartesian contact force estimation for robotic manipulators using Kalman filters and the generalized momentum,” in 2015 IEEE Int. Conf. on Automation Science and Engineering (CASE) ,2015, pp. 1230–1235. [18] L. Manuelli and R. Tedrake, “Localizing external contact using proprioceptive sensors: The Contact Particle Filter,” in IEEE /RSJ Int. Conf. on Intelligent Robots and Systems (IROS) , 2016, pp. 5062– 5069. [19] S.-D. Lee, K.-H. Ahn, and J.-B. Song, “Torque control based sensorless hand guiding for direct robot teaching,” in IEEE /RSJ Int. Conf. on Intelligent Robots and Systems (IROS) , 2016, pp. 745– 750. [20] S. Zhang, S. Wang, F. Jing, and M. Tan, “A Sensorless Hand Guiding Scheme Based on Model Identification and Control for Industrial Robot,” IEEE Trans. on Industrial Informatics , vol. 15, no. 9, pp. 5204–5213, 2019. [21] C. Ott, Cartesian Impedance Control of Redundant and Flexible-Joint Robots , ser. Springer Tracts in Advanced Robotics. Springer, 2008, vol. 49. [22] M. W. Spong, “Modeling and Control of Elastic Joint Robots,” 
+
+Journal of Dynamic Systems, Measurement, and Control , vol. 109, no. 4, pp. 310–318, 1987. [23] I. I. Delice and S. Ertugrul, “Intelligent Modeling of Human Driver: A Survey,” in IEEE Intelligent Vehicles Symp. , 2007, pp. 648–651. [24] A. Dietrich, A. Albu-Scha ff er, and G. Hirzinger, “On con-tinuous null space projections for torque-based, hierarchical, multi-objective manipulation,” in IEEE International Conference on Robotics and Automation . IEEE, 2012, pp. 2978–2985. [25] J. D. M. Osorio, F. Allmendinger, M. D. Fiore, U. E. Zimmer-mann, and T. Ortmaier, “Physical Human-Robot Interaction under Joint and Cartesian Constraints,” in 19th Int. Conf. on Advanced Robotics (ICAR) . IEEE, 2019, pp. 185–191. [26] D. E. Whitney, “Force Feedback Control of Manipulator Fine Motions,” Journal of Dynamic Systems, Measurement, and Control ,vol. 99, no. 2, pp. 91–97, 1977. [27] S. Haddadin, A. Albu-Scha ff er, A. De Luca, and G. Hirzinger, “Collision Detection and Reaction: A Contribution to Safe Physical Human-Robot Interaction,” in IEEE /RSJ Int. Conf. on Intelligent Robots and Systems , 2008, pp. 3356–3363. [28] G. Schreiber, A. Stemmer, and R. Bischo ff , “The Fast Research Interface for the KUKA Lightweight Robot,” in IEEE Int. Conf. on Robotics and Automation (ICRA) Workshop , 2010.

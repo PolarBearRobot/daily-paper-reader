@@ -1,0 +1,246 @@
+Title: Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning
+
+URL Source: https://arxiv.org/pdf/2608.11204v1
+
+Published Time: Wed, 12 Aug 2026 01:44:46 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning 
+
+# Wenrui Bao 1, Tianyun Jiang, Zhiben Chen, Ser-Nam Lim 1, Peter D. Peng 2, Yuzhang Shang 1∗
+
+> 1
+
+University of Central Florida, 2AdventHealth 
+
+Abstract 
+
+Learning reliable surgical manipulation policies is bottlenecked by the scarcity of action-labeled demonstrations: teleoperated surgical robot (e.g., dVRK) trajectories with synchronized kine-matics are costly to collect, while surgical tasks demand precise contact handling, long-horizon reasoning, and bimanual coor-dination. Endoscopic video is comparatively inexpensive and abundant relative to synchronized video–kinematics trajecto-ries, and a natural way to exploit it is to learn world models of surgical scenes. However, existing surgical world models use video primarily for simulation or policy evaluation, and rarely translate the learned dynamics into closed-loop control. This gap raises our central question: under a fixed budget of action-labeled demonstrations, does action-free video pretraining improve closed-loop surgical manipulation? To answer it, we introduce the Surgical World-Action Model ( Surgical WAM ), a unified generative model built on Cosmos Policy that jointly predicts future endoscopic observations and executable surgi-cal robot action chunks. Surgical WAM first learns surgical visual dynamics from action-free video and is then fine-tuned on the fixed action-labeled budget; at deployment, it acts as a closed-loop, receding-horizon controller that executes a short prefix of each predicted action chunk and replans from the resulting observation. On a suite of four simulated surgical manipulation tasks, video pretraining improves the average success rate from 63 .5% to 77 .8% , including an absolute gain of 20 percentage points on PegTransfer, with the largest im-provements on contact-rich and bimanual tasks. These results demonstrate that action-free video provides transferable visual dynamics priors for learning surgical robot control with limited action supervision, positioning data-efficient video pretraining as a practical path toward scaling up surgical robot learning. 
+
+# 1 Introduction 
+
+Autonomous surgical robots could improve the consistency, ac-cessibility, and scalability of minimally invasive surgery (Yang et al. 2017; Dupont et al. 2021; Attanasio et al. 2021). How-ever, learning reliable surgical manipulation policies remains challenging. A successful policy must achieve sub-millimeter precision, reason about contact with deformable tissue, and perform long-horizon actions whose success is often observ-able only at the end of a procedure, such as suturing or needle picking (Kassahun et al. 2016; Ostrander et al. 2024). 
+
+> ∗
+
+Corresponding author. 
+
+A central obstacle is the scarcity of action-labeled surgical robot data. Collecting teleoperated dVRK trajectories with synchronized kinematic labels requires access to surgical hardware, specialized environments, expert operators, and task-specific setup. Consequently, existing surgical manipula-tion datasets typically contain only hundreds to a few thousand demonstrations (Haworth et al. 2025; Kim et al. 2025), far fewer than the millions of frames commonly used in general-purpose robot learning (Walke et al. 2023; O’Neill et al. 2024; Khazatsky et al. 2024). This scarcity limits both the diversity of behaviors that can be learned and the robustness of the resulting policies. World models provide a potential way to alleviate this limitation. By predicting future observations conditioned on actions, they learn temporal dynamics and task-relevant physical structure (Ha and Schmidhuber 2018; Hafner et al. 2020). Unlike purely reactive Vision-Language-Action (VLA) policies (Brohan et al. 2023; Kim et al. 2024; Black et al. 2024b), predictive models can provide forward-looking rep-resentations of the consequences of candidate actions (Shen et al. 2025; Pai et al. 2025). Importantly, the observation-prediction objective can be trained on video without action labels, allowing representation learning to use data that would otherwise be unsuitable for policy training. Recent World-Action Models (WAMs) integrate these two capabilities into a single model. A WAM jointly predicts future video and the robot actions that would produce the predicted future, thereby sharing representations between world modeling and control (Ye et al. 2026). This joint formulation enables the two objectives to complement each other: generated rollouts inform action prediction, while action supervision focuses video prediction on task-relevant objects and dynamics. It also avoids the need to separately train and coordinate a world model and a control policy. For example, Cosmos Policy (Kim et al. 2026) adapts a latent video diffusion model by adding an action-prediction output and achieves competitive manipulation performance without introducing a separate policy architecture. Despite this progress, world models in surgical robotics have primarily been used in two separate roles. First, they have been used as evaluators that generate predicted video for assessing externally trained policies, without directly controlling the robot (Zbinden et al. 2025). Second, they have been used as synthetic-data generators in multi-stage arXiv:2608.11204v1 [cs.RO] 11 Aug 2026 1 2 34 5 67 8 9i. Closed-loop control with a Surgical WAM ii. Closed-loop success during policy fine-tuning.     
+
+>           
+
+Figure 1: Surgical WAM drives closed-loop dVRK manipulation and makes policy learning markedly more efficient. (i) AdVRK robot driven by Surgical WAM performs the PegTransfer task in closed loop. At each control step, the model receives the current endoscopic observation and dVRK proprioception, jointly predicts future observations and an action chunk, executes a short prefix of the predicted actions, and replans from the resulting observation, progressing through reaching, grasping, lifting, transferring, and placing. (ii) The proposed action-free video pretraining substantially improves training efficiency: under the same action-labeled budget, the pretrained model attains a higher peak success rate with fewer fine-tuning steps (62% at 50k steps vs. 50% at 60k steps without pretraining, averaged over the SurRoL task suite). pipelines, where a world model generates surgical videos, an inverse-dynamics model assigns pseudo-kinematics, and a separate VLA policy is trained on the resulting data (He et al. 2026). These approaches do not exploit the shared representation between prediction and control that is central to the WAM formulation. Moreover, they are commonly evaluated using open-loop prediction or trajectory metrics rather than closed-loop task success. This gap motivates our central question: under a fixed budget of action-labeled demonstrations, does action-free video pretraining improve closed-loop surgical manipulation? 
+
+The question is particularly relevant to surgery because video and action labels have substantially different collection costs. Endoscopic video can be collected from procedural recordings or generated in simulation, whereas paired robot kinematics require specialized hardware, instrumentation, and expert teleoperation. A WAM provides a direct mechanism for exploiting this asymmetry: its world-model component can be pretrained using video alone, while the action head can later be adapted using a comparatively small action-labeled dataset. If video pretraining improves the learned representation of surgical dynamics, it should improve downstream closed-loop control without increasing the action-label budget. In this work, we propose Surgical WAM , a closed-loop world-action model for surgical manipulation. At each control step, the model takes the current endoscopic observation and dVRK proprioceptive state, and jointly predicts a future video sequence together with an action chunk; it executes a short prefix of the chunk and replans from the resulting observation. This receding-horizon loop lets the model continually correct its predictions and actions as the scene evolves (Figure 1(i)). We evaluate Surgical WAM through closed-loop execution on four dVRK manipulation tasks in the SurRoL benchmark (Xu et al. 2021), which together cover unimanual, bimanual, and contact-rich behaviors such as reaching, grasping, and coordinated object transfer. To test whether Surgical WAM can acquire useful surgical dynamics from action-free video, we hold the action-labeled budget fixed and vary only the volume of video-only pre-training data. Under this controlled setting, action-free video pretraining consistently improves closed-loop task success and substantially accelerates fine-tuning: as shown in Fig-ure 1(ii), it reaches a higher peak success rate with fewer fine-tuning steps than training on action labels alone. Bench-mark and task details are given in Section 4. Overall, this work makes three contributions. First, we develop Surgical WAM , to our knowledge the first world-action model applied to surgical robot learning. The model jointly predicts future endoscopic video and dVRK actions within a single architecture and directly drives closed-loop task execution. Second, we answer the paper’s central question: under a fixed budget of action-labeled demonstrations, action-free video pretraining improves closed-loop surgical manipula-tion. Fine-tuned on the same action-labeled data with the same architecture, the video-pretrained WAM achieves higher closed-loop success and reaches its peak with substantially fewer fine-tuning steps; the gain thus comes entirely from the video pretraining, at no extra cost in action supervision. Third, we characterize when this benefit is realized: abla-tions show that the video-pretrained model peaks with half the fine-tuning steps, is robust across execution horizons, and gains most on contact-rich and bimanual tasks. The same trend holds on real dVRK video from JIGSAWS, confirming the learned prior captures genuine surgical dynamics rather than a simulator artifact. Together, these findings position data-efficient, action-free video pretraining as a practical path toward scaling up surgical robot learning: the bottleneck shifts from collecting expensive teleoperated demonstrations to curating video that the surgical domain already produces at scale. 
+
+# 2 Related Work 
+
+2.1 Surgical Robot Learning and Benchmarks 
+
+Surgical robot learning has progressed from model-based autonomy toward data-driven control. Early systems such as STAR combined explicit perception, tracking, planning, and control to demonstrate supervised-autonomous suturing and laparoscopic anastomosis (Shademan et al. 2016; Saeidi et al. 2022). The open dVRK platform (Kazanzides et al. 2014) and datasets such as JIGSAWS (Gao et al. 2014) sub-sequently made synchronized surgical video and kinematic data more accessible for learning-based methods. In simu-lation, SurRoL (Xu et al. 2021) has become a widely used dVRK-compatible benchmark for goal-conditioned surgical manipulation, alongside newer environments designed for higher-throughput data collection and deformable-tissue in-teraction (Yu et al. 2024; Scheikl et al. 2023; Schmidgall, Krieger, and Eshraghian 2024). These platforms make surgical robotics a useful testbed for learning-based control. Policies trained in these settings commonly use goal-conditioned reinforcement learning, demonstration-augmented reinforcement learning, or imitation learn-ing (Andrychowicz et al. 2017; Nair et al. 2018; Huang et al. 2023; Goecks et al. 2020). Recent systems have also extended data-driven learning to real surgical robots through hierarchical imitation learning and language-conditioned vision-language-action policies (Haworth et al. 2025; Kim et al. 2025). These methods establish important benchmarks, datasets, and policy baselines, but they learn directly from state-action or image-action pairs and thus cannot exploit surgical video that lacks kinematic labels. Our work instead treats such action-free video as a first-class training resource: we use it to pretrain a generative model of surgical dynamics and show that this improves closed-loop control on the same SurRoL tasks under a fixed action-label budget. 
+
+2.2 Video-Conditioned Control and World-Action Models 
+
+Video-conditioned robot learning has emerged as a way to reduce the dependence on action-labeled data. Earlier approaches typically separated visual planning from control: a model first generated a visual subgoal or trajectory, after which a downstream policy or inverse model converted the prediction into robot actions (Du et al. 2023; Ko et al. 2024; Black et al. 2024a). Other approaches use video prediction to learn predictive visual representations or to initialize general-purpose robot models (Wu et al. 2024a; Hu, Guo et al. 2025; Tian et al. 2025). Interactive video models further extend this idea by modeling how observations evolve under robot interaction (Wu et al. 2024b; Bruce et al. 2024; Agarwal et al. 2025). The shared motivation is that visual prediction encourages models to represent object motion, contact events, and task progress from video that does not necessarily contain action labels. A limitation of many video-conditioned systems is that video and action prediction remain separate stages. A visual model may generate a plausible future without representing which actions would produce it, while an inverse model may convert a predicted video into actions without sharing the representation used for visual prediction. This separation can be especially problematic for surgical manipulation, where small geometric errors may change contact outcomes. Recent World–Action Models (WAMs) instead unify future-state prediction and action generation in a single generative model (Zhu et al. 2025; Shen et al. 2025; Pai et al. 2025; Yuan et al. 2026). By sharing representations between the two streams, WAMs allow visual dynamics learned from video to inform control while using action supervision to align prediction with executable behavior. To our knowledge, ours is the first world–action model applied to surgical manipulation. Rather than proposing a new general-purpose architecture, we instantiate the paradigm with Cosmos Policy (Kim et al. 2026), which generates future visual content and robot actions in a shared latent sequence on top of a latent video diffusion model. This brings the WAMs to the domain where action labels are among the scarcest and control requirements are most stringent, and we quantify its benefit through closed-loop execution. 
+
+2.3 World and Video Models for Surgery 
+
+Generative modeling has recently been applied to surgical video synthesis, geometric reconstruction, and surgical foun-dation models. Endoscopic video generators condition on text, motion, or procedural structure to render plausible sur-gical scenes and future observations (Li et al. 2024; Chen et al. 2025). Neural rendering and digital-twin methods re-construct surgical scenes, including deformable tissue and endoscopic viewpoints (Wang et al. 2022; Liu et al. 2024). Other surgical foundation models focus on visual question answering, procedural reasoning, and vision-language assis-tance (Zeng et al. 2025). These approaches demonstrate the value of domain-specific generative representations, but their evaluations primarily focus on visual synthesis, perception, reasoning, or open-loop prediction. The closest surgical applications of Cosmos-family models also use interfaces that differ from ours. Cosmos-Surg-dVRK predicts future frames under candidate actions to evaluate ex-ternally trained policies, rather than generating actions for the robot (Zbinden et al. 2025). Cosmos-H-Surgical/ SurgWorld uses a video-only world model followed by inverse-dynamics modeling to produce pseudo-labeled data for a separate open-loop VLA policy (He et al. 2026). SAW similarly focuses on action-conditioned surgical video synthesis without in-tegrating an action head into the same generative model or evaluating closed-loop task execution (Rapuri et al. 2026). In contrast, our Surgical WAM keeps prediction and control in a single shared generative model: it jointly predicts future endoscopic observations and executable dVRK actions, conditioning inputs  generated  outputs  
+
+> current endoscopic img current proprio
+> unified video-action denoising: visual tokens, robot-state tokens, and action tokens share one sequence
+> future proprio future endoscopic img action chunk
+
+latent frames 
+
+Stage 1: Video pretraining 
+
+Fine-tune 
+
+Stage 2: Joint Fine-tuning 
+
+(i) Surgical WAM Architecture 
+
+(ii) Two-stage Training Recipe     
+
+> scarce surgical action -labeled data abundant action -free surgical video
+> Unlabeled Videos
+> Large-scale Footage
+> Internet Videos
+
+Pre-training 
+
+> Learn general dynamics and spatiotemporal
+> representations from abundant unlabeled videos.
+> Adapt the world model with task-specific supervision to obtain a surgical World Action Model (WAM).
+
+Figure 2: Surgical WAM architecture and two-stage training recipe. (Top) Architecture. Closed-loop inference with the 
+
+Surgical WAM on SurRoL peg transfer. At each control step, the model conditions on the current endoscopic frame, robot state and goal, and the task text. A single video-action diffusion transformer samples an action chunk in the same latent sequence used for visual/state prediction. (Bottom) Two-stage training recipe. Stage 1 (Video pretraining): the world model is fine-tuned on unlabeled surgical video using only the video loss Lvid ; action latent frames are masked (zeroed). Stage 2 (Joint fine-tuning): 
+
+the pretrained world model is jointly fine-tuned on action-labeled demonstrations using the full objective Ljoint .without relying on an external policy, inverse-dynamics model, or synthetic-data pipeline. We evaluate it directly through receding-horizon closed-loop manipulation on SurRoL and isolate the contribution of action-free video pretraining under a fixed action-label budget. In short, prior surgical world models ask whether plausible surgical video can be generated or scored; we test whether the same visual-dynamics prior can be made to act. 
+
+# 3 Method 
+
+Our goal is to learn a closed-loop surgical manipulation policy under a fixed budget of action-labeled demonstrations, while additionally exploiting surgical video that carries no action labels. We realize this with a two-stage recipe built on the world–action model paradigm (Figure 2): the model first acquires surgical visual dynamics through action-free video pretraining, and is then fine-tuned jointly on video and action prediction using the fixed action-labeled budget. This section introduces the model class and notation (Section 3.1), the two training stages (Section 3.2), and closed-loop execution at test time (Section 3.3). 
+
+3.1 Surgical World-Action Model 
+
+World–action models. A recent line of work trains a sin-gle network to jointly model future observations and future actions, rather than separating world modeling from policy learning (Shen et al. 2025; Pai et al. 2025; Yuan et al. 2026; Kim et al. 2026). Ye et al. (2026) group these models under the term world–action model (WAM), which we adopt as a descriptive label for the joint distribution 
+
+pθ (ot+1: t+K , a t:t+Hc | o≤t, s ≤t, c ) , (1) where o≤t and s≤t are the visual and proprioceptive history, 
+
+c is a task embedding, ot+1: t+K are K future predictions, and at:t+Hc is an action chunk (Zhao et al. 2023; Chi et al. 2023) of length Hc. In our surgical setting, ot is the current endoscopic RGB frame and st the dVRK proprioceptive state. Our recipe applies to any WAM whose latent sequence contains both video and action slots processed by a shared network, so that weights learned without action labels can be reused for action prediction. 
+
+Instantiation. As the backbone used throughout our exper-iments, we instantiate the WAM with Cosmos Policy (Kim et al. 2026), a diffusion-transformer realization of Equation (1) whose latent sequence contains dedicated slots for past visual observations, robot state, future predictions, and actions, all processed by a single network. Its visual and future-prediction slots are architecturally compatible with action-free video diffusion backbones, so weights obtained by action-free video pretraining transfer directly into Cosmos Policy and serve as the initialization for the action-labeled stage. 
+
+3.2 Two-Stage Training 
+
+Our training procedure is informed by recent evidence on the role of the video-prediction objective in a WAM. Yuan et al. (2026) show that removing video co-training substantially degrades manipulation performance, and predictive visual representations have likewise been shown to transfer to con-trol (Hu, Guo et al. 2025; Shen et al. 2025; Pai et al. 2025). Crucially, acquiring such a representation does not require action-labeled data: it can be learned from action-free video alone, reserving the scarce action labels for grounding the learned dynamics in executable commands. We therefore decouple training into a video-only pretraining stage followed by action-labeled fine-tuning. 
+
+Stage 1: action-free video pretraining. The first stage trains only the world-model component. Given the visual history of an action-free clip, the model learns to denoise the future-video latents, while the action and state slots are excluded from both input and supervision: 
+
+Lpre (θ) = E o∼D v , ϵ, τ 
+
+h
+
+ϵ − ϵθ
+
+ zvid  
+
+> τ
+
+, τ | o≤t
+
+ 22
+
+i
+
+, (2) where Dv is an action-free video corpus and zvid  
+
+> τ
+
+denotes the noised future-video latents at diffusion timestep τ . Because Equation (2) requires no kinematic labels, it can consume surgical video at a scale unreachable by teleoperated data collection. In this work we instantiate Stage 1 with the surgical video world model of He et al. (2026), obtained by fine-tuning a general video diffusion backbone (Agarwal et al. 2025) on large-scale surgical video. Its weights populate the visual and future-prediction slots of the WAM, while the action and state slots are initialized fresh and learned in Stage 2. 
+
+Why the recipe fits surgery. Inside a WAM, learning splits into two problems with very different data costs. Learn-ing how the endoscopic scene evolves requires only video, which surgery produces abundantly, whereas learning which command realizes a desired future requires synchronized kinematics, which are scarce and expensive. Training both from labeled demonstrations alone ignores this asymmetry, because the costly labels must then also teach visual dynamics that unlabeled video could have taught instead. The two-stage recipe assigns each problem to the data source that suits it: abundant video builds the dynamics representation in Stage 1, and the scarce labels are spent solely on grounding action prediction in that representation in Stage 2. 
+
+Stage 2: action-labeled fine-tuning. Starting from the video-pretrained initialization θ0, we fine-tune the full model on action-labeled surgical demonstrations Dva =
+
+{(o1: T , s 1: T , a 1: T , c )}. We denote the conditioning context at time t by ht := ( o≤t, s ≤t, c ). Each training example pairs this context with an action chunk and the corresponding future-prediction targets. The action and future-prediction tokens are inserted into a shared sequence and jointly cor-rupted according to the diffusion timestep τ . Let zτ denote the resulting noised sequence. We optimize the standard diffusion denoising objective 
+
+Lft (θ) = E(o,s,a,c )∼D va 
+
+> ϵ, τ
+
+h
+
+∥ϵ − ϵθ (zτ , τ | ht)∥22
+
+i
+
+. (3) Here, ϵ denotes the noise added to the shared sequence. Action and future-prediction tokens are denoised jointly through the same attention and visual-prediction parameters. This couples the action-prediction stream to the temporal structure learned during video-only pretraining, allowing the model to transfer video-derived dynamics representations while learning to predict executable surgical actions. The practical consequence of this recipe is a shift in the data bottleneck. Stage 1 consumes only action-free video, which is abundant and inexpensive to collect, while the action-labeled budget of Stage 2 remains fixed. The recipe thus offers a practical route to scaling up surgical robot learning: performance grows with curated surgical video rather than with expensive kinematic data collection. 
+
+3.3 Closed-Loop Policy Execution 
+
+At test time the finetuned model is used as a closed-loop receding-horizon policy. Given the current observation and task embedding, the diffusion sampler produces an action chunk of length Hc together with the corresponding future-prediction slots; the robot executes the first He ≤ Hc actions, discards the rest, and the loop then re-observes and re-plans. Smaller He improves reactivity while larger He amortizes the cost of diffusion sampling. 
+
+Joint sampling of video and action slots. Although only actions are sent to the actuator, the model samples the action and future-prediction tokens jointly: action tokens attend to the denoised future-prediction tokens at every diffusion step, preserving at inference the video-action coupling learned during finetuning. The future-prediction outputs are then dis-carded, so joint sampling adds compute but no I/O overhead. 
+
+# 4 Experiments 
+
+4.1 Experimental Setup 
+
+We evaluate the proposed Surgical World–Action Model (Surgical WAM ) on the SurRoL surgical manipulation bench-mark (Xu et al. 2021). The benchmark provides endoscopic observations, robot proprioception, and synchronized actions for simulated dVRK manipulation tasks. We consider four tasks: Needle Pick, Peg Transfer, Needle Regrasp, and BiPeg Transfer. Needle Pick and Peg Transfer are unilateral manipulation tasks, while Needle Regrasp and BiPeg Transfer require bimanual coordination. Together, these tasks involve reaching, grasping, contact-rich manipulation, object transfer, and precise placement. At each control step, the policy receives the current endo-scopic image, dVRK proprioception, and task embedding. It predicts an action chunk of length Hc, where each action is an absolute Cartesian end-effector target for the dVRK Table 1: Main results on the SurRoL benchmark. We report closed-loop task success rates (%) on four surgical manipulation tasks (snapshots shown in the top row). All methods are trained on the same action-labeled dataset with an identical fine-tuning budget. Best results are in bold . BET: Behavior Transformer; DEX: demonstration-guided exploration; PT: video pre-training.                                  
+
+> Model Needle Pick Peg Transfer Needle Regrasp BiPeg Transfer snapshots
+> BET (Shafiullah et al. 2022) 78% 73% 63 %—DEX (Huang et al. 2023) 98% 77% 56% —ALOHA (Fu, Zhao, and Finn 2024) 95% 14% 11% —Diffusion (Chi et al. 2023) 21% 2% 2% —
+> π0.5(Black et al. 2025) 8% 36% 12% 33%
+> Surgical WAM w/o PT (ours) 96% 66% 50% 42%
+> Surgical WAM w/ PT (ours) 99 %86 %62% 64 %
+
+patient-side manipulators (PSMs), consisting of a position, an orientation, and a gripper open–close command per arm. Only the first He actions are executed, after which the robot obtains a new observation and replans. Unless otherwise specified, we use Hc = 16 and He = 4 .
+
+Action-labeled demonstrations. The action-labeled train-ing set contains 10k demonstrations collected from the SurRoL simulator (Xu et al. 2021). Each demonstration consists of endoscopic observations, proprioceptive states, task informa-tion, and synchronized robot actions. The same action-labeled dataset is used for all methods and ablations. 
+
+Compared methods. We compare the proposed Surgical WAM against representative prior policies on the SurRoL benchmark, as well as an ablated variant of our own model. 
+
+• BET (Shafiullah et al. 2022): Behavior Transformer, a transformer-based behavior-cloning policy that models multi-modal demonstrations by discretizing actions into behavior modes. 
+
+• DEX (Huang et al. 2023): a demonstration-guided reinforcement-learning method with efficient exploration, designed for surgical task automation on SurRoL. 
+
+• ALOHA (Fu, Zhao, and Finn 2024): an imitation-learning policy with action chunking developed for fine-grained bimanual manipulation. 
+
+• Diffusion Policy (Chi et al. 2023): a visuomotor policy that generates action sequences via a diffusion model. 
+
+• π0.5 (Black et al. 2025): a large vision-language-action model with open-world generalization, fine-tuned on the same action-labeled demonstrations. We further compare two variants of our model with identical architectures and optimization settings: 
+
+• Surgical WAM w/o PT : the Cosmos Policy model is fine-tuned directly on action-labeled surgical demonstrations without additional surgical video pretraining. 
+
+• Surgical WAM w/ PT : the model is first pretrained on action-free surgical videos and then fine-tuned on the same action-labeled demonstrations. The two WAM variants share the same backbone initializa-tion, action representation, diffusion sampler, and evaluation protocol; their comparison therefore isolates the effect of action-free surgical video pretraining. 
+
+Evaluation metric. We report the closed-loop task success rate. An episode is successful if the task-specific success condition is satisfied within the maximum episode horizon. Each result is evaluated over 100 evaluation episodes. 
+
+Implementation details. The model is fine-tuned for 80 k
+
+optimization steps with a batch size of 1 and a learning rate of 1e − 4. The diffusion sampler uses 5 denoising steps. All experiments use the same image resolution, optimizer, learning-rate schedule, and action representation. 
+
+4.2 Main Results 
+
+Table 1 compares the proposed Surgical WAM against prior policies on the SurRoL benchmark, together with the corre-sponding WAM trained without surgical video pretraining. 
+
+Surgical WAM w/ PT achieves the best success rate on three of the four tasks and remains competitive on the fourth. Notably, the generalist policies transfer poorly to the surgical domain: ALOHA drops to 14% on PegTransfer and Diffusion Policy to 2% . Even π0.5, a state-of-the-art vision-language-action (VLA) model with large-scale multi-domain pretraining, obtains only 8% on NeedlePick and 
+
+12% on NeedleRegrasp, averaging 22 .3% across the four tasks. While its generalist pretraining yields a moderate 
+
+33% on the bimanual BiPegTransfer task, its uniformly low performance on precision-critical tasks suggests that language-conditioned action decoding alone does not capture the fine-grained visual dynamics required in the surgical domain. In contrast, Surgical WAM grounds action prediction in a learned model of surgical visual dynamics and achieves 64% 
+
+on BiPegTransfer, nearly doubling the VLA baseline without any language supervision. Video pretraining further strengthens this advantage. Under the same action-labeled budget, pretraining improves closed-loop success on PegTransfer from 66% to 86% , an absolute gain of 20 percentage points. The improvement is consistent Figure 3: Real-robot surgical manipulation sequences from JIGSAWS. Representative endoscopic frames from the JIGSAWS dVRK teleoperation recordings used in our real-data experiments, with task progress shown from left to right. (Top) Knot tying. 
+
+(Bottom) Suturing. Table 2: Fine-tuning-step ablation. Closed-loop success rate under different numbers of action-labeled fine-tuning steps.             
+
+> Fine-tuning steps WAM w/o PT WAM w/ PT
+> 40 k41 .5% 52% 80 k65 .5% 86% 120 k71 .5% 34% 160 k79% 56 .5%
+> Best 79% 86%
+
+across all four tasks and is most pronounced on the contact-rich and bimanual problems. Averaged over the full suite, 
+
+Surgical WAM w/ PT reaches 77 .8% versus 63 .5% without pretraining, an improvement of 14 .3 points. These results demonstrate that action-free video pretraining provides visual-dynamics representations that transfer to action prediction, even when the downstream action-labeled data are kept fixed, and that the World-Action model can outperform generalist VLA pretraining under matched fine-tuning budgets. 
+
+4.3 Ablation Studies 
+
+We perform controlled ablations to understand how the benefit of action-free video pretraining depends on the training budget and the amount of open-loop execution. 
+
+Effect of Fine-Tuning Steps We vary the number of Stage 2 optimization steps while keeping the action-labeled dataset and video-pretraining corpus fixed. As shown in Table 2, the video-pretrained model peaks at 86% after only 80 k steps, whereas the model without pretraining requires 160 k steps to reach its best of 79% . The pretrained initialization thus attains a higher peak with half the optimization budget. At longer horizons, the pretrained model degrades, which we attribute to overfitting to the limited demonstrations that gradually erodes the visual-dynamics prior. We therefore report both the best success rate and the rate at fixed steps, separating faster convergence from favorable checkpoint selection. 
+
+Effect of the Execution Horizon We study the execution horizon He, the number of predicted actions executed before Table 3: Execution-horizon ablation. Effect of the number of actions executed before replanning. The predicted chunk length Hc and all model parameters are fixed.           
+
+> HeWAM w/o PT WAM w/ PT
+> 150% 86% 252% 70% 466% 86% 860% 80%
+
+replanning. The model always predicts a chunk of fixed length 
+
+Hc = 16 , and we evaluate He ∈ { 1, 2, 4, 8}.A smaller He provides more frequent feedback at the cost of more diffusion sampling, while a larger He amortizes computation but makes the controller more open-loop. Table 3 shows that the pretrained model is robust across horizons, maintaining at least 70% success, whereas the model without pretraining is more sensitive and peaks only at He = 4 (66% ). We adopt He = 4 as the default, balancing reactivity against inference cost. 
+
+4.4 Results on Real Surgical Video 
+
+To probe whether the benefit of action-free video pretraining transfers beyond simulation, we apply the identical two-stage protocol to demonstrations from the JIGSAWS dataset (Gao et al. 2014), a standard corpus of dVRK operation recordings captured on real robotic hardware (Figure 3). We observe the same qualitative trend as in simulation: video-pretrained initializations yield stronger downstream policies than a from-scratch baseline. This indicates that the advantage of action-free video pretraining is not an artifact of the simulator’s rendering or dynamics, but persists under the visual complex-ity and manipulation difficulty of real surgical scenes. 
+
+# 5 Conclusion 
+
+We presented a two-stage training recipe for surgical manipu-lation that decouples visual-dynamics learning from action supervision. In the first stage, a world action model is pre-trained on action-free surgical videos; in the second stage, the model is fine-tuned on a fixed set of action-labeled demonstra-tions. Under an identical fine-tuning budget, video pretraining improves average closed-loop success from 63 .5% to 77 .8% 
+
+over four simulated tasks, with the largest gains on contact-rich and bimanual problems. Our ablations further show that the pretrained initialization converges faster, reaching a higher peak with half the optimization steps, and remains robust across execution horizons. Results on real surgical videos from JIGSAWS confirm that these benefits are not an artifact of simulation. These findings suggest that abundant unlabeled surgical video is an effective substitute for costly action la-bels, and that scaling action-free pretraining is a promising direction for data-efficient surgical robot learning. 
+
+# References 
+
+Agarwal, N.; et al. 2025. Cosmos World Foundation Model Platform for Physical AI. arXiv:2501.03575. Andrychowicz, M.; Wolski, F.; Ray, A.; Schneider, J.; Fong, R.; Welinder, P.; McGrew, B.; Tobin, J.; Abbeel, P.; and Zaremba, W. 2017. Hindsight Experience Replay. In Advances in Neural Information Processing Systems (NeurIPS) .Attanasio, A.; Scaglioni, B.; De Momi, E.; Fiorini, P.; and Valdastri, P. 2021. Autonomy in Surgical Robotics. Annual Review of Control, Robotics, and Autonomous Systems , 4: 651–679. Black, K.; Brown, N.; Darpinian, J.; Dhabalia, K.; Driess, D.; Esmail, A.; Equi, M. R.; Finn, C.; Fusai, N.; Galliker, M. Y.; et al. 2025. π0.5: A Vision-Language-Action Model with Open-World Generalization. In Conference on Robot Learning (CoRL) .Black, K.; Nakamoto, M.; Atreya, P.; Walke, H.; Finn, C.; Kumar, A.; and Levine, S. 2024a. Zero-Shot Robotic Ma-nipulation with Pretrained Image-Editing Diffusion Models. In International Conference on Learning Representations (ICLR) .Black, K.; et al. 2024b. π0: A Vision-Language-Action Flow Model for General Robot Control. arXiv:2410.24164. Brohan, A.; Brown, N.; Carbajal, J.; et al. 2023. RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control. In Conference on Robot Learning (CoRL) .Bruce, J.; Dennis, M.; Edwards, A.; Parker-Holder, J.; Shi, Y.; Hughes, E.; et al. 2024. Genie: Generative Interactive Environments. In International Conference on Machine Learning (ICML) .Chen, T.; et al. 2025. SurgSora: Object-Aware Diffusion Model for Controllable Surgical Video Generation. In Med-ical Image Computing and Computer Assisted Intervention (MICCAI) .Chi, C.; Feng, S.; Du, Y.; Xu, Z.; Cousineau, E.; Burchfiel, B.; and Song, S. 2023. Diffusion Policy: Visuomotor Policy Learning via Action Diffusion. In Robotics: Science and Systems (RSS) .Du, Y.; Yang, M.; Dai, B.; Dai, H.; Nachum, O.; Tenenbaum, J. B.; Schuurmans, D.; and Abbeel, P. 2023. Learning Univer-sal Policies via Text-Guided Video Generation. In Advances in Neural Information Processing Systems (NeurIPS) .Dupont, P. E.; Nelson, B. J.; Goldfarb, M.; Hannaford, B.; Menciassi, A.; O’Malley, M. K.; Simaan, N.; Valdastri, P.; and Yang, G.-Z. 2021. A Decade Retrospective of Medical Robotics Research from 2010 to 2020. Science Robotics ,6(60): eabi8017. Fu, Z.; Zhao, T. Z.; and Finn, C. 2024. Mobile ALOHA: Learning Bimanual Mobile Manipulation Using Low-Cost Whole-Body Teleoperation. In Conference on Robot Learning (CoRL) .Gao, Y.; Vedula, S. S.; Reiley, C. E.; Ahmidi, N.; Varadarajan, B.; Lin, H. C.; Tao, L.; Zappella, L.; Béjar, B.; Yuh, D. D.; Chen, C. C. G.; Vidal, R.; Khudanpur, S.; and Hager, G. D. 2014. JHU-ISI Gesture and Skill Assessment Working Set (JIGSAWS): A Surgical Activity Dataset for Human Motion Modeling. In MICCAI Workshop on Modeling and Monitoring of Computer Assisted Interventions (M2CAI) .Goecks, V. G.; Gremillion, G. M.; Lawhern, V. J.; Valasek, J.; and Waytowich, N. R. 2020. Integrating Behavior Cloning and Reinforcement Learning for Improved Performance in Dense and Sparse Reward Environments. In International Conference on Autonomous Agents and Multiagent Systems (AAMAS) , 465–473. Ha, D.; and Schmidhuber, J. 2018. Recurrent World Models Facilitate Policy Evolution. In Advances in Neural Information Processing Systems (NeurIPS) , 2455–2467. Hafner, D.; Lillicrap, T.; Ba, J.; and Norouzi, M. 2020. Dream to Control: Learning Behaviors by Latent Imagination. In In-ternational Conference on Learning Representations (ICLR) .Haworth, J.; Chen, J.-T.; Nelson, N.; Kim, J. W.; Moghani, M.; Finn, C.; and Krieger, A. 2025. SutureBot: A Precision Framework and Benchmark for Autonomous End-to-End Suturing. arXiv:2510.20965. He, Y.; Guo, P.; Xu, M.; Li, Z.; Myronenko, A.; Xu, D.; et al. 2026. Cosmos-H-Surgical: Learning Surgical Robot Policies from Videos via World Modeling. arXiv:2512.23162. Hu, Y.; Guo, Y.; et al. 2025. Video Prediction Policy: A Gen-eralist Robot Policy with Predictive Visual Representations. In International Conference on Machine Learning (ICML) .Huang, T.; Chen, K.; Li, B.; Liu, Y.-H.; and Dou, Q. 2023. Demonstration-Guided Reinforcement Learning with Effi-cient Exploration for Task Automation of Surgical Robot. In 
+
+IEEE International Conference on Robotics and Automation (ICRA) , 4640–4647. Kassahun, Y.; Yu, B.; Tibebu, A. T.; Stoyanov, D.; Giannarou, S.; Metzen, J. H.; and Vander Poorten, E. 2016. Surgical Robotics beyond Enhanced Dexterity Instrumentation: A Survey of Machine Learning Techniques and Their Role in Intelligent and Autonomous Surgical Actions. International Journal of Computer Assisted Radiology and Surgery , 11(4): 553–568. Kazanzides, P.; Chen, Z.; Deguet, A.; Fischer, G. S.; Taylor, R. H.; and DiMaio, S. P. 2014. An Open-Source Research Kit for the da Vinci Surgical System. In IEEE International Conference on Robotics and Automation (ICRA) , 6434–6439. Khazatsky, A.; Pertsch, K.; Nair, S.; et al. 2024. DROID: A Large-Scale In-The-Wild Robot Manipulation Dataset. In 
+
+Robotics: Science and Systems (RSS) .Kim, J. W.; Chen, J.-T.; Hansen, P.; Shi, L. X.; Schmidgall, S.; Scheikl, P. M.; Finn, C.; and Krieger, A. 2025. SRT-H: A Hi-erarchical Framework for Autonomous Surgery via Language-Conditioned Imitation Learning. arXiv:2505.10251. Kim, M. J.; Gao, Y.; Lin, T.-Y.; Lin, Y.-C.; Ge, Y.; Lam, G.; Liang, P.; Song, S.; Liu, M.-Y.; Finn, C.; and Gu, J. 2026. Cosmos Policy: Fine-Tuning Video Models for Visuomotor Control and Planning. arXiv:2601.16163. Kim, M. J.; Pertsch, K.; Karamcheti, S.; et al. 2024. Open-VLA: An Open-Source Vision-Language-Action Model. In 
+
+Conference on Robot Learning (CoRL) .Ko, P.-C.; Mao, J.; Du, Y.; Sun, S.-H.; and Tenenbaum, J. B. 2024. Learning to Act from Actionless Videos through Dense Correspondences. In International Conference on Learning Representations (ICLR) .Li, C.; Liu, H.; Liu, Y.; Feng, B. Y.; Li, W.; Liu, X.; Chen, Z.; Shao, J.; and Yuan, Y. 2024. Endora: Video Generation Mod-els as Endoscopy Simulators. In Medical Image Computing and Computer Assisted Intervention (MICCAI) .Liu, Y.; Li, C.; Yang, C.; and Yuan, Y. 2024. EndoGaussian: Real-Time Gaussian Splatting for Dynamic Endoscopic Scene Reconstruction. arXiv:2401.12561. Nair, A.; McGrew, B.; Andrychowicz, M.; Zaremba, W.; and Abbeel, P. 2018. Overcoming Exploration in Reinforce-ment Learning with Demonstrations. In IEEE International Conference on Robotics and Automation (ICRA) .O’Neill, A.; Rehman, A.; Maddukuri, A.; et al. 2024. Open X-Embodiment: Robotic Learning Datasets and RT-X Mod-els. In IEEE International Conference on Robotics and Automation (ICRA) , 6892–6903. Ostrander, B. T.; Massillon, D.; Meller, L.; Chiu, Z.-Y.; Yip, M.; and Orosco, R. K. 2024. The Current State of Autonomous Suturing: A Systematic Review. Surgical Endoscopy , 38(5): 2383–2397. Pai, J.; Achenbach, L.; Montesinos, V.; Forrai, B.; Mees, O.; and Nava, E. 2025. Mimic-Video: Video-Action Models for Generalizable Robot Control Beyond VLAs. arXiv:2512.15692. Rapuri, S.; Seenivasan, L.; Schneider, D.; Soberanis-Mukul, R.; He, Y.; Ding, H.; Xu, J.; Yu, C.; Jing, C.; Guo, P.; Xu, D.; and Unberath, M. 2026. SAW: Toward a Surgical Action World Model via Controllable and Scalable Video Generation. arXiv:2603.13024. Saeidi, H.; Opfermann, J. D.; Kam, M.; Wei, S.; Leonard, S.; Hsieh, M. H.; Kang, J. U.; and Krieger, A. 2022. Autonomous Robotic Laparoscopic Surgery for Intestinal Anastomosis. 
+
+Science Robotics , 7(62): eabj2908. Scheikl, P. M.; Gyenes, B.; Younis, R.; Haas, C.; Neumann, G.; Wagner, M.; and Mathis-Ullrich, F. 2023. LapGym – An Open Source Framework for Reinforcement Learning in Robot-Assisted Laparoscopic Surgery. Journal of Machine Learning Research , 24(368): 1–45. Schmidgall, S.; Krieger, A.; and Eshraghian, J. 2024. Sur-gical Gym: A High-Performance GPU-Based Platform for Reinforcement Learning with Surgical Robots. In IEEE In-ternational Conference on Robotics and Automation (ICRA) .Shademan, A.; Decker, R. S.; Opfermann, J. D.; Leonard, S.; Krieger, A.; and Kim, P. C. W. 2016. Supervised Autonomous Robotic Soft Tissue Surgery. Science Translational Medicine ,8(337): 337ra64. Shafiullah, N. M. M.; Cui, Z. J.; Altanzaya, A.; and Pinto, L. 2022. Behavior Transformers: Cloning k Modes with One Stone. In Advances in Neural Information Processing Systems (NeurIPS) .Shen, Y.; Wei, F.; Du, Z.; Liang, Y.; Lu, Y.; Yang, J.; Zheng, N.; and Guo, B. 2025. VideoVLA: Video Generators Can Be Generalizable Robot Manipulators. In Advances in Neural Information Processing Systems (NeurIPS) .Tian, Y.; et al. 2025. Predictive Inverse Dynamics Models Are Scalable Learners for Robotic Manipulation. In International Conference on Learning Representations (ICLR) .Walke, H.; Black, K.; Lee, A.; Kim, M. J.; Du, M.; Zheng, C.; Zhao, T.; Hansen-Estruch, P.; Vuong, Q.; He, A.; Myers, V.; Fang, K.; Finn, C.; and Levine, S. 2023. BridgeData V2: A Dataset for Robot Learning at Scale. In Conference on Robot Learning (CoRL) .Wang, Y.; Long, Y.; Fan, S. H.; and Dou, Q. 2022. Neural Rendering for Stereo 3D Reconstruction of Deformable Tis-sues in Robotic Surgery. In Medical Image Computing and Computer Assisted Intervention (MICCAI) .Wu, H.; Jing, Y.; Cheang, C.; Chen, G.; Xu, J.; Li, X.; Liu, M.; Li, H.; and Kong, T. 2024a. Unleashing Large-Scale Video Generative Pre-Training for Visual Robot Manipulation. In International Conference on Learning Representations (ICLR) .Wu, J.; Yin, S.; Feng, N.; He, X.; Li, D.; Hao, J.; and Long, M. 2024b. iVideoGPT: Interactive VideoGPTs Are Scalable World Models. In Advances in Neural Information Processing Systems (NeurIPS) .Xu, J.; Li, B.; Lu, B.; Liu, Y.-H.; Dou, Q.; and Heng, P.-A. 2021. SurRoL: An Open-Source Reinforcement Learning Centered and dVRK Compatible Platform for Surgical Robot Learning. In IEEE/RSJ International Conference on Intelli-gent Robots and Systems (IROS) .Yang, G.-Z.; et al. 2017. Medical Robotics—Regulatory, Ethical, and Legal Considerations for Increasing Levels of Autonomy. Science Robotics , 2(4): eaam8638. Ye, S.; Ge, Y.; Zheng, K.; Gao, S.; Yu, S.; Kautz, J.; Zhu, Y.; Fan, L.; and Jang, J. 2026. World Action Models Are Zero-Shot Policies. arXiv:2602.15922. Yu, Q.; Moghani, M.; Dharmarajan, K.; Schorp, V.; Pan-itch, W. C.-H.; Liu, J.; Goldberg, K.; Garg, A.; et al. 2024. ORBIT-Surgical: An Open-Simulation Framework for Learn-ing Surgical Augmented Dexterity. In IEEE International Conference on Robotics and Automation (ICRA) .Yuan, T.; Dong, Z.; Liu, Y.; and Zhao, H. 2026. Fast-WAM: Do World Action Models Need Test-Time Future Imagination? arXiv:2603.16666. Zbinden, L.; Nelson, N.; Chen, J.-T.; Chen, X.; Kim, J. W.; Azizian, M.; Krieger, A.; and Huver, S. 2025. Cosmos-Surg-dVRK: World Foundation Model-Based Automated Online Evaluation of Surgical Robot Policy Learning. arXiv:2510.16240. Zeng, Z.; Zhuo, Z.; Jia, X.; Jin, Y.; et al. 2025. SurgVLM: A Large Vision-Language Model and Systematic Evaluation Benchmark for Surgical Intelligence. arXiv:2506.02555. Zhao, T. Z.; Kumar, V.; Levine, S.; and Finn, C. 2023. Learn-ing Fine-Grained Bimanual Manipulation with Low-Cost Hardware. In Robotics: Science and Systems (RSS) .Zhu, C.; Yu, R.; Feng, S.; Burchfiel, B.; Shah, P.; and Gupta, A. 2025. Unified World Models: Coupling Video and Ac-tion Diffusion for Pretraining on Large Robotic Datasets. arXiv:2504.02792.

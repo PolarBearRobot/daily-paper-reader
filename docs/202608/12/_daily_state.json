@@ -1,0 +1,297 @@
+{
+  "date": "20260812",
+  "date_label": "",
+  "generated_at": "2026-08-12 21:13:42 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2608.10484v1",
+      "route": "202608/12/2608.10484v1-lost-in-reconstruction-aligning-action-representations-with-language-in-vision-language-action-models",
+      "title": "Lost in Reconstruction: Aligning Action Representations with Language in Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出语义对齐动作分词器SALT，将VLA中的动作表征与语言对齐，解决动作表征学习问题",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10756v1",
+      "route": "202608/12/2608.10756v1-embodied-multimodal-grounding-for-open-vocabulary-mobile-manipulation-via-semantic-3d-gaussian-splatting",
+      "title": "Embodied Multimodal Grounding for Open-Vocabulary Mobile Manipulation via Semantic 3D Gaussian Splatting",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于语义3D高斯泼溅的具身多模态接地用于开放词汇VLA策略",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10780v1",
+      "route": "202608/12/2608.10780v1-jepa-wam-stage-level-joint-embedding-prediction-for-world-action-models-in-robot-manipulation",
+      "title": "JEPA-WAM: Stage-Level Joint-Embedding Prediction for World-Action Models in Robot Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "提出面向机器人操作世界动作模型的阶段级联合嵌入预测方法",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10860v1",
+      "route": "202608/12/2608.10860v1-flex--a-multi-stream-world-action-model-with-compute-flexibility",
+      "title": "Flex-$π$: A Multi-Stream World-Action Model with Compute Flexibility",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过共享VAE隐空间对3D点图与DINO语义进行多流监督，增强WAM的3D空间理解",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.07905v1",
+      "route": "202608/12/2608.07905v1-graphthink-graph-enhanced-llm-thinking-for-long-horizon-embodied-task-planning",
+      "title": "GraphThink: Graph-Enhanced LLM Thinking for Long-Horizon Embodied Task Planning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "结合任务图与场景图增强LLM规划器，支持长时程具身任务规划和环境记忆",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10413v1",
+      "route": "202608/12/2608.10413v1-drivevla-m0-failure-aware-memory-augmentation-for-autonomous-driving",
+      "title": "DriveVLA-M0: Failure-Aware Memory Augmentation for Autonomous Driving",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "为自动驾驶VLA引入故障感知的潜在记忆池与检索增强",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10758v1",
+      "route": "202608/12/2608.10758v1-where-to-look--causal-tracing-of-vision-encoders-in-vlm",
+      "title": "Where To Look? : Causal Tracing of Vision Encoders in VLM",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "analysis"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "对视觉语言模型中的视觉编码器进行因果追踪，直接研究视觉语言架构的可解释性",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10824v1",
+      "route": "202608/12/2608.10824v1-neural-introspection-gating-for-adaptive-kv-cache-reuse-in-vision-language-action-models",
+      "title": "Neural Introspection Gating for Adaptive KV-Cache Reuse in Vision-Language-Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向视觉-语言-动作模型的自适应KV缓存复用神经内省门控",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10847v1",
+      "route": "202608/12/2608.10847v1-enabling-scalable-kinesthetic-teaching-via-observer-based-hand-guiding-with-active-support",
+      "title": "Enabling Scalable Kinesthetic Teaching via Observer-based Hand-guiding with Active Support",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "减少操作者疲劳，支持可扩展的演示数据采集",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10976v1",
+      "route": "202608/12/2608.10976v1-xcot-vla-executable-chain-of-thought-for-vision-language-action-driving",
+      "title": "XCoT-VLA: Executable Chain-of-Thought for Vision-Language-Action Driving",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向视觉-语言-动作驾驶的可执行思维链",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.11204v1",
+      "route": "202608/12/2608.11204v1-surgical-wam-a-world-action-model-for-data-efficient-surgical-robot-learning",
+      "title": "Surgical WAM: A World-Action Model for Data-Efficient Surgical Robot Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用丰富的内窥镜视频学习世界动作模型，在动作标签稀缺条件下实现外科机器人控制",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.09816v1",
+      "route": "202608/12/2608.09816v1-hierarchical-fast--slow-react-agent-for-zero-shot-object-goal-navigation",
+      "title": "Hierarchical Fast--Slow ReAct Agent for Zero-Shot Object-Goal Navigation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "提出带记忆的分层快慢智能体，用于零样本目标导航，处理长时序规划与记忆反思",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10278v1",
+      "route": "202608/12/2608.10278v1-chain-of-spatial-thoughts-modality-agnostic-spatial-grounding-for-vision-language-models",
+      "title": "Chain of Spatial Thoughts: Modality-Agnostic Spatial Grounding for Vision Language Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "Space Tokens将3D几何与空间属性蒸馏为连续隐式标记，服务具身VLM空间推理",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10864v1",
+      "route": "202608/12/2608.10864v1-multi-view-relational-distillation-for-spatial-reasoning-with-vision-language-models",
+      "title": "Multi-View Relational Distillation for Spatial Reasoning with Vision-Language Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "多视图关系蒸馏改善视觉-语言模型的视觉-空间表征，用于具身AI的空间推理",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.08523v1",
+      "route": "202608/12/2608.08523v1-discovering-diverse-planning-policies-for-multimodal-embodied-agents-with-quality-diversity-optimization",
+      "title": "Discovering Diverse Planning Policies for Multimodal Embodied Agents with Quality-Diversity Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "针对具身智能体长时程任务，用质量多样性优化发现多样规划策略",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.09564v1",
+      "route": "202608/12/2608.09564v1-from-semantic-grounding-to-decision-optimization-a-unified-framework-for-long-horizon-uav-vision-language-navigation",
+      "title": "From Semantic Grounding to Decision Optimization: A Unified Framework for Long-Horizon UAV Vision-Language Navigation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "提出面向长时序UAV视觉语言导航的统一框架，包含语义接地与历史记忆优化",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10600v1",
+      "route": "202608/12/2608.10600v1-boost-bridging-semantics-and-motions-for-efficient-skill-transfer",
+      "title": "BooST: Bridging Semantics and Motions for Efficient Skill Transfer",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "data"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过技能抽象连接语义与运动，实现向真实机器人的高效技能迁移",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    },
+    {
+      "paper_id": "2608.10618v1",
+      "route": "202608/12/2608.10618v1-toward-the-cognitive--physical-limits-of-embodied-intelligence-through-a-world-model-centric-autonomous-racing-agent",
+      "title": "Toward the Cognitive--Physical Limits of Embodied Intelligence through a World-Model-Centric Autonomous Racing Agent",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "model"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "以世界模型为中心的自动驾驶竞速智能体",
+      "first_seen_at": "2026-08-12 21:13:42 UTC",
+      "updated_at": "2026-08-12 21:13:42 UTC"
+    }
+  ]
+}
